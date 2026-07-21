@@ -1,0 +1,61 @@
+# This contract is committed before the implementation it evaluates.
+version: 1
+id: patchproof-initial-release
+title: Build the PatchProof independent verification layer
+task: >-
+  Deliver a local-first CLI and library that verifies AI-written Git patches against
+  base-sealed policy and falsifiable claims, records tamper-evident evidence, supports
+  optional Ed25519 signing, and renders an accessible standalone proof explorer.
+claims:
+  - id: release-builds-and-passes
+    statement: The implementation passes its complete test suite, strict type checking, and production build.
+    severity: blocking
+    evidence:
+      commands:
+        - tests
+        - types
+        - build
+      requireTestChange: true
+  - id: verifier-authority-stays-trusted
+    statement: The candidate does not alter the base-sealed verifier policy and stays within the declared repository scope.
+    severity: blocking
+    evidence:
+      rules:
+        - policy-integrity
+        - scope
+  - id: existing-tests-remain-active
+    statement: No existing test is deleted, skipped, focused, or detectably weakened.
+    severity: blocking
+    evidence:
+      rules:
+        - test-integrity
+  - id: release-surface-is-inspectable
+    statement: Added content contains no likely credential and dependency changes remain structurally inspectable.
+    severity: blocking
+    evidence:
+      rules:
+        - secret-scan
+        - dependency-review
+  - id: proof-and-report-are-delivered
+    statement: The candidate includes both the proof engine and the standalone report implementation.
+    severity: blocking
+    evidence:
+      paths:
+        - "src/proof/**"
+        - "src/report/**"
+      commands:
+        - tests
+        - build
+  - id: patch-remains-reviewable
+    statement: The initial implementation remains inside the explicitly declared release-size boundary.
+    severity: blocking
+    evidence:
+      rules:
+        - diff-size
+outOfScope:
+  - ".git/**"
+  - ".env*"
+  - ".patchproof/keys/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "coverage/**"

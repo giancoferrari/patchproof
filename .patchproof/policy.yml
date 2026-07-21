@@ -1,0 +1,46 @@
+# This policy is committed before the implementation and loaded from the trusted base commit.
+version: 1
+commands:
+  - id: tests
+    run: npm test
+    description: Run the complete PatchProof test suite
+    timeoutMs: 300000
+    required: true
+  - id: types
+    run: npm run typecheck
+    description: Run strict TypeScript validation
+    timeoutMs: 240000
+    required: true
+  - id: build
+    run: npm run build
+    description: Build the CLI, library, declarations, and source maps
+    timeoutMs: 600000
+    required: true
+scope:
+  allowed:
+    - "**/*"
+  denied:
+    - ".git/**"
+    - ".env*"
+    - ".patchproof/keys/**"
+    - "node_modules/**"
+    - "dist/**"
+    - "coverage/**"
+thresholds:
+  maxChangedFiles: 250
+  maxChangedLines: 40000
+  requireTestsForSourceChanges: true
+rules:
+  policyIntegrity: true
+  testIntegrity: true
+  secretScan: true
+  dependencyReview: true
+  scope: true
+  diffSize: true
+model:
+  provider: none
+redactions:
+  - GITHUB_TOKEN
+  - NPM_TOKEN
+  - OPENAI_API_KEY
+  - PATCHPROOF_API_KEY

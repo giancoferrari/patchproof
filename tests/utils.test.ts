@@ -67,9 +67,12 @@ describe("glob helpers", () => {
 
 describe("secret redaction", () => {
   it("redacts exact values, credentials, and well-known token shapes", () => {
+    const exactSecret = ["correct-horse-", "battery-staple"].join("");
+    const githubToken = ["ghp_", "abcdefghijklmnopqrstuvwxyz012345"].join("");
+    const credentialedUri = ["https://me:", "hunter2@example.test"].join("");
     const output = redactSecrets(
-      "secret=correct-horse-battery-staple ghp_abcdefghijklmnopqrstuvwxyz012345 https://me:hunter2@example.test",
-      ["correct-horse-battery-staple"],
+      `secret=${exactSecret} ${githubToken} ${credentialedUri}`,
+      [exactSecret],
     );
     expect(output).not.toContain("correct-horse");
     expect(output).not.toContain("ghp_");

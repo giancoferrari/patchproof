@@ -105,7 +105,7 @@ const DETECTORS: readonly SecretDetector[] = [
     id: "generic-unquoted-secret",
     label: "hard-coded credential",
     pattern:
-      /\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key|secret|token|password|passwd)\b\s*[:=]\s*([A-Za-z0-9/+_.=-]{12,})/i,
+      /\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key|secret|token|password|passwd)\b\s*[:=]\s*([A-Za-z0-9/+_.=-]{12,})(?![A-Za-z0-9/+_.=-])(?!(?:\s*)\()/i,
     captureGroup: 1,
     severity: "warning",
     generic: true,

@@ -4,6 +4,7 @@ import {
   changedPaths,
   evidenceStatusForFindings,
   isCommentOnly,
+  isSourceFile,
   isTestFile,
   makeEvidence,
   makeFinding,
@@ -64,6 +65,33 @@ function matchesAny(line: string, patterns: readonly RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(line));
 }
 
+function maskStringLiterals(line: string): string {
+  let quote: "\"" | "'" | "`" | null = null;
+  let escaped = false;
+  let masked = "";
+
+  for (const character of line) {
+    if (quote !== null) {
+      masked += " ";
+      if (escaped) {
+        escaped = false;
+      } else if (character === "\\") {
+        escaped = true;
+      } else if (character === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (character === "\"" || character === "'" || character === "`") {
+      quote = character;
+      masked += " ";
+    } else {
+      masked += character;
+    }
+  }
+  return masked;
+}
+
 function skipMatch(line: string): { column: number } | null {
   for (const pattern of SKIP_PATTERNS) {
     const match = pattern.exec(line);
@@ -86,10 +114,13 @@ export const testIntegrityAnalyzer: Analyzer = {
       const previousPath = normalizePath(file.previousPath ?? file.path);
       const namedTestFile = isTestFile(path) || isTestFile(previousPath);
       const lines = await changedLinesForFile(context, file);
-      const containsTestSyntax = lines.some((line) =>
-        matchesAny(line.content, [...ASSERTION_PATTERNS, ...TEST_DECLARATION_PATTERNS, ...SKIP_PATTERNS]),
+      const containsExecutableTestSyntax = lines.some((line) =>
+        matchesAny(maskStringLiterals(line.content), [
+          ...ASSERTION_PATTERNS,
+          ...TEST_DECLARATION_PATTERNS,
+        ]),
       );
-      if (!namedTestFile && !containsTestSyntax) {
+      if (!namedTestFile && !(isSourceFile(path) && containsExecutableTestSyntax)) {
         continue;
       }
       inspectedFiles.push(path);
@@ -114,7 +145,7 @@ export const testIntegrityAnalyzer: Analyzer = {
       const removed = lines.filter((line) => line.kind === "removed" && !isCommentOnly(line.content));
 
       for (const line of added) {
-        const skipped = skipMatch(line.content);
+        const skipped = skipMatch(maskStringLiterals(line.content));
         if (skipped === null) {
           continue;
         }

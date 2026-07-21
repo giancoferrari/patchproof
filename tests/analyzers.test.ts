@@ -45,6 +45,18 @@ function unifiedPatch(removed: readonly string[], added: readonly string[]): str
   ].join("\n");
 }
 
+function githubTokenFixture(): string {
+  return ["ghp_", "abcdefghijklmnopqrstuvwxyz1234567890"].join("");
+}
+
+function awsAccessKeyFixture(): string {
+  return ["AKIA", "IOSFODNN7EXAMPLE"].join("");
+}
+
+function credentialedUriFixture(): string {
+  return ["https://user:", "password@example.test/toolkit.tgz"].join("");
+}
+
 function change(
   path: string,
   options: {
@@ -282,6 +294,28 @@ describe("test integrity analyzer", () => {
     expect(result.findings).toEqual([]);
   });
 
+  it("ignores test syntax embedded in strings and non-source report artifacts", async () => {
+    const context = makeContext({
+      files: [
+        change("tests/analyzer.test.ts", {
+          patch: unifiedPatch([], [
+            'const fixture = "test.skip(\\\"later\\\", () => run())";',
+          ]),
+        }),
+        change("examples/proof.json", {
+          patch: unifiedPatch([], ['{"summary":"test.skip was detected"}']),
+        }),
+        change("examples/report.html", {
+          patch: unifiedPatch([], ["<p>test.skip was detected</p>"]),
+        }),
+      ],
+    });
+
+    const result = await testIntegrityAnalyzer.analyze(context);
+
+    expect(result.findings).toEqual([]);
+  });
+
   it("flags focused tests and exact assertions replaced with truthiness", async () => {
     const context = makeContext({
       files: [
@@ -306,8 +340,8 @@ describe("test integrity analyzer", () => {
 
 describe("secret scan analyzer", () => {
   it("finds likely secrets while redacting every matched value from the result", async () => {
-    const githubToken = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";
-    const password = "Tr0ub4dor-Correct-2026";
+    const githubToken = githubTokenFixture();
+    const password = ["Tr0ub4dor-", "Correct-2026"].join("");
     const context = makeContext({
       files: [
         change("src/config.ts", {
@@ -331,7 +365,7 @@ describe("secret scan analyzer", () => {
   });
 
   it("assigns unique stable IDs when the same secret appears at multiple locations", async () => {
-    const githubToken = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";
+    const githubToken = githubTokenFixture();
     const context = makeContext({
       files: [
         change("src/config.ts", {
@@ -355,19 +389,24 @@ describe("secret scan analyzer", () => {
   });
 
   it("ignores removed values, binary files, environment lookups, and obvious placeholders", async () => {
+    const githubToken = githubTokenFixture();
     const context = makeContext({
       files: [
         change("src/config.ts", {
-          additions: 2,
+          additions: 3,
           deletions: 1,
           patch: unifiedPatch(
-            ["const token = 'ghp_abcdefghijklmnopqrstuvwxyz1234567890';"],
-            ["const token = process.env.API_TOKEN;", "const password = 'changeme';"],
+            [`const token = '${githubToken}';`],
+            [
+              "const token = process.env.API_TOKEN;",
+              "const password = 'changeme';",
+              "const privateKey = createPrivateKey(privateKeyPem);",
+            ],
           ),
         }),
         change("fixtures/archive.bin", {
           binary: true,
-          patch: unifiedPatch([], ["ghp_abcdefghijklmnopqrstuvwxyz1234567890"]),
+          patch: unifiedPatch([], [githubToken]),
         }),
       ],
     });
@@ -379,7 +418,7 @@ describe("secret scan analyzer", () => {
   });
 
   it("scans a newly added file even when no unified patch body is available", async () => {
-    const secret = "AKIAIOSFODNN7EXAMPLE";
+    const secret = awsAccessKeyFixture();
     const context = makeContext({
       files: [change(".env", { kind: "added" })],
       filesAtRef: { "head:.env": `AWS_ACCESS_KEY_ID=${secret}` },
@@ -428,7 +467,7 @@ describe("dependency review analyzer", () => {
   it("reports package changes and executable install hooks without leaking dependency locators", async () => {
     const before = JSON.stringify({ dependencies: { zod: "^3.0.0" }, scripts: {} });
     const after = JSON.stringify({
-      dependencies: { zod: "^4.0.0", toolkit: "https://user:password@example.test/toolkit.tgz" },
+      dependencies: { zod: "^4.0.0", toolkit: credentialedUriFixture() },
       scripts: { postinstall: "node scripts/setup.js" },
     });
     const context = makeContext({

@@ -330,6 +330,30 @@ describe("secret scan analyzer", () => {
     );
   });
 
+  it("assigns unique stable IDs when the same secret appears at multiple locations", async () => {
+    const githubToken = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";
+    const context = makeContext({
+      files: [
+        change("src/config.ts", {
+          additions: 2,
+          patch: unifiedPatch([], [
+            `const primaryToken = '${githubToken}';`,
+            `const fallbackToken = '${githubToken}';`,
+          ]),
+        }),
+      ],
+    });
+
+    const first = await secretScanAnalyzer.analyze(context);
+    const second = await secretScanAnalyzer.analyze(context);
+
+    expect(first.findings).toHaveLength(2);
+    expect(new Set(first.findings.map((finding) => finding.id)).size).toBe(2);
+    expect(first.findings.map((finding) => finding.id)).toEqual(
+      second.findings.map((finding) => finding.id),
+    );
+  });
+
   it("ignores removed values, binary files, environment lookups, and obvious placeholders", async () => {
     const context = makeContext({
       files: [

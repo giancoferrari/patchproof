@@ -1,0 +1,758 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/giancoferrari/patchproof/main/schemas/proof-bundle.schema.json",
+  "title": "PatchProof proof bundle",
+  "description": "A portable bundle of patch metadata, sealed policy, evidence, findings, evaluated claims, and an optional Ed25519 attestation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "createdAt",
+    "generator",
+    "patch",
+    "policy",
+    "contract",
+    "evidence",
+    "findings",
+    "claims",
+    "verdict",
+    "chainDigest",
+    "contentDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator": {
+      "$ref": "#/$defs/generator"
+    },
+    "patch": {
+      "$ref": "#/$defs/patchSnapshot"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seal", "value"],
+      "properties": {
+        "seal": {
+          "$ref": "#/$defs/policySeal"
+        },
+        "value": {
+          "$ref": "#/$defs/patchProofPolicy"
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "value"],
+      "properties": {
+        "digest": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/patchContract"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidenceRecord"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evaluatedClaim"
+      }
+    },
+    "verdict": {
+      "$ref": "#/$defs/proofVerdict"
+    },
+    "chainDigest": {
+      "type": "string"
+    },
+    "contentDigest": {
+      "type": "string"
+    },
+    "attestation": {
+      "$ref": "#/$defs/proofAttestation"
+    }
+  },
+  "$defs": {
+    "severity": {
+      "enum": ["info", "warning", "blocking"]
+    },
+    "evidenceStatus": {
+      "enum": ["passed", "failed", "skipped", "error"]
+    },
+    "claimStatus": {
+      "enum": ["proven", "disproven", "unproven"]
+    },
+    "changeKind": {
+      "enum": ["added", "modified", "deleted", "renamed", "copied", "unknown"]
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "node", "platform"],
+      "properties": {
+        "name": {
+          "const": "patchproof"
+        },
+        "version": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        }
+      }
+    },
+    "fileChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "additions", "deletions", "binary"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "previousPath": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/changeKind"
+        },
+        "additions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deletions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "binary": {
+          "type": "boolean"
+        },
+        "patch": {
+          "type": "string"
+        }
+      }
+    },
+    "patchStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filesChanged", "additions", "deletions", "testFilesChanged"],
+      "properties": {
+        "filesChanged": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "additions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deletions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "testFilesChanged": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "patchSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repositoryRoot",
+        "repositoryName",
+        "branch",
+        "baseRef",
+        "headRef",
+        "baseCommit",
+        "headCommit",
+        "diff",
+        "diffDigest",
+        "files",
+        "stats"
+      ],
+      "properties": {
+        "repositoryRoot": {
+          "type": "string"
+        },
+        "repositoryName": {
+          "type": "string"
+        },
+        "branch": {
+          "type": ["string", "null"]
+        },
+        "baseRef": {
+          "type": "string"
+        },
+        "headRef": {
+          "type": "string"
+        },
+        "baseCommit": {
+          "type": "string"
+        },
+        "headCommit": {
+          "type": "string"
+        },
+        "diff": {
+          "type": "string"
+        },
+        "diffDigest": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fileChange"
+          }
+        },
+        "stats": {
+          "$ref": "#/$defs/patchStats"
+        }
+      }
+    },
+    "commandSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "run", "timeoutMs", "required"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "run": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "inheritEnv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scopePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "denied"],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "denied": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "thresholdPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxChangedFiles", "maxChangedLines", "requireTestsForSourceChanges"],
+      "properties": {
+        "maxChangedFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxChangedLines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requireTestsForSourceChanges": {
+          "type": "boolean"
+        }
+      }
+    },
+    "rulePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policyIntegrity",
+        "testIntegrity",
+        "secretScan",
+        "dependencyReview",
+        "scope",
+        "diffSize"
+      ],
+      "properties": {
+        "policyIntegrity": {
+          "type": "boolean"
+        },
+        "testIntegrity": {
+          "type": "boolean"
+        },
+        "secretScan": {
+          "type": "boolean"
+        },
+        "dependencyReview": {
+          "type": "boolean"
+        },
+        "scope": {
+          "type": "boolean"
+        },
+        "diffSize": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider"],
+      "properties": {
+        "provider": {
+          "enum": ["none", "ollama", "openai-compatible"]
+        },
+        "model": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "apiKeyEnv": {
+          "type": "string"
+        }
+      }
+    },
+    "patchProofPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "commands", "scope", "thresholds", "rules", "model", "redactions"],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/commandSpec"
+          }
+        },
+        "scope": {
+          "$ref": "#/$defs/scopePolicy"
+        },
+        "thresholds": {
+          "$ref": "#/$defs/thresholdPolicy"
+        },
+        "rules": {
+          "$ref": "#/$defs/rulePolicy"
+        },
+        "model": {
+          "$ref": "#/$defs/modelPolicy"
+        },
+        "redactions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "claimEvidenceRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requireTestChange": {
+          "type": "boolean"
+        }
+      }
+    },
+    "claimDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "severity", "evidence"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "evidence": {
+          "$ref": "#/$defs/claimEvidenceRequirement"
+        }
+      }
+    },
+    "patchContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "id", "title", "claims", "outOfScope"],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claimDefinition"
+          }
+        },
+        "outOfScope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "findingLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ruleId",
+        "title",
+        "description",
+        "severity",
+        "relatedFiles",
+        "fingerprint"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ruleId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "location": {
+          "$ref": "#/$defs/findingLocation"
+        },
+        "relatedFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fingerprint": {
+          "type": "string"
+        },
+        "remediation": {
+          "type": "string"
+        }
+      }
+    },
+    "evidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "producer",
+        "status",
+        "startedAt",
+        "completedAt",
+        "durationMs",
+        "summary",
+        "relatedFiles",
+        "metadata",
+        "previousDigest",
+        "digest"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["command", "rule", "artifact", "human", "model"]
+        },
+        "producer": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "summary": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "exitCode": {
+          "type": ["integer", "null"]
+        },
+        "stdout": {
+          "type": "string"
+        },
+        "stderr": {
+          "type": "string"
+        },
+        "relatedFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "previousDigest": {
+          "type": ["string", "null"]
+        },
+        "digest": {
+          "type": "string"
+        }
+      }
+    },
+    "evaluatedClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "statement",
+        "severity",
+        "evidence",
+        "status",
+        "evidenceIds",
+        "findingIds",
+        "explanation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "evidence": {
+          "$ref": "#/$defs/claimEvidenceRequirement"
+        },
+        "status": {
+          "$ref": "#/$defs/claimStatus"
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "findingIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "explanation": {
+          "type": "string"
+        }
+      }
+    },
+    "policySeal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "sourceRef", "path", "digest"],
+      "properties": {
+        "source": {
+          "enum": ["base-commit", "working-tree", "explicit-file"]
+        },
+        "sourceRef": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        }
+      }
+    },
+    "proofVerdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary",
+        "blockingFindings",
+        "warnings",
+        "provenClaims",
+        "disprovenClaims",
+        "unprovenClaims",
+        "requiredCommandsPassed",
+        "requiredCommandsTotal"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["verified", "rejected", "incomplete", "error"]
+        },
+        "summary": {
+          "type": "string"
+        },
+        "blockingFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenClaims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disprovenClaims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unprovenClaims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requiredCommandsPassed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requiredCommandsTotal": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "proofAttestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "publicKey", "signedDigest", "signature", "createdAt", "keyId"],
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "signedDigest": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "keyId": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

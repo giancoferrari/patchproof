@@ -1,0 +1,142 @@
+name: PatchProof
+description: Verify AI-written patches against base-sealed policy and falsifiable claims.
+author: Giancarlo Ferrari
+
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  base-ref:
+    description: Trusted Git base ref. When empty, PatchProof resolves the repository default.
+    required: false
+    default: ""
+  head-ref:
+    description: Candidate Git ref to verify.
+    required: false
+    default: HEAD
+  policy-path:
+    description: Repository-relative PatchProof policy path.
+    required: false
+    default: .patchproof/policy.yml
+  contract-path:
+    description: Repository-relative PatchProof contract path.
+    required: false
+    default: .patchproof/contract.yml
+  proof-path:
+    description: Repository-relative path for the JSON proof bundle.
+    required: false
+    default: .patchproof/proofs/patchproof-proof.json
+  report-path:
+    description: Repository-relative HTML report path. Leave empty to disable the report.
+    required: false
+    default: .patchproof/proofs/patchproof-report.html
+  sarif-path:
+    description: Repository-relative SARIF output path. Leave empty to disable SARIF output.
+    required: false
+    default: .patchproof/proofs/patchproof.sarif
+  run-commands:
+    description: Run commands declared by the trusted policy.
+    required: false
+    default: "true"
+  trust-working-policy:
+    description: Trust the working-tree policy instead of the base-sealed policy.
+    required: false
+    default: "false"
+  node-version:
+    description: Node.js version used to build and execute PatchProof.
+    required: false
+    default: 20.12.x
+  setup-command:
+    description: Optional trusted command that prepares the target repository before verification.
+    required: false
+    default: ""
+
+outputs:
+  proof-path:
+    description: Path to the generated proof bundle.
+    value: ${{ steps.verify.outputs.proof-path }}
+  report-path:
+    description: Path to the generated HTML report, or an empty string when disabled.
+    value: ${{ steps.verify.outputs.report-path }}
+  sarif-path:
+    description: Path to the generated SARIF report, or an empty string when disabled.
+    value: ${{ steps.verify.outputs.sarif-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+        cache-dependency-path: ${{ github.action_path }}/package-lock.json
+
+    - name: Build and install PatchProof
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        npm ci --ignore-scripts --no-audit --no-fund
+        npm run build
+        npm install --global "$GITHUB_ACTION_PATH" --ignore-scripts --no-audit --no-fund
+
+    - name: Prepare target repository
+      if: ${{ inputs.setup-command != '' }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        INPUT_SETUP_COMMAND: ${{ inputs.setup-command }}
+      run: |
+        set -euo pipefail
+        bash -euo pipefail -c "$INPUT_SETUP_COMMAND"
+
+    - name: Verify patch
+      id: verify
+      shell: bash
+      env:
+        INPUT_BASE_REF: ${{ inputs.base-ref }}
+        INPUT_HEAD_REF: ${{ inputs.head-ref }}
+        INPUT_POLICY_PATH: ${{ inputs.policy-path }}
+        INPUT_CONTRACT_PATH: ${{ inputs.contract-path }}
+        INPUT_PROOF_PATH: ${{ inputs.proof-path }}
+        INPUT_REPORT_PATH: ${{ inputs.report-path }}
+        INPUT_SARIF_PATH: ${{ inputs.sarif-path }}
+        INPUT_RUN_COMMANDS: ${{ inputs.run-commands }}
+        INPUT_TRUST_WORKING_POLICY: ${{ inputs.trust-working-policy }}
+      run: |
+        set -euo pipefail
+
+        args=(
+          verify
+          --head "$INPUT_HEAD_REF"
+          --policy "$INPUT_POLICY_PATH"
+          --contract "$INPUT_CONTRACT_PATH"
+          --output "$INPUT_PROOF_PATH"
+          --json
+        )
+
+        if [[ -n "$INPUT_BASE_REF" ]]; then
+          args+=(--base "$INPUT_BASE_REF")
+        fi
+        if [[ -n "$INPUT_REPORT_PATH" ]]; then
+          args+=(--report "$INPUT_REPORT_PATH")
+        else
+          args+=(--no-report)
+        fi
+        if [[ -n "$INPUT_SARIF_PATH" ]]; then
+          args+=(--sarif "$INPUT_SARIF_PATH")
+        fi
+        if [[ "$INPUT_RUN_COMMANDS" != "true" ]]; then
+          args+=(--no-commands)
+        fi
+        if [[ "$INPUT_TRUST_WORKING_POLICY" == "true" ]]; then
+          args+=(--trust-working-policy)
+        fi
+
+        printf 'proof-path=%s\n' "$INPUT_PROOF_PATH" >> "$GITHUB_OUTPUT"
+        printf 'report-path=%s\n' "$INPUT_REPORT_PATH" >> "$GITHUB_OUTPUT"
+        printf 'sarif-path=%s\n' "$INPUT_SARIF_PATH" >> "$GITHUB_OUTPUT"
+
+        patchproof "${args[@]}"

@@ -1,0 +1,457 @@
+{
+  "schemaVersion": "1.0",
+  "id": "proof_c3e10c7fd8aa6090ef1e",
+  "createdAt": "2026-07-21T09:12:06.615Z",
+  "generator": {
+    "name": "patchproof",
+    "version": "0.1.0",
+    "node": "v24.15.0",
+    "platform": "win32-x64"
+  },
+  "patch": {
+    "repositoryRoot": ".",
+    "repositoryName": "acme-api",
+    "branch": "agent/fix-pagination",
+    "baseRef": "main",
+    "headRef": "agent/fix-pagination",
+    "baseCommit": "7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132",
+    "headCommit": "d874cf3f83a0a63d08ef80dc555eb2aa66282f9e",
+    "diff": "diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () => {\n-  it(\"rejects malformed cursors\", () => {\n+  it.skip(\"rejects malformed cursors\", () => {\n     expect(() => decodeCursor(\"%%%\")) .toThrow();\n   });",
+    "diffDigest": "745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6",
+    "files": [
+      {
+        "path": "src/pagination.ts",
+        "previousPath": "src/pagination.ts",
+        "kind": "modified",
+        "additions": 1,
+        "deletions": 0,
+        "binary": false,
+        "patch": "diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"
+      },
+      {
+        "path": "tests/pagination.test.ts",
+        "previousPath": "tests/pagination.test.ts",
+        "kind": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "binary": false,
+        "patch": "diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () => {\n-  it(\"rejects malformed cursors\", () => {\n+  it.skip(\"rejects malformed cursors\", () => {\n     expect(() => decodeCursor(\"%%%\")) .toThrow();\n   });"
+      }
+    ],
+    "stats": {
+      "filesChanged": 2,
+      "additions": 2,
+      "deletions": 1,
+      "testFilesChanged": 1
+    }
+  },
+  "policy": {
+    "seal": {
+      "source": "base-commit",
+      "sourceRef": "7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132",
+      "path": ".patchproof/policy.yml",
+      "digest": "c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534"
+    },
+    "value": {
+      "version": 1,
+      "commands": [
+        {
+          "id": "tests",
+          "run": "npm test",
+          "description": "Run the full test suite",
+          "timeoutMs": 300000,
+          "required": true
+        },
+        {
+          "id": "types",
+          "run": "npm run typecheck",
+          "description": "Check TypeScript",
+          "timeoutMs": 180000,
+          "required": true
+        }
+      ],
+      "scope": {
+        "allowed": [
+          "src/**",
+          "tests/**"
+        ],
+        "denied": [
+          ".github/workflows/**",
+          ".patchproof/policy.yml"
+        ]
+      },
+      "thresholds": {
+        "maxChangedFiles": 20,
+        "maxChangedLines": 500,
+        "requireTestsForSourceChanges": true
+      },
+      "rules": {
+        "policyIntegrity": true,
+        "testIntegrity": true,
+        "secretScan": true,
+        "dependencyReview": true,
+        "scope": true,
+        "diffSize": true
+      },
+      "model": {
+        "provider": "none"
+      },
+      "redactions": [
+        "API_KEY",
+        "TOKEN",
+        "PASSWORD"
+      ]
+    }
+  },
+  "contract": {
+    "digest": "51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8",
+    "value": {
+      "version": 1,
+      "id": "cursor-pagination-fix",
+      "title": "Harden cursor pagination",
+      "task": "Reject empty and malformed cursors without changing the public response schema.",
+      "claims": [
+        {
+          "id": "empty-cursor-safe",
+          "statement": "Empty cursors no longer crash request handling.",
+          "severity": "blocking",
+          "evidence": {
+            "commands": [
+              "tests"
+            ],
+            "paths": [
+              "src/pagination.ts"
+            ],
+            "requireTestChange": true
+          }
+        },
+        {
+          "id": "schema-compatible",
+          "statement": "The public pagination response schema is unchanged.",
+          "severity": "blocking",
+          "evidence": {
+            "commands": [
+              "types"
+            ],
+            "rules": [
+              "scope"
+            ]
+          }
+        },
+        {
+          "id": "tests-preserved",
+          "statement": "Existing cursor protections remain enabled.",
+          "severity": "blocking",
+          "evidence": {
+            "rules": [
+              "test-integrity"
+            ]
+          }
+        }
+      ],
+      "outOfScope": [
+        "src/auth/**",
+        "src/billing/**"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "id": "evidence-policy-integrity",
+      "type": "rule",
+      "producer": "patchproof/analyzer/policy-integrity",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:02.970Z",
+      "completedAt": "2026-07-21T09:12:02.980Z",
+      "durationMs": 10,
+      "summary": "Verification policy remained anchored to the base revision",
+      "relatedFiles": [],
+      "metadata": {
+        "ruleId": "policy-integrity",
+        "analyzerId": "policy-integrity",
+        "findingIds": [],
+        "findingsDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "previousDigest": null,
+      "digest": "35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950"
+    },
+    {
+      "id": "evidence-scope",
+      "type": "rule",
+      "producer": "patchproof/analyzer/scope",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:03.000Z",
+      "completedAt": "2026-07-21T09:12:03.011Z",
+      "durationMs": 11,
+      "summary": "Every changed file is within declared scope",
+      "relatedFiles": [
+        "src/pagination.ts",
+        "tests/pagination.test.ts"
+      ],
+      "metadata": {
+        "ruleId": "scope",
+        "analyzerId": "scope",
+        "matchedFiles": 2,
+        "findingIds": [],
+        "findingsDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "previousDigest": "35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950",
+      "digest": "9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c"
+    },
+    {
+      "id": "evidence-secret-scan",
+      "type": "rule",
+      "producer": "patchproof/analyzer/secret-scan",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:03.012Z",
+      "completedAt": "2026-07-21T09:12:03.024Z",
+      "durationMs": 12,
+      "summary": "No high-confidence secret patterns found in added lines",
+      "relatedFiles": [
+        "src/pagination.ts",
+        "tests/pagination.test.ts"
+      ],
+      "metadata": {
+        "ruleId": "secret-scan",
+        "analyzerId": "secret-scan",
+        "scannedAddedLines": 2,
+        "findingIds": [],
+        "findingsDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "previousDigest": "9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c",
+      "digest": "25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6"
+    },
+    {
+      "id": "evidence-test-integrity",
+      "type": "rule",
+      "producer": "patchproof/analyzer/test-integrity",
+      "status": "failed",
+      "startedAt": "2026-07-21T09:12:03.025Z",
+      "completedAt": "2026-07-21T09:12:03.032Z",
+      "durationMs": 7,
+      "summary": "One existing test was changed to a skipped state",
+      "details": "tests/pagination.test.ts:44 added it.skip for the malformed-cursor regression test.",
+      "relatedFiles": [
+        "tests/pagination.test.ts"
+      ],
+      "metadata": {
+        "ruleId": "test-integrity",
+        "analyzerId": "test-integrity",
+        "skippedTestsAdded": 1,
+        "findingIds": [
+          "finding-test-skip-1"
+        ],
+        "findingsDigest": "9ca2022c3a5a2a112b58e2c3fa4140629361ce5213d657e979050f070c05fdaf"
+      },
+      "previousDigest": "25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6",
+      "digest": "c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6"
+    },
+    {
+      "id": "evidence-dependency-review",
+      "type": "rule",
+      "producer": "patchproof/analyzer/dependency-review",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:03.033Z",
+      "completedAt": "2026-07-21T09:12:03.035Z",
+      "durationMs": 2,
+      "summary": "No dependency manifests or lockfiles changed",
+      "relatedFiles": [],
+      "metadata": {
+        "ruleId": "dependency-review",
+        "analyzerId": "dependency-review",
+        "findingIds": [],
+        "findingsDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "previousDigest": "c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6",
+      "digest": "f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883"
+    },
+    {
+      "id": "evidence-diff-size",
+      "type": "rule",
+      "producer": "patchproof/analyzer/diff-size",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:03.036Z",
+      "completedAt": "2026-07-21T09:12:03.037Z",
+      "durationMs": 1,
+      "summary": "Patch size is within policy",
+      "relatedFiles": [
+        "src/pagination.ts",
+        "tests/pagination.test.ts"
+      ],
+      "metadata": {
+        "ruleId": "diff-size",
+        "analyzerId": "diff-size",
+        "findingIds": [],
+        "findingsDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "previousDigest": "f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883",
+      "digest": "1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9"
+    },
+    {
+      "id": "evidence-missing-test-changes",
+      "type": "rule",
+      "producer": "patchproof/analyzer/missing-test-changes",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:03.038Z",
+      "completedAt": "2026-07-21T09:12:03.039Z",
+      "durationMs": 1,
+      "summary": "One qualifying test file change found",
+      "relatedFiles": [
+        "tests/pagination.test.ts"
+      ],
+      "metadata": {
+        "ruleId": "missing-test-changes",
+        "analyzerId": "missing-test-changes",
+        "findingIds": [],
+        "findingsDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "previousDigest": "1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9",
+      "digest": "fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a"
+    },
+    {
+      "id": "evidence-tests",
+      "type": "command",
+      "producer": "command:tests",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:03.040Z",
+      "completedAt": "2026-07-21T09:12:05.382Z",
+      "durationMs": 2342,
+      "summary": "Test command exited successfully",
+      "command": "npm test",
+      "exitCode": 0,
+      "stdout": "PASS tests/pagination.test.ts\nTests: 1 skipped, 42 passed, 43 total\nTime: 2.11 s",
+      "stderr": "",
+      "relatedFiles": [],
+      "metadata": {
+        "commandId": "tests",
+        "required": true
+      },
+      "previousDigest": "fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a",
+      "digest": "55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b"
+    },
+    {
+      "id": "evidence-types",
+      "type": "command",
+      "producer": "command:types",
+      "status": "passed",
+      "startedAt": "2026-07-21T09:12:05.390Z",
+      "completedAt": "2026-07-21T09:12:06.601Z",
+      "durationMs": 1211,
+      "summary": "TypeScript check exited successfully",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "stdout": "> acme-api@4.8.0 typecheck\n> tsc --noEmit",
+      "stderr": "",
+      "relatedFiles": [],
+      "metadata": {
+        "commandId": "types",
+        "required": true
+      },
+      "previousDigest": "55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b",
+      "digest": "11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding-test-skip-1",
+      "ruleId": "test-integrity",
+      "title": "Existing protection was skipped",
+      "description": "The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.",
+      "severity": "blocking",
+      "location": {
+        "path": "tests/pagination.test.ts",
+        "line": 44
+      },
+      "relatedFiles": [
+        "tests/pagination.test.ts"
+      ],
+      "fingerprint": "664313a153d4ae017ba1b40c05bc4d0c154a51b42becda027e3e7e841a591d53",
+      "remediation": "Restore the active test and fix decodeCursor without weakening malformed-input coverage."
+    },
+    {
+      "id": "finding-schema-gap-1",
+      "ruleId": "contract-coverage",
+      "title": "Schema compatibility lacks direct evidence",
+      "description": "Type checking passed, but no response-schema snapshot or contract test was declared for this claim.",
+      "severity": "warning",
+      "relatedFiles": [
+        "src/pagination.ts"
+      ],
+      "fingerprint": "05a599a98bab2580a4d1ff32bae6d155393e033e083c427f1d959d8515e15aad",
+      "remediation": "Attach a response contract test or schema-diff command to schema-compatible."
+    }
+  ],
+  "claims": [
+    {
+      "id": "empty-cursor-safe",
+      "statement": "Empty cursors no longer crash request handling.",
+      "severity": "blocking",
+      "evidence": {
+        "commands": [
+          "tests"
+        ],
+        "paths": [
+          "src/pagination.ts"
+        ],
+        "requireTestChange": true
+      },
+      "status": "proven",
+      "evidenceIds": [
+        "evidence-tests"
+      ],
+      "findingIds": [],
+      "explanation": "All 3 evidence requirements passed."
+    },
+    {
+      "id": "schema-compatible",
+      "statement": "The public pagination response schema is unchanged.",
+      "severity": "blocking",
+      "evidence": {
+        "commands": [
+          "types"
+        ],
+        "rules": [
+          "scope"
+        ]
+      },
+      "status": "proven",
+      "evidenceIds": [
+        "evidence-scope",
+        "evidence-types"
+      ],
+      "findingIds": [],
+      "explanation": "All 2 evidence requirements passed."
+    },
+    {
+      "id": "tests-preserved",
+      "statement": "Existing cursor protections remain enabled.",
+      "severity": "blocking",
+      "evidence": {
+        "rules": [
+          "test-integrity"
+        ]
+      },
+      "status": "disproven",
+      "evidenceIds": [
+        "evidence-test-integrity"
+      ],
+      "findingIds": [
+        "finding-test-skip-1"
+      ],
+      "explanation": "rule test-integrity found a blocking condition"
+    }
+  ],
+  "verdict": {
+    "status": "rejected",
+    "summary": "The patch has blocking findings or disproven required claims.",
+    "blockingFindings": 1,
+    "warnings": 1,
+    "provenClaims": 2,
+    "disprovenClaims": 1,
+    "unprovenClaims": 0,
+    "requiredCommandsPassed": 2,
+    "requiredCommandsTotal": 2
+  },
+  "chainDigest": "11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c",
+  "contentDigest": "fc7f66dee06ba0f98bdb13323e12418919acc5db945a392b8457e55f51e91bfa"
+}

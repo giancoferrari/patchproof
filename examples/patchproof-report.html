@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="PatchProof verification report for acme-api">
+  <title>Harden cursor pagination · PatchProof</title>
+  <style>
+:root {
+  color-scheme: light;
+  --proof-blue: oklch(0.57 0.16 230);
+  --proof-blue-deep: oklch(0.41 0.125 230);
+  --annotation-orange: oklch(0.65 0.185 35);
+  --verified: oklch(0.52 0.135 150);
+  --verified-soft: oklch(0.95 0.035 150);
+  --warning: oklch(0.88 0.105 88);
+  --warning-soft: oklch(0.965 0.045 88);
+  --failed: oklch(0.555 0.195 25);
+  --failed-soft: oklch(0.95 0.045 25);
+  --canvas: oklch(1 0 0);
+  --surface: oklch(0.965 0.008 230);
+  --surface-strong: oklch(0.925 0.014 230);
+  --ink: oklch(0.19 0.025 235);
+  --muted: oklch(0.455 0.03 235);
+  --rule: oklch(0.85 0.014 230);
+  --focus: oklch(0.57 0.16 230 / 0.28);
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --rail: 226px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--canvas); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+}
+button, select { font: inherit; }
+button, a, select, summary { -webkit-tap-highlight-color: transparent; }
+a { color: var(--proof-blue-deep); text-underline-offset: 3px; }
+a:hover { color: var(--proof-blue); }
+:focus-visible { outline: 2px solid var(--proof-blue); outline-offset: 3px; }
+.skip-link {
+  position: fixed; z-index: 60; top: 8px; left: 8px; transform: translateY(-150%);
+  padding: 9px 13px; color: var(--canvas); background: var(--proof-blue-deep); border-radius: 7px;
+}
+.skip-link:focus { transform: translateY(0); }
+.icon { width: 1.05em; height: 1.05em; flex: 0 0 auto; }
+.shell { min-height: 100vh; display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); }
+.rail {
+  position: sticky; top: 0; align-self: start; height: 100vh; padding: 22px 16px;
+  background: var(--surface); border-right: 1px solid var(--rule); overflow-y: auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin: 2px 8px 28px; font-weight: 760; letter-spacing: -0.025em; }
+.brand-mark {
+  width: 29px; height: 29px; display: grid; place-items: center; color: var(--canvas);
+  background: var(--proof-blue-deep); border-radius: 7px;
+}
+.rail nav { display: grid; gap: 3px; }
+.rail nav a {
+  min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  color: var(--muted); text-decoration: none; border-radius: 7px; font-weight: 590;
+}
+.rail nav a:hover, .rail nav a[aria-current="true"] { color: var(--ink); background: var(--surface-strong); }
+.rail nav a[aria-current="true"] { color: var(--proof-blue-deep); }
+.rail-meta { margin: 30px 8px 0; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12px; }
+.rail-meta code { display: block; margin-top: 5px; color: var(--ink); font-family: var(--mono); overflow-wrap: anywhere; }
+.content { min-width: 0; }
+.hero {
+  padding: 34px clamp(22px, 4.5vw, 68px) 28px; border-bottom: 1px solid var(--rule); background: var(--canvas);
+}
+.hero-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.verdict-lockup { display: flex; gap: 15px; min-width: 0; }
+.verdict-symbol {
+  width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px;
+  background: var(--surface); color: var(--muted);
+}
+.verdict-symbol .icon { width: 23px; height: 23px; }
+.verdict-verified .verdict-symbol { color: var(--verified); background: var(--verified-soft); }
+.verdict-rejected .verdict-symbol, .verdict-error .verdict-symbol { color: var(--failed); background: var(--failed-soft); }
+.verdict-incomplete .verdict-symbol { color: var(--ink); background: var(--warning); }
+.hero h1 { margin: 0; font-size: 2rem; line-height: 1.15; letter-spacing: -0.025em; text-wrap: balance; }
+.hero-summary { max-width: 68ch; margin: 8px 0 0; color: var(--muted); text-wrap: pretty; }
+.ref-line { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 13px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.ref-arrow { color: var(--proof-blue); font-family: var(--font); font-weight: 750; }
+.hero-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.button {
+  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 13px; border-radius: 7px; border: 1px solid var(--rule); background: var(--canvas);
+  color: var(--ink); cursor: pointer; font-weight: 640; transition: background 180ms ease-out, color 180ms ease-out, transform 180ms ease-out;
+}
+.button:hover { background: var(--surface); }
+.button:active { transform: translateY(1px); }
+.button-primary { color: var(--canvas); background: var(--proof-blue-deep); border-color: var(--proof-blue-deep); }
+.button-primary:hover { color: var(--canvas); background: var(--proof-blue); border-color: var(--proof-blue); }
+.metrics {
+  display: flex; flex-wrap: wrap; margin: 28px 0 0; padding: 0; list-style: none;
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+}
+.metric { min-width: 145px; padding: 14px 24px 14px 0; margin-right: 24px; }
+.metric + .metric { padding-left: 24px; border-left: 1px solid var(--rule); }
+.metric dt { color: var(--muted); font-size: 12px; font-weight: 650; }
+.metric dd { margin: 2px 0 0; font-size: 20px; font-weight: 720; letter-spacing: -0.02em; }
+.main { max-width: 1280px; padding: 8px clamp(22px, 4.5vw, 68px) 90px; }
+.section { padding: 42px 0; scroll-margin-top: 16px; }
+.section + .section { border-top: 1px solid var(--rule); }
+.section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 21px; }
+.section h2 { margin: 0; font-size: 1.25rem; line-height: 1.25; letter-spacing: -0.018em; text-wrap: balance; }
+.section-intro { max-width: 68ch; margin: 5px 0 0; color: var(--muted); }
+.status {
+  display: inline-flex; align-items: center; gap: 5px; width: max-content; padding: 4px 8px;
+  border-radius: 999px; font-size: 12px; line-height: 1.35; font-weight: 690;
+}
+.status-proven, .status-passed, .status-verified { color: var(--canvas); background: var(--verified); }
+.status-disproven, .status-failed, .status-error, .status-rejected, .severity-blocking { color: var(--canvas); background: var(--failed); }
+.status-unproven, .status-skipped, .status-incomplete, .severity-warning { color: var(--ink); background: var(--warning); }
+.severity-info { color: var(--proof-blue-deep); background: oklch(0.94 0.035 230); }
+.graph-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(270px, .75fr); gap: 28px; align-items: start; }
+.graph-canvas { min-width: 0; padding: 16px; background: var(--surface); border-radius: 12px; overflow-x: auto; }
+.graph-canvas svg { display: block; min-width: 620px; width: 100%; height: auto; }
+.graph-edge { stroke: var(--rule); stroke-width: 2; fill: none; }
+.graph-edge-passed { stroke: var(--verified); }
+.graph-node { fill: var(--canvas); stroke: var(--rule); stroke-width: 2; }
+.graph-node-proven, .graph-node-passed { stroke: var(--verified); }
+.graph-node-disproven, .graph-node-failed, .graph-node-error { stroke: var(--failed); }
+.graph-node-unproven, .graph-node-skipped { stroke: oklch(0.72 0.11 88); }
+.graph-label { fill: var(--ink); font-family: var(--font); font-size: 11px; font-weight: 650; }
+.graph-sub { fill: var(--muted); font-family: var(--mono); font-size: 9px; }
+.semantic-graph { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+.semantic-graph li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.semantic-graph strong { display: block; margin-bottom: 3px; }
+.semantic-graph span { color: var(--muted); font-size: 13px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.filter {
+  min-height: 40px; padding: 8px 32px 8px 10px; color: var(--ink); background: var(--canvas);
+  border: 1px solid var(--rule); border-radius: 7px;
+}
+.result-count { color: var(--muted); font-size: 13px; }
+.claim-list { border-top: 1px solid var(--rule); }
+.claim {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; column-gap: 13px;
+  align-items: start;
+  padding: 19px 0; border-bottom: 1px solid var(--rule);
+}
+.claim-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 7px; background: var(--surface); color: var(--muted); }
+.claim[data-status="proven"] .claim-mark { color: var(--verified); background: var(--verified-soft); }
+.claim[data-status="disproven"] .claim-mark { color: var(--failed); background: var(--failed-soft); }
+.claim h3 { margin: 2px 0 4px; font-size: 1rem; line-height: 1.38; text-wrap: pretty; }
+.claim-id { font-family: var(--mono); color: var(--muted); font-size: 11px; }
+.claim p { margin: 7px 0 0; max-width: 76ch; color: var(--muted); }
+.evidence-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.evidence-link { font-family: var(--mono); font-size: 11px; color: var(--proof-blue-deep); text-decoration: none; padding: 3px 6px; background: var(--surface); border-radius: 4px; }
+.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.data-table th { padding: 9px 10px; text-align: left; color: var(--muted); background: var(--surface); font-size: 12px; font-weight: 680; }
+.data-table td { padding: 12px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
+.data-table th:first-child, .data-table td:first-child { padding-left: 0; }
+.data-table th:last-child, .data-table td:last-child { padding-right: 0; }
+.finding-title { font-weight: 650; }
+.finding-description { margin-top: 3px; color: var(--muted); font-size: 13px; }
+.mono { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.evidence-list { border-top: 1px solid var(--rule); }
+.evidence-item { border-bottom: 1px solid var(--rule); }
+.evidence-item summary {
+  min-height: 58px; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto; gap: 12px;
+  align-items: center; padding: 10px 0; cursor: pointer; list-style: none;
+}
+.evidence-item summary::-webkit-details-marker { display: none; }
+.evidence-item summary::after { content: "+"; font-size: 18px; color: var(--muted); }
+.evidence-item[open] summary::after { content: "−"; }
+.evidence-summary strong { display: block; }
+.evidence-summary span { display: block; color: var(--muted); font-size: 12px; }
+.evidence-body { padding: 0 0 20px 40px; }
+.metadata { display: flex; flex-wrap: wrap; gap: 7px 20px; margin: 0 0 13px; color: var(--muted); font-size: 12px; }
+.metadata dt { font-weight: 650; }
+.metadata dd { margin: 0; font-family: var(--mono); color: var(--ink); }
+pre {
+  max-height: 430px; margin: 10px 0 0; padding: 14px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  color: var(--ink); background: var(--surface); border-radius: 7px; font: 12px/1.6 var(--mono); tab-size: 2;
+}
+.empty { padding: 24px 0; color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.integrity-grid { display: grid; grid-template-columns: minmax(220px, .65fr) minmax(0, 1.35fr); gap: 28px; }
+.integrity-status { padding: 20px; background: var(--surface); border-radius: 12px; }
+.integrity-status strong { display: block; font-size: 1.08rem; }
+.integrity-status p { margin: 6px 0 0; color: var(--muted); }
+.digest-list { margin: 0; }
+.digest-row { display: grid; grid-template-columns: 145px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.digest-row dt { color: var(--muted); font-size: 12px; }
+.digest-row dd { margin: 0; font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
+.copy {
+  width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); background: transparent;
+  border: 0; border-radius: 7px; cursor: pointer;
+}
+.copy:hover { color: var(--proof-blue-deep); background: var(--surface); }
+.copy[data-copied="true"] { color: var(--verified); }
+.hidden { display: none !important; }
+.footer { padding: 20px clamp(22px, 4.5vw, 68px) 34px; color: var(--muted); border-top: 1px solid var(--rule); font-size: 12px; }
+
+@media (max-width: 900px) {
+  :root { --rail: 0px; }
+  .shell { display: block; }
+  .rail { position: sticky; z-index: 30; top: 0; width: 100%; height: auto; display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-right: 0; border-bottom: 1px solid var(--rule); overflow-x: auto; }
+  .rail { scrollbar-width: none; overscroll-behavior-x: contain; }
+  .rail::-webkit-scrollbar { display: none; }
+  .brand { margin: 0 8px 0 0; white-space: nowrap; }
+  .rail nav { display: flex; gap: 3px; }
+  .rail nav a { white-space: nowrap; }
+  .rail-meta { display: none; }
+  .hero { padding-top: 25px; }
+  .hero-row { display: block; }
+  .hero-actions { justify-content: flex-start; margin-top: 18px; }
+  .graph-layout, .integrity-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1320px) {
+  .graph-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .brand span:last-child { display: none; }
+  .rail nav a { padding-inline: 8px; font-size: 13px; }
+  .hero h1 { font-size: 1.55rem; }
+  .verdict-symbol { width: 38px; height: 38px; }
+  .metric { min-width: 50%; margin: 0; padding: 12px 10px 12px 0; border-bottom: 1px solid var(--rule); }
+  .metric + .metric { padding-left: 10px; }
+  .claim { grid-template-columns: 30px minmax(0, 1fr); }
+  .claim > .status { grid-column: 2; margin-top: 10px; }
+  .section-head { display: block; }
+  .section-head .toolbar { margin-top: 14px; }
+  .filter { max-width: 100%; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+  .data-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .data-table tr { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .data-table td { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 10px; padding: 5px 0; border: 0; }
+  .data-table td::before { content: attr(data-label); color: var(--muted); font-size: 12px; font-weight: 650; }
+  .evidence-body { padding-left: 0; }
+  .digest-row { grid-template-columns: 1fr auto; }
+  .digest-row dd { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+@media print {
+  .rail, .hero-actions, .toolbar, .copy, .skip-link { display: none !important; }
+  .shell { display: block; }
+  .hero, .main, .footer { padding-left: 0; padding-right: 0; }
+  .section { break-inside: avoid; }
+  .evidence-item:not([open]) .evidence-body { display: block; }
+  pre { max-height: none; white-space: pre-wrap; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+  <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+</head>
+<body>
+  <a class="skip-link" href="#report-main">Skip to report</a>
+  <div class="shell">
+    <aside class="rail" aria-label="Report navigation">
+      <div class="brand"><span class="brand-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></span><span>PatchProof</span></div>
+      <nav>
+        <a href="#overview" aria-current="true">Overview</a>
+        <a href="#claims">Claims</a>
+        <a href="#findings">Findings</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#files">Files</a>
+        <a href="#integrity">Integrity</a>
+      </nav>
+      <div class="rail-meta">Portable proof bundle<code>schema 1.0</code></div>
+    </aside>
+    <div class="content">
+      <header class="hero verdict-rejected" id="overview">
+    <div class="hero-row">
+      <div class="verdict-lockup">
+        <div class="verdict-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg></div>
+        <div>
+          <h1>Harden cursor pagination: rejected</h1>
+          <p class="hero-summary">The patch has blocking findings or disproven required claims.</p>
+          <div class="ref-line">
+            <span>7df2b0a279cf</span>
+            <span class="ref-arrow" aria-label="to">→</span>
+            <span>d874cf3f83a0</span>
+            <span>·</span>
+            <span>acme-api</span>
+            <span>·</span>
+            <span>Jul 21, 2026, 11:12 AM</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="button" type="button" onclick="window.print()">Print report</button>
+        <button class="button button-primary" type="button" data-copy="11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg> Copy chain digest</button>
+      </div>
+    </div>
+    <dl class="metrics">
+    <div class="metric"><dt>Claims proven</dt><dd>2/3</dd></div>
+    <div class="metric"><dt>Evidence passed</dt><dd>8/9</dd></div>
+    <div class="metric"><dt>Blocking findings</dt><dd>1</dd></div>
+    <div class="metric"><dt>Changed lines</dt><dd>3</dd></div>
+  </dl>
+  </header>
+      <main class="main" id="report-main">
+        <section class="section" aria-labelledby="graph-title">
+    <div class="section-head"><div><h2 id="graph-title">Proof graph</h2><p class="section-intro">The verdict is connected to claims, then to the evidence records that support or challenge them.</p></div></div>
+    <div class="graph-layout">
+      <div class="graph-canvas">
+        <svg viewBox="0 0 670 310" role="img" aria-labelledby="proof-graph-label proof-graph-description">
+          <title id="proof-graph-label">Patch proof relationship graph</title>
+          <desc id="proof-graph-description">Verdict rejected, connected to 3 claims and 9 evidence records.</desc>
+          <path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 48, 142 48"/><path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 116, 142 116"/><path class="graph-edge" d="M 112 155 C 126 155, 128 184, 142 184"/>
+          <path class="graph-edge graph-edge-passed" d="M 326 116 C 390 116, 410 96, 474 96"/><path class="graph-edge" d="M 326 184 C 390 184, 410 204, 474 204"/>
+          <g tabindex="0" aria-label="Verdict: rejected">
+            <rect class="graph-node graph-node-failed" x="10" y="128" width="102" height="54" rx="10"/>
+            <text class="graph-label" x="25" y="151">Verdict</text>
+            <text class="graph-sub" x="25" y="168">rejected</text>
+          </g>
+          <g tabindex="0" aria-label="Claim empty-cursor-safe: proven">
+        <rect class="graph-node graph-node-proven" x="142" y="26" width="184" height="44" rx="8"/>
+        <text class="graph-label" x="155" y="46">Empty cursors no longer c…</text>
+        <text class="graph-sub" x="155" y="61">proven · empty-cursor-safe</text>
+      </g><g tabindex="0" aria-label="Claim schema-compatible: proven">
+        <rect class="graph-node graph-node-proven" x="142" y="94" width="184" height="44" rx="8"/>
+        <text class="graph-label" x="155" y="114">The public pagination res…</text>
+        <text class="graph-sub" x="155" y="129">proven · schema-compatible</text>
+      </g><g tabindex="0" aria-label="Claim tests-preserved: disproven">
+        <rect class="graph-node graph-node-disproven" x="142" y="162" width="184" height="44" rx="8"/>
+        <text class="graph-label" x="155" y="182">Existing cursor protectio…</text>
+        <text class="graph-sub" x="155" y="197">disproven · tests-preserved</text>
+      </g>
+          <g tabindex="0" aria-label="Evidence evidence-policy-integrity: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="24" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="41">patchproof/analyzer/po</text>
+        <text class="graph-sub" x="486" y="54">passed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-scope: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="78" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="95">patchproof/analyzer/sc</text>
+        <text class="graph-sub" x="486" y="108">passed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-secret-scan: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="132" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="149">patchproof/analyzer/se</text>
+        <text class="graph-sub" x="486" y="162">passed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-test-integrity: failed">
+        <rect class="graph-node graph-node-failed" x="474" y="186" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="203">patchproof/analyzer/te</text>
+        <text class="graph-sub" x="486" y="216">failed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-dependency-review: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="240" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="257">patchproof/analyzer/de</text>
+        <text class="graph-sub" x="486" y="270">passed</text>
+      </g>
+        </svg>
+      </div>
+      <ol class="semantic-graph" aria-label="Proof graph as a list"><li><strong>Empty cursors no longer crash request handling.</strong><span>proven. 1 linked evidence record.</span></li><li><strong>The public pagination response schema is unchanged.</strong><span>proven. 2 linked evidence records.</span></li><li><strong>Existing cursor protections remain enabled.</strong><span>disproven. 1 linked evidence record.</span></li></ol>
+    </div>
+  </section>
+        <section class="section" id="claims" aria-labelledby="claims-title">
+    <div class="section-head">
+      <div><h2 id="claims-title">Claims</h2><p class="section-intro">Each claim is evaluated only against the evidence requirements declared in the task contract.</p></div>
+      <div class="toolbar">
+        <label><span class="sr-only">Filter claims</span><select class="filter" data-filter="claim"><option value="all">All claim states</option><option value="proven">Proven</option><option value="disproven">Disproven</option><option value="unproven">Unproven</option></select></label>
+        <span class="result-count" data-count-for="claim">3 shown</span>
+      </div>
+    </div>
+    <div class="claim-list"><article class="claim" data-filter-kind="claim" data-status="proven">
+    <div class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></div>
+    <div>
+      <span class="claim-id">empty-cursor-safe</span>
+      <h3>Empty cursors no longer crash request handling.</h3>
+      <p>All 3 evidence requirements passed.</p>
+      <div class="evidence-links"><a class="evidence-link" href="#evidence-evidence-tests"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-tests</a></div>
+    </div>
+    <span class="status status-proven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Proven</span>
+  </article><article class="claim" data-filter-kind="claim" data-status="proven">
+    <div class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></div>
+    <div>
+      <span class="claim-id">schema-compatible</span>
+      <h3>The public pagination response schema is unchanged.</h3>
+      <p>All 2 evidence requirements passed.</p>
+      <div class="evidence-links"><a class="evidence-link" href="#evidence-evidence-scope"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-scope</a><a class="evidence-link" href="#evidence-evidence-types"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-types</a></div>
+    </div>
+    <span class="status status-proven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Proven</span>
+  </article><article class="claim" data-filter-kind="claim" data-status="disproven">
+    <div class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg></div>
+    <div>
+      <span class="claim-id">tests-preserved</span>
+      <h3>Existing cursor protections remain enabled.</h3>
+      <p>rule test-integrity found a blocking condition</p>
+      <div class="evidence-links"><a class="evidence-link" href="#evidence-evidence-test-integrity"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-test-inte</a></div>
+    </div>
+    <span class="status status-disproven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Disproven</span>
+  </article></div>
+  </section>
+        <section class="section" id="findings" aria-labelledby="findings-title">
+    <div class="section-head">
+      <div><h2 id="findings-title">Findings</h2><p class="section-intro">Blocking conditions, warnings, and informational observations from deterministic analyzers.</p></div>
+      <div class="toolbar"><label><span class="sr-only">Filter findings</span><select class="filter" data-filter="finding"><option value="all">All severities</option><option value="blocking">Blocking</option><option value="warning">Warning</option><option value="info">Info</option></select></label><span class="result-count" data-count-for="finding">2 shown</span></div>
+    </div><table class="data-table"><thead><tr><th style="width:130px">Severity</th><th>Finding</th><th style="width:25%">Location</th><th style="width:18%">Rule</th></tr></thead><tbody><tr data-filter-kind="finding" data-status="blocking">
+    <td data-label="Severity"><span class="status severity-blocking"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg> blocking</span></td>
+    <td data-label="Finding"><div class="finding-title">Existing protection was skipped</div><div class="finding-description">The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.</div></td>
+    <td data-label="Location" class="mono">tests/pagination.test.ts:44</td>
+    <td data-label="Rule" class="mono">test-integrity</td>
+  </tr><tr data-filter-kind="finding" data-status="warning">
+    <td data-label="Severity"><span class="status severity-warning"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg> warning</span></td>
+    <td data-label="Finding"><div class="finding-title">Schema compatibility lacks direct evidence</div><div class="finding-description">Type checking passed, but no response-schema snapshot or contract test was declared for this claim.</div></td>
+    <td data-label="Location" class="mono">src/pagination.ts</td>
+    <td data-label="Rule" class="mono">contract-coverage</td>
+  </tr></tbody></table>
+  </section>
+        <section class="section" id="evidence" aria-labelledby="evidence-title">
+    <div class="section-head">
+      <div><h2 id="evidence-title">Evidence</h2><p class="section-intro">Commands and rules are recorded in execution order. Each digest commits to the previous record.</p></div>
+      <div class="toolbar">
+        <label><span class="sr-only">Filter evidence</span><select class="filter" data-filter="evidence"><option value="all">All evidence states</option><option value="passed">Passed</option><option value="failed">Failed</option><option value="skipped">Skipped</option><option value="error">Error</option></select></label>
+        <button class="button" type="button" data-expand-evidence>Expand all</button><button class="button" type="button" data-collapse-evidence>Collapse all</button>
+        <span class="result-count" data-count-for="evidence">9 shown</span>
+      </div>
+    </div>
+    <div class="evidence-list"><details class="evidence-item" id="evidence-evidence-policy-integrity" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>Verification policy remained anchored to the base revision</strong><span>patchproof/analyzer/policy-integrity · 10 ms</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-policy-integrity</dd></div><div><dt>Digest</dt><dd>35379372c40694d443f4</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <p class="empty">This evidence record has no raw output.</p>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-scope" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>Every changed file is within declared scope</strong><span>patchproof/analyzer/scope · 11 ms</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-scope</dd></div><div><dt>Digest</dt><dd>9874c9dbd5ab2db3cbcd</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <p class="empty">This evidence record has no raw output.</p>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-secret-scan" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>No high-confidence secret patterns found in added lines</strong><span>patchproof/analyzer/secret-scan · 12 ms</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-secret-scan</dd></div><div><dt>Digest</dt><dd>25598a95a3cb19c87365</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <p class="empty">This evidence record has no raw output.</p>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-test-integrity" data-filter-kind="evidence" data-status="failed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg></span>
+      <span class="evidence-summary"><strong>One existing test was changed to a skipped state</strong><span>patchproof/analyzer/test-integrity · 7 ms</span></span>
+      <span class="status status-failed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Failed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-test-integrity</dd></div><div><dt>Digest</dt><dd>c8948d334dc09f9beb81</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <pre><code>tests/pagination.test.ts:44 added it.skip for the malformed-cursor regression test.</code></pre>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-dependency-review" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>No dependency manifests or lockfiles changed</strong><span>patchproof/analyzer/dependency-review · 2 ms</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-dependency-review</dd></div><div><dt>Digest</dt><dd>f1cb5005682f1b82e22d</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <p class="empty">This evidence record has no raw output.</p>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-diff-size" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>Patch size is within policy</strong><span>patchproof/analyzer/diff-size · 1 ms</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-diff-size</dd></div><div><dt>Digest</dt><dd>1bf99913b11c04ebf7e5</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <p class="empty">This evidence record has no raw output.</p>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-missing-test-changes" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>One qualifying test file change found</strong><span>patchproof/analyzer/missing-test-changes · 1 ms</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-missing-test-changes</dd></div><div><dt>Digest</dt><dd>fdaa69d056d8c4623962</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
+      <p class="empty">This evidence record has no raw output.</p>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-tests" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>Test command exited successfully</strong><span>command:tests · 2.3 s</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-tests</dd></div><div><dt>Digest</dt><dd>55a5d9a6aec7a6150356</dd></div><div><dt>Exit code</dt><dd>0</dd></div></dl>
+      <pre><code>$ npm test
+PASS tests/pagination.test.ts
+Tests: 1 skipped, 42 passed, 43 total
+Time: 2.11 s</code></pre>
+    </div>
+  </details><details class="evidence-item" id="evidence-evidence-types" data-filter-kind="evidence" data-status="passed">
+    <summary>
+      <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
+      <span class="evidence-summary"><strong>TypeScript check exited successfully</strong><span>command:types · 1.2 s</span></span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+    </summary>
+    <div class="evidence-body">
+      <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-types</dd></div><div><dt>Digest</dt><dd>11547d1237ff2db57d46</dd></div><div><dt>Exit code</dt><dd>0</dd></div></dl>
+      <pre><code>$ npm run typecheck
+&gt; acme-api@4.8.0 typecheck
+&gt; tsc --noEmit</code></pre>
+    </div>
+  </details></div>
+  </section>
+        <section class="section" id="files" aria-labelledby="files-title">
+    <div class="section-head"><div><h2 id="files-title">Changed files</h2><p class="section-intro">The exact patch surface used by scope and integrity rules.</p></div></div>
+    <table class="data-table"><thead><tr><th>File</th><th style="width:110px">Change</th><th style="width:90px">Added</th><th style="width:90px">Deleted</th><th style="width:90px">Binary</th></tr></thead><tbody><tr><td data-label="File" class="mono">src/pagination.ts</td><td data-label="Change">modified</td><td data-label="Added" class="mono">+1</td><td data-label="Deleted" class="mono">−0</td><td data-label="Binary">No</td></tr><tr><td data-label="File" class="mono">tests/pagination.test.ts</td><td data-label="Change">modified</td><td data-label="Added" class="mono">+1</td><td data-label="Deleted" class="mono">−1</td><td data-label="Binary">No</td></tr></tbody></table>
+  </section>
+        <section class="section" id="integrity" aria-labelledby="integrity-title">
+    <div class="section-head"><div><h2 id="integrity-title">Integrity</h2><p class="section-intro">Digests make policy, task intent, patch content, and evidence order independently verifiable.</p></div></div>
+    <div class="integrity-grid">
+      <div class="integrity-status">
+        <span class="status status-incomplete"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>Incomplete</span>
+        <strong>Unsigned proof bundle</strong>
+        <p>The hash chain is complete, but no signing key was used.</p>
+      </div>
+      <dl class="digest-list">
+        <div class="digest-row"><dt>Patch diff</dt><dd>745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6</dd><button class="copy" type="button" data-copy="745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
+        <div class="digest-row"><dt>Policy</dt><dd>c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534</dd><button class="copy" type="button" data-copy="c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
+        <div class="digest-row"><dt>Contract</dt><dd>51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8</dd><button class="copy" type="button" data-copy="51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
+        <div class="digest-row"><dt>Evidence chain</dt><dd>11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c</dd><button class="copy" type="button" data-copy="11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
+      </dl>
+    </div>
+  </section>
+      </main>
+      <footer class="footer">Generated by PatchProof 0.1.0. The bundled JSON is the source of truth; this HTML is an offline projection.</footer>
+    </div>
+  </div>
+  <script type="application/json" id="patchproof-data">{"schemaVersion":"1.0","id":"proof_c3e10c7fd8aa6090ef1e","createdAt":"2026-07-21T09:12:06.615Z","generator":{"name":"patchproof","version":"0.1.0","node":"v24.15.0","platform":"win32-x64"},"patch":{"repositoryRoot":".","repositoryName":"acme-api","branch":"agent/fix-pagination","baseRef":"main","headRef":"agent/fix-pagination","baseCommit":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","headCommit":"d874cf3f83a0a63d08ef80dc555eb2aa66282f9e","diff":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });","diffDigest":"745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6","files":[{"path":"src/pagination.ts","previousPath":"src/pagination.ts","kind":"modified","additions":1,"deletions":0,"binary":false,"patch":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"},{"path":"tests/pagination.test.ts","previousPath":"tests/pagination.test.ts","kind":"modified","additions":1,"deletions":1,"binary":false,"patch":"diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });"}],"stats":{"filesChanged":2,"additions":2,"deletions":1,"testFilesChanged":1}},"policy":{"seal":{"source":"base-commit","sourceRef":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","path":".patchproof/policy.yml","digest":"c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534"},"value":{"version":1,"commands":[{"id":"tests","run":"npm test","description":"Run the full test suite","timeoutMs":300000,"required":true},{"id":"types","run":"npm run typecheck","description":"Check TypeScript","timeoutMs":180000,"required":true}],"scope":{"allowed":["src/**","tests/**"],"denied":[".github/workflows/**",".patchproof/policy.yml"]},"thresholds":{"maxChangedFiles":20,"maxChangedLines":500,"requireTestsForSourceChanges":true},"rules":{"policyIntegrity":true,"testIntegrity":true,"secretScan":true,"dependencyReview":true,"scope":true,"diffSize":true},"model":{"provider":"none"},"redactions":["API_KEY","TOKEN","PASSWORD"]}},"contract":{"digest":"51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8","value":{"version":1,"id":"cursor-pagination-fix","title":"Harden cursor pagination","task":"Reject empty and malformed cursors without changing the public response schema.","claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true}},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]}},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]}}],"outOfScope":["src/auth/**","src/billing/**"]}},"evidence":[{"id":"evidence-policy-integrity","type":"rule","producer":"patchproof/analyzer/policy-integrity","status":"passed","startedAt":"2026-07-21T09:12:02.970Z","completedAt":"2026-07-21T09:12:02.980Z","durationMs":10,"summary":"Verification policy remained anchored to the base revision","relatedFiles":[],"metadata":{"ruleId":"policy-integrity","analyzerId":"policy-integrity","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":null,"digest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950"},{"id":"evidence-scope","type":"rule","producer":"patchproof/analyzer/scope","status":"passed","startedAt":"2026-07-21T09:12:03.000Z","completedAt":"2026-07-21T09:12:03.011Z","durationMs":11,"summary":"Every changed file is within declared scope","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"scope","analyzerId":"scope","matchedFiles":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950","digest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c"},{"id":"evidence-secret-scan","type":"rule","producer":"patchproof/analyzer/secret-scan","status":"passed","startedAt":"2026-07-21T09:12:03.012Z","completedAt":"2026-07-21T09:12:03.024Z","durationMs":12,"summary":"No high-confidence secret patterns found in added lines","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"secret-scan","analyzerId":"secret-scan","scannedAddedLines":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c","digest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6"},{"id":"evidence-test-integrity","type":"rule","producer":"patchproof/analyzer/test-integrity","status":"failed","startedAt":"2026-07-21T09:12:03.025Z","completedAt":"2026-07-21T09:12:03.032Z","durationMs":7,"summary":"One existing test was changed to a skipped state","details":"tests/pagination.test.ts:44 added it.skip for the malformed-cursor regression test.","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"test-integrity","analyzerId":"test-integrity","skippedTestsAdded":1,"findingIds":["finding-test-skip-1"],"findingsDigest":"9ca2022c3a5a2a112b58e2c3fa4140629361ce5213d657e979050f070c05fdaf"},"previousDigest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6","digest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6"},{"id":"evidence-dependency-review","type":"rule","producer":"patchproof/analyzer/dependency-review","status":"passed","startedAt":"2026-07-21T09:12:03.033Z","completedAt":"2026-07-21T09:12:03.035Z","durationMs":2,"summary":"No dependency manifests or lockfiles changed","relatedFiles":[],"metadata":{"ruleId":"dependency-review","analyzerId":"dependency-review","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6","digest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883"},{"id":"evidence-diff-size","type":"rule","producer":"patchproof/analyzer/diff-size","status":"passed","startedAt":"2026-07-21T09:12:03.036Z","completedAt":"2026-07-21T09:12:03.037Z","durationMs":1,"summary":"Patch size is within policy","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"diff-size","analyzerId":"diff-size","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883","digest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9"},{"id":"evidence-missing-test-changes","type":"rule","producer":"patchproof/analyzer/missing-test-changes","status":"passed","startedAt":"2026-07-21T09:12:03.038Z","completedAt":"2026-07-21T09:12:03.039Z","durationMs":1,"summary":"One qualifying test file change found","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"missing-test-changes","analyzerId":"missing-test-changes","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9","digest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a"},{"id":"evidence-tests","type":"command","producer":"command:tests","status":"passed","startedAt":"2026-07-21T09:12:03.040Z","completedAt":"2026-07-21T09:12:05.382Z","durationMs":2342,"summary":"Test command exited successfully","command":"npm test","exitCode":0,"stdout":"PASS tests/pagination.test.ts\nTests: 1 skipped, 42 passed, 43 total\nTime: 2.11 s","stderr":"","relatedFiles":[],"metadata":{"commandId":"tests","required":true},"previousDigest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a","digest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b"},{"id":"evidence-types","type":"command","producer":"command:types","status":"passed","startedAt":"2026-07-21T09:12:05.390Z","completedAt":"2026-07-21T09:12:06.601Z","durationMs":1211,"summary":"TypeScript check exited successfully","command":"npm run typecheck","exitCode":0,"stdout":"\u003e acme-api@4.8.0 typecheck\n\u003e tsc --noEmit","stderr":"","relatedFiles":[],"metadata":{"commandId":"types","required":true},"previousDigest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b","digest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"}],"findings":[{"id":"finding-test-skip-1","ruleId":"test-integrity","title":"Existing protection was skipped","description":"The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.","severity":"blocking","location":{"path":"tests/pagination.test.ts","line":44},"relatedFiles":["tests/pagination.test.ts"],"fingerprint":"664313a153d4ae017ba1b40c05bc4d0c154a51b42becda027e3e7e841a591d53","remediation":"Restore the active test and fix decodeCursor without weakening malformed-input coverage."},{"id":"finding-schema-gap-1","ruleId":"contract-coverage","title":"Schema compatibility lacks direct evidence","description":"Type checking passed, but no response-schema snapshot or contract test was declared for this claim.","severity":"warning","relatedFiles":["src/pagination.ts"],"fingerprint":"05a599a98bab2580a4d1ff32bae6d155393e033e083c427f1d959d8515e15aad","remediation":"Attach a response contract test or schema-diff command to schema-compatible."}],"claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true},"status":"proven","evidenceIds":["evidence-tests"],"findingIds":[],"explanation":"All 3 evidence requirements passed."},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]},"status":"proven","evidenceIds":["evidence-scope","evidence-types"],"findingIds":[],"explanation":"All 2 evidence requirements passed."},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]},"status":"disproven","evidenceIds":["evidence-test-integrity"],"findingIds":["finding-test-skip-1"],"explanation":"rule test-integrity found a blocking condition"}],"verdict":{"status":"rejected","summary":"The patch has blocking findings or disproven required claims.","blockingFindings":1,"warnings":1,"provenClaims":2,"disprovenClaims":1,"unprovenClaims":0,"requiredCommandsPassed":2,"requiredCommandsTotal":2},"chainDigest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c","contentDigest":"fc7f66dee06ba0f98bdb13323e12418919acc5db945a392b8457e55f51e91bfa"}</script>
+  <script>
+(() => {
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const setCount = (kind) => {
+    const items = $$('[data-filter-kind="' + kind + '"]');
+    const visible = items.filter((item) => !item.classList.contains('hidden')).length;
+    const target = document.querySelector('[data-count-for="' + kind + '"]');
+    if (target) target.textContent = visible + ' shown';
+  };
+
+  $$('[data-filter]').forEach((select) => {
+    select.addEventListener('change', () => {
+      const kind = select.dataset.filter;
+      const value = select.value;
+      $$('[data-filter-kind="' + kind + '"]').forEach((item) => {
+        item.classList.toggle('hidden', value !== 'all' && item.dataset.status !== value);
+      });
+      setCount(kind);
+    });
+  });
+
+  $$('[data-copy]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const value = button.dataset.copy || '';
+      try {
+        await navigator.clipboard.writeText(value);
+        button.dataset.copied = 'true';
+        button.setAttribute('aria-label', 'Copied');
+        setTimeout(() => {
+          button.dataset.copied = 'false';
+          button.setAttribute('aria-label', 'Copy value');
+        }, 1600);
+      } catch {
+        button.setAttribute('aria-label', 'Copy failed');
+      }
+    });
+  });
+
+  const details = $$('details.evidence-item');
+  const expand = document.querySelector('[data-expand-evidence]');
+  const collapse = document.querySelector('[data-collapse-evidence]');
+  if (expand) expand.addEventListener('click', () => details.forEach((item) => { item.open = true; }));
+  if (collapse) collapse.addEventListener('click', () => details.forEach((item) => { item.open = false; }));
+
+  const links = $$('.rail nav a');
+  const sections = links
+    .map((link) => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      links.forEach((link) => link.setAttribute('aria-current', String(link.getAttribute('href') === '#' + visible.target.id)));
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: [0, 0.2, 0.8] });
+    sections.forEach((section) => observer.observe(section));
+  }
+})();
+</script>
+</body>
+</html>

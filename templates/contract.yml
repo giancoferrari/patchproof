@@ -1,0 +1,59 @@
+# Claims are falsifiable requirements. Missing evidence remains explicitly unproven.
+version: 1
+id: default-change-contract
+title: Verify the requested code change
+task: >-
+  Confirm that the requested behavior is implemented, regression coverage is active,
+  required repository checks pass, and the patch stays inside trusted policy boundaries.
+
+claims:
+  - id: requested-behavior
+    statement: The requested behavior is supported by passing tests and static type checks.
+    severity: blocking
+    evidence:
+      commands:
+        - tests
+        - types
+      requireTestChange: true
+
+  - id: tests-remain-active
+    statement: Existing tests were not deleted, disabled, focused, or weakened by the patch.
+    severity: blocking
+    evidence:
+      rules:
+        - test-integrity
+
+  - id: change-stays-in-scope
+    statement: Every changed path is permitted by policy and the verification policy was not altered.
+    severity: blocking
+    evidence:
+      rules:
+        - scope
+        - policy-integrity
+
+  - id: added-content-has-no-secrets
+    statement: Added text contains no likely credentials or private key material.
+    severity: blocking
+    evidence:
+      rules:
+        - secret-scan
+
+  - id: dependency-changes-are-inspectable
+    statement: Dependency manifests and lockfiles remain paired and reviewable.
+    severity: warning
+    evidence:
+      rules:
+        - dependency-review
+
+  - id: patch-remains-reviewable
+    statement: The patch stays within configured changed-file and changed-line limits.
+    severity: blocking
+    evidence:
+      rules:
+        - diff-size
+
+outOfScope:
+  - ".git/**"
+  - ".env*"
+  - ".patchproof/keys/**"
+  - ".github/workflows/**"

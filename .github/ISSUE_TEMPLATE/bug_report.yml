@@ -1,0 +1,84 @@
+name: Bug report
+description: Report reproducible incorrect behavior in PatchProof.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make PatchProof more reliable. Remove credentials, private source code, and unredacted command output before submitting.
+
+  - type: input
+    id: version
+    attributes:
+      label: PatchProof version
+      description: Run `patchproof --version` and paste the exact value.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - CLI
+        - GitHub Action
+        - JavaScript API
+        - HTML report
+        - Proof bundle or schema
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide the smallest safe repository, command sequence, policy, and contract that reproduce the issue.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Explain what happened, including the exit code and redacted output when relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Explain the result you expected and why.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include operating system, Node.js version, Git version, shell, and CI runner when applicable.
+      placeholder: Windows 11; Node.js 24.4.1; Git 2.50.1; PowerShell 7.5
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics
+      description: Add relevant stack traces or `PATCHPROOF_DEBUG=1` output after removing secrets and private paths.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues for the same behavior.
+          required: true
+        - label: I removed credentials, private code, and other sensitive data.
+          required: true
+        - label: I can reproduce this with a supported Node.js version.
+          required: true

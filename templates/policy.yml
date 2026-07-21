@@ -1,0 +1,46 @@
+# PatchProof loads this policy from the trusted base commit by default.
+version: 1
+
+commands:
+  - id: tests
+    run: npm test
+    description: Run the repository test suite
+    timeoutMs: 300000
+    required: true
+  - id: types
+    run: npm run typecheck
+    description: Run strict static type checking
+    timeoutMs: 240000
+    required: true
+  - id: build
+    run: npm run build
+    description: Build distributable artifacts
+    timeoutMs: 600000
+    required: false
+
+scope:
+  allowed:
+    - "**/*"
+  denied:
+    - ".git/**"
+    - ".env*"
+    - ".patchproof/keys/**"
+    - ".github/workflows/**"
+
+thresholds:
+  maxChangedFiles: 80
+  maxChangedLines: 2000
+  requireTestsForSourceChanges: true
+
+rules:
+  policyIntegrity: true
+  testIntegrity: true
+  secretScan: true
+  dependencyReview: true
+  scope: true
+  diffSize: true
+
+model:
+  provider: none
+
+redactions: []

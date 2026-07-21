@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 20.12.x
+          - os: ubuntu-latest
+            node: 22.x
+          - os: ubuntu-latest
+            node: 24.x
+          - os: windows-latest
+            node: 24.x
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Typecheck, test, and build
+        run: npm run check
+
+  package:
+    name: Package smoke test
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build package
+        run: npm run build
+
+      - name: Exercise packaged CLI
+        run: |
+          node dist/cli.js --version
+          node dist/cli.js --help
+
+      - name: Create npm tarball
+        run: npm pack --ignore-scripts
+
+      - name: Install and import npm tarball
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_tarball="$(find . -maxdepth 1 -name 'giancoferrari-patchproof-*.tgz' -print -quit)"
+          test -n "$package_tarball"
+          mkdir package-smoke
+          npm install --prefix package-smoke --ignore-scripts --no-audit --no-fund "$package_tarball"
+          node package-smoke/node_modules/@giancoferrari/patchproof/dist/cli.js --version
+          node --input-type=module -e "const api = await import('./package-smoke/node_modules/@giancoferrari/patchproof/dist/index.js'); if (typeof api.verifyProofBundle !== 'function') throw new Error('public API import failed')"
+          test -f package-smoke/node_modules/@giancoferrari/patchproof/schemas/proof-bundle.schema.json
+
+      - name: Upload npm tarball
+        uses: actions/upload-artifact@v7
+        with:
+          name: giancoferrari-patchproof-npm-package
+          path: giancoferrari-patchproof-*.tgz
+          if-no-files-found: error
+          retention-days: 7

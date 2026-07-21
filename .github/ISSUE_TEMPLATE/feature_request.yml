@@ -1,0 +1,73 @@
+name: Feature request
+description: Propose a deterministic verification capability or workflow improvement.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        PatchProof keeps verdict authority deterministic. Models may propose claims or explanations, but reproducible evidence and versioned policy decide outcomes.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the concrete verification or review problem and who encounters it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-workaround
+    attributes:
+      label: Current workaround
+      description: Explain how users handle this today and where that approach fails.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed capability
+      description: Describe inputs, deterministic behavior, evidence produced, and user-facing output.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Primary surface
+      options:
+        - Analyzer or policy rule
+        - CLI
+        - GitHub Action or CI
+        - Proof bundle or schema
+        - HTML report
+        - Model adapter
+        - Developer API
+    validations:
+      required: true
+
+  - type: textarea
+    id: trust-model
+    attributes:
+      label: Trust and failure model
+      description: Explain false positives, false negatives, unavailable dependencies, and how uncertainty should appear.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe other designs or existing tools and their tradeoffs.
+
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Design checks
+      options:
+        - label: The proposal can expose inspectable evidence instead of only a confidence score.
+          required: true
+        - label: The proposal keeps model output advisory rather than authoritative.
+          required: true
+        - label: I searched existing issues and pull requests for related work.
+          required: true

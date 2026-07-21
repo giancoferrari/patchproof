@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-21T00:00:00.000Z",
+  "title": "Design System: PatchProof",
+  "extensions": {
+    "colorMeta": {
+      "proof-blue": {
+        "role": "primary",
+        "displayName": "Proof Blue",
+        "canonical": "oklch(0.570 0.160 230)",
+        "tonalRamp": ["oklch(0.150 0.160 230)", "oklch(0.260 0.160 230)", "oklch(0.370 0.160 230)", "oklch(0.480 0.160 230)", "oklch(0.590 0.160 230)", "oklch(0.700 0.160 230)", "oklch(0.820 0.120 230)", "oklch(0.950 0.040 230)"]
+      },
+      "proof-blue-deep": {
+        "role": "primary",
+        "displayName": "Deep Proof Blue",
+        "canonical": "oklch(0.410 0.125 230)",
+        "tonalRamp": ["oklch(0.150 0.125 230)", "oklch(0.260 0.125 230)", "oklch(0.370 0.125 230)", "oklch(0.480 0.125 230)", "oklch(0.590 0.125 230)", "oklch(0.700 0.125 230)", "oklch(0.820 0.095 230)", "oklch(0.950 0.030 230)"]
+      },
+      "annotation-orange": {
+        "role": "secondary",
+        "displayName": "Annotation Orange",
+        "canonical": "oklch(0.650 0.185 35)",
+        "tonalRamp": ["oklch(0.150 0.120 35)", "oklch(0.260 0.150 35)", "oklch(0.370 0.175 35)", "oklch(0.480 0.185 35)", "oklch(0.590 0.185 35)", "oklch(0.700 0.170 35)", "oklch(0.820 0.120 35)", "oklch(0.950 0.035 35)"]
+      },
+      "verified-green": {
+        "role": "success",
+        "displayName": "Verified Green",
+        "canonical": "oklch(0.520 0.135 150)",
+        "tonalRamp": ["oklch(0.150 0.095 150)", "oklch(0.260 0.115 150)", "oklch(0.370 0.130 150)", "oklch(0.480 0.135 150)", "oklch(0.590 0.130 150)", "oklch(0.700 0.110 150)", "oklch(0.820 0.075 150)", "oklch(0.950 0.025 150)"]
+      },
+      "warning-gold": {
+        "role": "warning",
+        "displayName": "Warning Gold",
+        "canonical": "oklch(0.880 0.105 88)",
+        "tonalRamp": ["oklch(0.150 0.080 88)", "oklch(0.260 0.095 88)", "oklch(0.370 0.105 88)", "oklch(0.480 0.105 88)", "oklch(0.590 0.105 88)", "oklch(0.700 0.105 88)", "oklch(0.820 0.105 88)", "oklch(0.950 0.035 88)"]
+      },
+      "failed-red": {
+        "role": "error",
+        "displayName": "Failed Red",
+        "canonical": "oklch(0.555 0.195 25)",
+        "tonalRamp": ["oklch(0.150 0.130 25)", "oklch(0.260 0.165 25)", "oklch(0.370 0.190 25)", "oklch(0.480 0.195 25)", "oklch(0.590 0.185 25)", "oklch(0.700 0.150 25)", "oklch(0.820 0.100 25)", "oklch(0.950 0.030 25)"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "canonical": "oklch(1.000 0.000 0)",
+        "tonalRamp": ["oklch(0.150 0.000 0)", "oklch(0.260 0.000 0)", "oklch(0.370 0.000 0)", "oklch(0.480 0.000 0)", "oklch(0.590 0.000 0)", "oklch(0.700 0.000 0)", "oklch(0.820 0.000 0)", "oklch(0.950 0.000 0)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Lab Surface",
+        "canonical": "oklch(0.965 0.008 230)",
+        "tonalRamp": ["oklch(0.150 0.008 230)", "oklch(0.260 0.008 230)", "oklch(0.370 0.008 230)", "oklch(0.480 0.008 230)", "oklch(0.590 0.008 230)", "oklch(0.700 0.008 230)", "oklch(0.820 0.008 230)", "oklch(0.950 0.008 230)"]
+      },
+      "surface-strong": {
+        "role": "neutral",
+        "displayName": "Selected Surface",
+        "canonical": "oklch(0.925 0.014 230)",
+        "tonalRamp": ["oklch(0.150 0.014 230)", "oklch(0.260 0.014 230)", "oklch(0.370 0.014 230)", "oklch(0.480 0.014 230)", "oklch(0.590 0.014 230)", "oklch(0.700 0.014 230)", "oklch(0.820 0.014 230)", "oklch(0.950 0.014 230)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Forensic Ink",
+        "canonical": "oklch(0.190 0.025 235)",
+        "tonalRamp": ["oklch(0.150 0.025 235)", "oklch(0.260 0.025 235)", "oklch(0.370 0.025 235)", "oklch(0.480 0.025 235)", "oklch(0.590 0.025 235)", "oklch(0.700 0.025 235)", "oklch(0.820 0.020 235)", "oklch(0.950 0.008 235)"]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(0.455 0.030 235)",
+        "tonalRamp": ["oklch(0.150 0.030 235)", "oklch(0.260 0.030 235)", "oklch(0.370 0.030 235)", "oklch(0.480 0.030 235)", "oklch(0.590 0.030 235)", "oklch(0.700 0.025 235)", "oklch(0.820 0.018 235)", "oklch(0.950 0.006 235)"]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Structural Rule",
+        "canonical": "oklch(0.850 0.014 230)",
+        "tonalRamp": ["oklch(0.150 0.014 230)", "oklch(0.260 0.014 230)", "oklch(0.370 0.014 230)", "oklch(0.480 0.014 230)", "oklch(0.590 0.014 230)", "oklch(0.700 0.014 230)", "oklch(0.820 0.014 230)", "oklch(0.950 0.010 230)"]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Report Headline", "purpose": "Verdicts and primary page titles." },
+      "title": { "displayName": "Evidence Title", "purpose": "Claim groups, evidence sections, and inspector headings." },
+      "body": { "displayName": "Investigation Body", "purpose": "Explanations, findings, and reviewer guidance." },
+      "label": { "displayName": "State Label", "purpose": "Status, filters, and compact table headings." },
+      "mono": { "displayName": "Provenance Mono", "purpose": "Commands, paths, hashes, timestamps, and raw evidence." }
+    },
+    "shadows": [
+      { "name": "overlay", "value": "0 6px 8px oklch(0.190 0.025 235 / 0.14)", "purpose": "Menus, command palettes, and tooltips that physically overlap evidence." },
+      { "name": "sticky-edge", "value": "0 1px 0 oklch(0.850 0.014 230)", "purpose": "Separates sticky summary regions from scrolling evidence." }
+    ],
+    "motion": [
+      { "name": "ease-investigate", "value": "cubic-bezier(0.2, 0, 0, 1)", "purpose": "Short state changes and evidence disclosure." },
+      { "name": "duration-fast", "value": "120ms", "purpose": "Hover and focus feedback." },
+      { "name": "duration-resolve", "value": "220ms", "purpose": "Proof-path and inspector transitions." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "720px" },
+      { "name": "wide", "value": "1080px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Commits a high-confidence action such as exporting or verifying a bundle.",
+      "html": "<button class=\"ds-btn-primary\">Verify bundle</button>",
+      "css": ".ds-btn-primary{background:oklch(0.410 0.125 230);color:white;border:0;border-radius:7px;padding:10px 16px;font:650 0.9375rem/1.4 Inter,system-ui,sans-serif;cursor:pointer;transition:background 120ms,transform 120ms}.ds-btn-primary:hover{background:oklch(0.570 0.160 230)}.ds-btn-primary:focus-visible{outline:2px solid oklch(0.570 0.160 230);outline-offset:2px}.ds-btn-primary:active{transform:translateY(1px)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Navigates or copies evidence without competing with the primary action.",
+      "html": "<button class=\"ds-btn-secondary\">Copy digest</button>",
+      "css": ".ds-btn-secondary{background:white;color:oklch(0.190 0.025 235);border:1px solid oklch(0.850 0.014 230);border-radius:7px;padding:10px 16px;font:600 0.9375rem/1.4 Inter,system-ui,sans-serif;cursor:pointer;transition:background 120ms,border-color 120ms}.ds-btn-secondary:hover{background:oklch(0.965 0.008 230);border-color:oklch(0.570 0.160 230)}.ds-btn-secondary:focus-visible{outline:2px solid oklch(0.570 0.160 230);outline-offset:2px}.ds-btn-secondary:active{transform:translateY(1px)}"
+    },
+    {
+      "name": "Evidence Search",
+      "kind": "input",
+      "refersTo": "evidence-search",
+      "description": "Filters claims, findings, files, commands, and raw evidence in place.",
+      "html": "<label class=\"ds-field\"><span>Search evidence</span><input type=\"search\" placeholder=\"Path, rule, command, hash…\"></label>",
+      "css": ".ds-field{display:grid;gap:6px;color:oklch(0.455 0.030 235);font:650 0.75rem/1.25 Inter,system-ui,sans-serif}.ds-field input{min-height:40px;background:white;color:oklch(0.190 0.025 235);border:1px solid oklch(0.850 0.014 230);border-radius:7px;padding:8px 12px;font:450 0.9375rem/1.45 Inter,system-ui,sans-serif;transition:border-color 120ms,box-shadow 120ms}.ds-field input:hover{border-color:oklch(0.570 0.160 230)}.ds-field input:focus-visible{outline:0;border-color:oklch(0.570 0.160 230);box-shadow:0 0 0 3px oklch(0.570 0.160 230 / .18)}"
+    },
+    {
+      "name": "Evidence Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Keeps the verdict-to-raw-evidence path explicit and keyboard navigable.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Proof sections\"><a class=\"active\" href=\"#\">Overview <span>1</span></a><a href=\"#\">Claims <span>4</span></a><a href=\"#\">Evidence <span>8</span></a></nav>",
+      "css": ".ds-nav{display:grid;gap:4px;width:220px;font:600 0.875rem/1.3 Inter,system-ui,sans-serif}.ds-nav a{display:flex;justify-content:space-between;align-items:center;min-height:40px;padding:8px 10px;border-radius:7px;color:oklch(0.455 0.030 235);text-decoration:none;transition:background 120ms,color 120ms}.ds-nav a:hover{background:oklch(0.965 0.008 230);color:oklch(0.190 0.025 235)}.ds-nav a.active{background:oklch(0.925 0.014 230);color:oklch(0.410 0.125 230)}.ds-nav a:focus-visible{outline:2px solid oklch(0.570 0.160 230);outline-offset:2px}.ds-nav span{font:650 .75rem/1.25 ui-monospace,monospace}"
+    },
+    {
+      "name": "Proven Status",
+      "kind": "chip",
+      "refersTo": "status-proven",
+      "description": "An earned semantic state containing an icon and explicit status text.",
+      "html": "<span class=\"ds-chip-proven\"><svg aria-hidden=\"true\" viewBox=\"0 0 16 16\"><path d=\"M3 8.4 6.2 11.5 13 4.8\"/></svg>Proven</span>",
+      "css": ".ds-chip-proven{display:inline-flex;align-items:center;gap:5px;background:oklch(0.520 0.135 150);color:white;border-radius:999px;padding:5px 9px;font:650 .75rem/1.25 Inter,system-ui,sans-serif}.ds-chip-proven svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}"
+    },
+    {
+      "name": "Claim Evidence",
+      "kind": "card",
+      "refersTo": "claim-evidence",
+      "description": "A compact claim row that exposes state, explanation, and supporting evidence count.",
+      "html": "<article class=\"ds-claim\"><div><span class=\"ds-kicker\">CLAIM · BEHAVIOR</span><h3>Requested behavior is covered by tests.</h3></div><span class=\"ds-state\">✓ Proven</span><p>Test command and test-integrity rule passed.</p><code>3 evidence records</code></article>",
+      "css": ".ds-claim{display:grid;grid-template-columns:1fr auto;gap:8px 16px;max-width:620px;background:white;color:oklch(0.190 0.025 235);border:1px solid oklch(0.850 0.014 230);border-radius:12px;padding:16px 18px;font-family:Inter,system-ui,sans-serif}.ds-claim h3{margin:3px 0 0;font-size:1.05rem;line-height:1.3}.ds-claim p{grid-column:1/-1;margin:4px 0;color:oklch(0.455 0.030 235);font-size:.875rem}.ds-claim code{grid-column:1/-1;color:oklch(0.410 0.125 230);font:450 .75rem/1.4 ui-monospace,monospace}.ds-kicker{color:oklch(0.455 0.030 235);font:650 .7rem/1.2 ui-monospace,monospace;letter-spacing:.04em}.ds-state{align-self:start;background:oklch(0.520 0.135 150);color:white;border-radius:999px;padding:5px 9px;font-size:.75rem;font-weight:650}.ds-claim:hover{border-color:oklch(0.570 0.160 230)}.ds-claim:focus-within{outline:2px solid oklch(0.570 0.160 230);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Forensic Workbench",
+    "overview": "PatchProof feels like a precise evidence table in a bright engineering lab. The canvas is neutral and calm; cobalt marks active reasoning, orange marks annotations, and semantic colors appear only where a verifier has produced an actual state. The interface is compact enough for experts while preserving a clear path from verdict to raw evidence.\n\nThe visual system rejects generic dark AI dashboards, decorative terminal chrome, and opaque trust meters. Delight comes from the proof graph resolving, a counterexample appearing beside a claim, and a hash chain visibly closing. Familiar controls keep the investigator focused on the evidence.",
+    "keyCharacteristics": [
+      "Light, neutral working canvas with crisp cobalt navigation.",
+      "Dense evidence arranged through hierarchy, not nested cards.",
+      "Monospaced detail only where data provenance benefits from it.",
+      "Semantic status always paired with an icon and explicit text.",
+      "Short, state-driven transitions with full reduced-motion support."
+    ],
+    "rules": [
+      { "name": "The Earned Color Rule", "body": "Semantic color appears only when a verifier or user action has produced a state.", "section": "colors" },
+      { "name": "The One Active Blue Rule", "body": "Proof Blue identifies the current path or action. It never competes with status colors.", "section": "colors" },
+      { "name": "The Provenance Type Rule", "body": "Monospace means the value can be copied, compared, or verified. It is never decorative.", "section": "typography" },
+      { "name": "The Flat Evidence Rule", "body": "Evidence is separated by alignment and rules. A shadow must communicate actual overlap.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do connect every verdict, claim, and finding to inspectable evidence.",
+      "Do use Proof Blue for the current path and reserve semantic colors for real verifier states.",
+      "Do keep logs monospaced, selectable, line-wrapped by default, and expandable for full output.",
+      "Do preserve familiar controls, visible focus, 40px minimum targets, and reduced-motion behavior.",
+      "Do show uncertainty in plain language, including what was not executed or could not be proven."
+    ],
+    "donts": [
+      "Don't create generic dark AI dashboards with purple gradients, neon glows, or decorative terminal chrome.",
+      "Don't present conversational summaries as evidence or hide raw verifier output.",
+      "Don't use equal-card SaaS grids, fake activity metrics, or abstract trust scores with no inspectable inputs.",
+      "Don't use security fear, opaque severity, or red everywhere instead of explaining the exact source-to-result chain.",
+      "Don't turn the report into an agent launcher or worktree dashboard.",
+      "Don't use colored side-stripe borders, gradient text, glassmorphism, or wide decorative shadows."
+    ]
+  }
+}

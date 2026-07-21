@@ -4,7 +4,6 @@ import {
   changedPaths,
   evidenceStatusForFindings,
   isCommentOnly,
-  isSourceFile,
   isTestFile,
   makeEvidence,
   makeFinding,
@@ -113,16 +112,10 @@ export const testIntegrityAnalyzer: Analyzer = {
       const path = normalizePath(file.path);
       const previousPath = normalizePath(file.previousPath ?? file.path);
       const namedTestFile = isTestFile(path) || isTestFile(previousPath);
-      const lines = await changedLinesForFile(context, file);
-      const containsExecutableTestSyntax = lines.some((line) =>
-        matchesAny(maskStringLiterals(line.content), [
-          ...ASSERTION_PATTERNS,
-          ...TEST_DECLARATION_PATTERNS,
-        ]),
-      );
-      if (!namedTestFile && !(isSourceFile(path) && containsExecutableTestSyntax)) {
+      if (!namedTestFile) {
         continue;
       }
+      const lines = await changedLinesForFile(context, file);
       inspectedFiles.push(path);
 
       if (file.kind === "deleted" && namedTestFile) {

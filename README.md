@@ -2,6 +2,9 @@
 
 Independent, inspectable evidence for AI-written code.
 
+[![CI](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml)
+
 PatchProof turns a Git patch into a portable proof bundle: the exact diff, a policy anchored to the trusted base commit, deterministic analyzer results, test and build output, falsifiable claims, and an optional Ed25519 signature. It is designed for teams that want stronger review evidence than "the coding agent says it works."
 
 PatchProof is local by default. No model is required to verify a patch. A local Ollama model, or an explicitly configured OpenAI-compatible endpoint, can optionally draft a contract; the final verdict remains deterministic.
@@ -38,12 +41,14 @@ npm install --global .
 patchproof --version
 ```
 
-For a project-local install from the npm release, use the scoped package; the executable remains `patchproof`:
+For a project-local install from the GitHub release asset:
 
 ```sh
-npm install --save-dev @giancoferrari/patchproof
+npm install --save-dev https://github.com/giancoferrari/patchproof/releases/download/v0.1.0/giancoferrari-patchproof-0.1.0.tgz
 npx patchproof --version
 ```
+
+The package identity is `@giancoferrari/patchproof`; the executable remains `patchproof`.
 
 ## Five-minute workflow
 

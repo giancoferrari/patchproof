@@ -95,6 +95,7 @@ jobs:
           node package-smoke/node_modules/@giancoferrari/patchproof/dist/cli.js --version
           node --input-type=module -e "const api = await import('./package-smoke/node_modules/@giancoferrari/patchproof/dist/index.js'); if (typeof api.verifyProofBundle !== 'function') throw new Error('public API import failed')"
           test -f package-smoke/node_modules/@giancoferrari/patchproof/schemas/proof-bundle.schema.json
+          node scripts/smoke-package.mjs package-smoke/node_modules/@giancoferrari/patchproof
 
       - name: Upload npm tarball
         uses: actions/upload-artifact@v7

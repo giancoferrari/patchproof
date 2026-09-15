@@ -1,6 +1,7 @@
 import { Command, CommanderError, Option } from "commander";
 import pc from "picocolors";
 import {
+  compareBundles,
   generateContract,
   generateKeys,
   generateReport,
@@ -13,6 +14,9 @@ import {
 } from "./commands/index.js";
 import { DEFAULT_CONTRACT_PATH, DEFAULT_REPORT_NAME } from "./constants.js";
 import type { ModelPolicy } from "./types.js";
+import type { BundleVerificationOptions } from "./proof/bundle.js";
+import type { CompareOptions } from "./commands/compare.js";
+import type { DoctorOptions } from "./commands/doctor.js";
 import { PACKAGE_VERSION } from "./version.js";
 
 interface GlobalOptions {
@@ -54,6 +58,8 @@ program
   .option("--report <file>", "standalone HTML report output path")
   .option("--no-report", "do not generate an HTML report")
   .option("--sarif <file>", "write SARIF 2.1.0 findings")
+  .option("--summary <file>", "write a Markdown review summary with findings and fixes")
+  .option("--expected-contract-digest <sha256>", "require a reviewed contract digest before running commands")
   .option("--sign-key <file>", "sign the proof with an Ed25519 private key")
   .option("--json", "print one machine-readable result object", false)
   .action(
@@ -69,6 +75,8 @@ program
         report?: string | boolean;
         sarif?: string;
         signKey?: string;
+        summary?: string;
+        expectedContractDigest?: string;
         json: boolean;
       },
       command: Command,
@@ -78,12 +86,26 @@ program
   );
 
 program
+  .command("compare")
+  .description("Compare validated proofs for new findings, resolved findings, and regressions")
+  .argument("<baseline>", "previous proof JSON")
+  .argument("<candidate>", "new proof JSON")
+  .option("--json", "print a machine-readable comparison")
+  .option("-o, --output <file>", "also save the comparison to a file")
+  .option("--fail-on-regression", "exit 1 for regressions, 2 when verification bases differ")
+  .action(async (baseline: string, candidate: string, options: CompareOptions, command: Command) => {
+    await compareBundles(baseline, candidate, cwdFrom(command), options);
+  });
+
+program
   .command("report")
-  .description("Render a verified proof bundle as a standalone HTML report")
+  .description("Render a validated proof as standalone HTML or a Markdown review summary")
   .argument("<proof>", "proof bundle JSON")
   .option("-o, --output <file>", "HTML output path", DEFAULT_REPORT_NAME)
-  .action(async (proof: string, options: { output: string }, command: Command) => {
-    await generateReport(proof, options.output, cwdFrom(command));
+  .addOption(new Option("--format <format>", "report format").choices(["html", "markdown"]).default("html"))
+  .action(async (proof: string, options: { output: string; format: "html" | "markdown" }, command: Command) => {
+    const output = options.format === "markdown" && command.getOptionValueSource("output") === "default" ? "patchproof-summary.md" : options.output;
+    await generateReport(proof, output, cwdFrom(command), options.format);
   });
 
 program
@@ -122,8 +144,15 @@ program
   .description("Check proof digests, evidence chain, and optional signature")
   .argument("<proof>", "proof bundle JSON")
   .option("--json", "print one machine-readable result object", false)
-  .action(async (proof: string, options: { json: boolean }, command: Command) => {
-    await verifyBundleCommand(proof, cwdFrom(command), options.json);
+  .option("--require-signature", "reject unsigned proofs")
+  .option("--trusted-key <file>", "require a trusted Ed25519 public key (repeat for key rotation)", (value: string, previous: string[] = []) => [...previous, value])
+  .option("--expected-head <commit>", "require this full candidate commit hash")
+  .option("--expected-base <commit>", "require this full base commit hash")
+  .option("--expected-contract-digest <sha256>", "require this reviewed contract digest")
+  .option("--require-base-policy", "reject policies supplied by the candidate checkout")
+  .option("--require-verified", "require the proof verdict to be verified")
+  .action(async (proof: string, options: { json: boolean } & BundleVerificationOptions & { trustedKey?: string[] }, command: Command) => {
+    await verifyBundleCommand(proof, cwdFrom(command), options.json, options);
   });
 
 program
@@ -162,8 +191,14 @@ program
 program
   .command("doctor")
   .description("Check Git, Node.js, policy, and contract readiness")
-  .action(async (_options: unknown, command: Command) => {
-    await runDoctor(cwdFrom(command));
+  .option("--json", "print machine-readable checks and suggested fixes")
+  .option("--preflight", "also check comparison refs, trusted policy, and command checkout")
+  .option("--base <ref>", "trusted base Git ref; enables verification preflight")
+  .option("--head <ref>", "candidate Git ref", "HEAD")
+  .option("--policy <path>", "repository-relative policy path", verifyDefaults.policy)
+  .option("--contract <path>", "repository-relative contract path", verifyDefaults.contract)
+  .action(async (options: DoctorOptions, command: Command) => {
+    await runDoctor(cwdFrom(command), options);
   });
 
 try {

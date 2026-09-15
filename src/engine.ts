@@ -134,6 +134,12 @@ export async function verifyPatch(options: VerificationOptions): Promise<ProofBu
   ]);
   const contract = loadedContract.value;
   validateContractAgainstPolicy(contract, policy, options.contractPath);
+  if (options.expectedContractDigest !== undefined && (
+    !/^[a-f\d]{64}$/iu.test(options.expectedContractDigest) ||
+    sha256(canonicalJson(contract)) !== options.expectedContractDigest.toLowerCase()
+  )) {
+    throw new Error("The contract does not match the expected approved digest. No verification commands were executed.");
+  }
 
   const context: AnalyzerContext = {
     patch,
@@ -141,14 +147,21 @@ export async function verifyPatch(options: VerificationOptions): Promise<ProofBu
     contract,
     getFileAtRef: (ref, path) => repository.getFileAtRef(ref, path),
   };
+  options.onProgress?.({ phase: "analysis", status: "started", message: "Analyzing the committed patch against the sealed policy" });
   const analyzerResult = await runAnalyzers(createBuiltinAnalyzers(policy), context);
+  options.onProgress?.({ phase: "analysis", status: "completed", message: `${analyzerResult.findings.length} findings from deterministic analysis` });
   const drafts: EvidenceDraft[] = [...analyzerResult.evidence];
 
   if (options.runCommands) {
     const exactRedactions = redactionValues(policy.redactions);
     const runner = new CommandRunner({ cwd: repository.root, redactions: exactRedactions });
     for (const command of policy.commands) {
-      drafts.push(await commandEvidence(runner, command, patch.diffDigest, exactRedactions));
+      // Catch checkout changes between commands as well as at the boundaries.
+      await repository.assertCommandCheckout(patch.headCommit);
+      options.onProgress?.({ phase: "command", status: "started", message: `Running ${command.id}` });
+      const record = await commandEvidence(runner, command, patch.diffDigest, exactRedactions);
+      drafts.push(record);
+      options.onProgress?.({ phase: "command", status: "completed", message: `${command.id}: ${record.status} (${record.durationMs} ms)` });
     }
     await repository.assertCommandCheckout(patch.headCommit);
   } else {

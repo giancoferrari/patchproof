@@ -14,11 +14,22 @@ Implemented today:
 - optional local or explicitly configured contract drafting;
 - public TypeScript APIs, a composite GitHub Action, and cross-platform command execution/CI.
 
-The current limitations are intentional and documented: commands are not sandboxed, Git-ignored artifacts can influence builds, contract approval is external, signature identity is external, analyzers are heuristic, and bundle loading does not yet apply the complete published JSON Schema automatically.
+The current limitations are documented: commands are not sandboxed, Git-ignored artifacts can influence builds, contract approval is external, real-world signature identity is external, and analyzers are heuristic.
+
+## Implemented in the current checkout
+
+- Full published-schema validation of imported bundles without altering signed content.
+- Trusted-key allowlists, signature requirements, exact commit and approved-contract checks, and verdict requirements.
+- Contract digest pinning before command execution and checkout guards between commands.
+- Read-only verification preflight with machine-readable diagnoses and remediation.
+- Markdown review summaries, actionable terminal findings, and GitHub job summaries on failed verdicts.
+- Proof comparison with finding, command, claim, and verdict regressions; changed verification bases produce an inconclusive gate.
+
+These changes preserve proof schema `1.0`. See [Advanced workflows](docs/advanced-workflows.md).
 
 ## Priority 1: make independent verification boring
 
-- Apply exhaustive top-level runtime validation before rendering, signing, or verifying an imported bundle.
+- Extend malformed-input test vectors and resource limits for imported bundles.
 - Provide a small verifier with minimal dependencies and test vectors for canonicalization, evidence chains, and Ed25519 attestations.
 - Define compatibility rules for additive fields, schema migrations, and unknown critical fields.
 - Add reproducible fixtures that other languages can verify byte for byte.
@@ -37,7 +48,7 @@ Success means the proof's Git patch, contract, commands, and checkout describe t
 
 ## Priority 3: stronger trust and CI ergonomics
 
-- Add trusted-key allowlists and policies that require signatures.
+- Extend the implemented local trusted-key allowlists with organization-managed trust distribution.
 - Support external signing providers and protected CI key stores without exporting private key material.
 - Define key rotation, revocation, and signer metadata without pretending PatchProof is a public-key infrastructure.
 - Add SARIF upload, annotations, artifact retention guidance, and baseline comparisons around the first-party Action.
@@ -69,7 +80,7 @@ External scanners should contribute declared evidence rather than silently chang
 ## Priority 6: better review experience
 
 - Add claim-to-diff and finding-to-evidence navigation.
-- Add proof comparison for successive candidate commits.
+- Improve fingerprint stability and review navigation in the implemented proof comparison.
 - Make report accessibility and print/export behavior part of release tests.
 - Surface redaction, truncation, skipped evidence, and weak trust modes more prominently.
 - Provide concise human review summaries without replacing the JSON source of truth.

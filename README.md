@@ -23,6 +23,19 @@ PatchProof is local by default. No model is required to verify a patch. A local 
 - Required repository commands pass.
 - Every contract claim has the evidence it declared in advance.
 - The complete proof content, derived claims/verdict, evidence order, and optional signature remain internally consistent.
+- Imported bundles conform to the complete published JSON Schema before their contents are used.
+- Optional consumer requirements enforce trusted signing keys, exact commits, an approved contract, a base-sealed policy, and a passing verdict.
+
+## Advanced review workflow (current checkout)
+
+```sh
+patchproof doctor --base main
+patchproof verify --base main --summary .patchproof/proofs/review.md
+patchproof compare before.json after.json --fail-on-regression
+patchproof verify-bundle after.json --trusted-key ci-public.pem --require-verified
+```
+
+Get actionable findings and fixes in the terminal, a Markdown review summary, and the GitHub job summary. Compare candidate runs to identify regressions; pin an approved contract before commands run; require a known signer and exact candidate commit when accepting evidence. See [Advanced workflows](docs/advanced-workflows.md) for complete examples and trust boundaries. These additions are in the current checkout and are not part of the published `v0.1.0` release.
 
 PatchProof does **not** prove arbitrary semantic correctness, sandbox commands, scan the whole repository for secrets, query vulnerability databases, or establish the real-world identity of a signing key. See [the threat model](docs/threat-model.md).
 
@@ -120,11 +133,13 @@ Unknown fields, duplicate identifiers, disabled-rule references, and unknown com
 | --- | --- |
 | `patchproof init` | Create policy, contract, and ignore entries without replacing existing configuration |
 | `patchproof doctor` | Check Node.js, Git, and configuration readiness |
+| `patchproof doctor --base REF` | Preflight trusted policy, contract references, comparison refs, and command checkout |
 | `patchproof verify` | Build a proof from a committed base/head comparison |
 | `patchproof report PROOF_FILE` | Render an internally consistent bundle as standalone HTML |
 | `patchproof keygen` | Create a local Ed25519 key pair |
 | `patchproof sign PROOF_FILE` | Sign an existing bundle |
 | `patchproof verify-bundle PROOF_FILE` | Check digests, the evidence chain, and any embedded signature |
+| `patchproof compare BEFORE AFTER` | Compare findings, claim support, commands, and verdicts; optionally gate regressions |
 | `patchproof contract` | Draft a contract through Ollama or an explicit OpenAI-compatible endpoint |
 
 Run `patchproof COMMAND --help` for all options.
@@ -239,6 +254,7 @@ The public API also exports the Git adapter, analyzers, configuration validators
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 - [Roadmap](ROADMAP.md)
+- [Advanced review and trust workflows](docs/advanced-workflows.md)
 
 ## Project status
 

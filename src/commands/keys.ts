@@ -8,6 +8,7 @@ import {
   signProofBundle,
   verifyProofBundle,
   writeProofBundle,
+  type BundleVerificationOptions,
 } from "../proof/index.js";
 
 async function exists(path: string): Promise<boolean> {
@@ -54,13 +55,31 @@ export async function signBundle(
   process.stdout.write(`${pc.green("Proof signed")} ${signed.attestation?.keyId ?? "unknown key"}\n`);
 }
 
-export async function verifyBundleCommand(input: string, cwd: string, json: boolean): Promise<void> {
-  const bundle = await readProofBundle(resolve(cwd, input));
-  const result = verifyProofBundle(bundle);
+export async function verifyBundleCommand(
+  input: string, cwd: string, json: boolean,
+  options: BundleVerificationOptions & { trustedKey?: string[] } = {},
+): Promise<void> {
+  let result;
+  try {
+    const bundle = await readProofBundle(resolve(cwd, input));
+    const trustedPublicKeys = options.trustedKey
+      ? await Promise.all(options.trustedKey.map((path) => readFile(resolve(cwd, path), "utf8")))
+      : options.trustedPublicKeys;
+    result = verifyProofBundle(bundle, {
+      ...options, ...(trustedPublicKeys !== undefined ? { trustedPublicKeys } : {}),
+    });
+  } catch (error) {
+    result = { valid: false, errors: [error instanceof Error ? error.message : String(error)], signature: "invalid" as const };
+  }
   if (json) {
     process.stdout.write(`${JSON.stringify(result)}\n`);
   } else if (result.valid) {
     process.stdout.write(`${pc.green("Valid proof bundle")} · signature ${result.signature}\n`);
+    if (options.trustedKey || options.trustedPublicKeys) {
+      process.stdout.write("  Signing key matched the verifier's trusted key list.\n");
+    } else if (result.signature === "valid") {
+      process.stdout.write("  Signer trust was not checked. Use --trusted-key to require a known signer.\n");
+    }
   } else {
     process.stdout.write(`${pc.red("Invalid proof bundle")}\n${result.errors.map((error) => `  - ${error}`).join("\n")}\n`);
   }

@@ -235,6 +235,15 @@ export interface VerificationOptions {
   runCommands: boolean;
   explicitPolicy: boolean;
   packageVersion: string;
+  /** Pin a reviewed contract before any repository commands execute. */
+  expectedContractDigest?: string;
+  onProgress?: (event: VerificationProgress) => void;
+}
+
+export interface VerificationProgress {
+  phase: "analysis" | "command";
+  status: "started" | "completed";
+  message: string;
 }
 
 export interface ModelContractRequest {

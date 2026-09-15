@@ -80,11 +80,15 @@ export class GitRepository implements GitRepositoryLike {
   }
 
   async resolveComparisonRefs(baseRef: string, headRef = "HEAD"): Promise<ComparisonRefs> {
-    const [baseCommit, headCommit] = await Promise.all([
+    // Reap both child processes before returning an error. An early rejection
+    // can otherwise leave Git holding the worktree open during caller cleanup.
+    const [base, head] = await Promise.allSettled([
       this.resolveRef(baseRef),
       this.resolveRef(headRef),
     ]);
-    return { baseRef, headRef, baseCommit, headCommit };
+    if (base.status === "rejected") throw base.reason;
+    if (head.status === "rejected") throw head.reason;
+    return { baseRef, headRef, baseCommit: base.value, headCommit: head.value };
   }
 
   async resolveDefaultBaseRef(): Promise<string> {
@@ -176,7 +180,7 @@ export class GitRepository implements GitRepositoryLike {
   }
 
   async mergeBase(leftRef: string, rightRef: string): Promise<string> {
-    const [left, right] = await Promise.all([this.resolveRef(leftRef), this.resolveRef(rightRef)]);
+    const { baseCommit: left, headCommit: right } = await this.resolveComparisonRefs(leftRef, rightRef);
     const args = ["merge-base", left, right];
     const result = await this.#execute(args, { cwd: this.root });
     const commit = result.stdout.trim();

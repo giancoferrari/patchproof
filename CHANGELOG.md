@@ -2,6 +2,27 @@
 
 Notable user-visible changes are recorded here. PatchProof follows semantic versioning while pre-1.0 APIs and proof semantics are still evolving.
 
+## Unreleased
+
+### Trust and correctness
+
+- Validate imported bundles against the complete published JSON Schema before use, preserving the original signed content.
+- Accept unknown input safely in `verifyProofBundle`; report malformed files as structured failures in `verify-bundle --json`.
+- Add trusted Ed25519 public-key allowlists, signature requirements, full expected commit hashes, approved contract digests, base-policy requirements, and verified-verdict requirements.
+- Reject contradictory command exit evidence, command identities/requirements, duplicate command records, and base-policy seal refs.
+- Check an approved contract digest before running commands and check checkout integrity between commands.
+
+### Review workflow
+
+- Add `compare` with new/resolved/persistent/escalated findings, claim and command transitions, and an optional regression gate. Changed verification bases exit as inconclusive.
+- Add Markdown reports and verification summaries with findings, remediation, trust context, and bounded lists.
+- Add CLI verification progress and actionable finding output.
+- Add `doctor --base`/`--preflight`, JSON diagnostics, suggested fixes, and the canonical contract digest.
+- Add GitHub Action review summaries and verdict outputs, including rejected/incomplete runs, plus approved-contract input.
+- Prevent explicit output collisions with other artifacts, configuration, signing keys, and report/comparison input proofs.
+
+Proof schema remains `1.0`; old schema-conforming bundles remain readable, subject to stricter consistency checks.
+
 ## 0.1.0 - 2026-07-21
 
 Initial public implementation.

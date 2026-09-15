@@ -35,6 +35,14 @@ inputs:
     description: Repository-relative SARIF output path. Leave empty to disable SARIF output.
     required: false
     default: .patchproof/proofs/patchproof.sarif
+  summary-path:
+    description: Markdown review summary path. Leave empty to disable the job summary.
+    required: false
+    default: .patchproof/proofs/patchproof-summary.md
+  expected-contract-digest:
+    description: Optional approved contract SHA-256 from a trusted review or CI setting.
+    required: false
+    default: ""
   run-commands:
     description: Run commands declared by the trusted policy.
     required: false
@@ -53,6 +61,12 @@ inputs:
     default: ""
 
 outputs:
+  verdict:
+    description: Verified, rejected, or incomplete result, available even for a failing verdict.
+    value: ${{ steps.verify.outputs.verdict }}
+  summary-path:
+    description: Path to the Markdown review summary, or an empty string when disabled.
+    value: ${{ steps.verify.outputs.summary-path }}
   proof-path:
     description: Path to the generated proof bundle.
     value: ${{ steps.verify.outputs.proof-path }}
@@ -103,6 +117,8 @@ runs:
         INPUT_PROOF_PATH: ${{ inputs.proof-path }}
         INPUT_REPORT_PATH: ${{ inputs.report-path }}
         INPUT_SARIF_PATH: ${{ inputs.sarif-path }}
+        INPUT_SUMMARY_PATH: ${{ inputs.summary-path }}
+        INPUT_CONTRACT_DIGEST: ${{ inputs.expected-contract-digest }}
         INPUT_RUN_COMMANDS: ${{ inputs.run-commands }}
         INPUT_TRUST_WORKING_POLICY: ${{ inputs.trust-working-policy }}
       run: |
@@ -128,6 +144,12 @@ runs:
         if [[ -n "$INPUT_SARIF_PATH" ]]; then
           args+=(--sarif "$INPUT_SARIF_PATH")
         fi
+        if [[ -n "$INPUT_SUMMARY_PATH" ]]; then
+          args+=(--summary "$INPUT_SUMMARY_PATH")
+        fi
+        if [[ -n "$INPUT_CONTRACT_DIGEST" ]]; then
+          args+=(--expected-contract-digest "$INPUT_CONTRACT_DIGEST")
+        fi
         if [[ "$INPUT_RUN_COMMANDS" != "true" ]]; then
           args+=(--no-commands)
         fi
@@ -138,5 +160,12 @@ runs:
         printf 'proof-path=%s\n' "$INPUT_PROOF_PATH" >> "$GITHUB_OUTPUT"
         printf 'report-path=%s\n' "$INPUT_REPORT_PATH" >> "$GITHUB_OUTPUT"
         printf 'sarif-path=%s\n' "$INPUT_SARIF_PATH" >> "$GITHUB_OUTPUT"
+        printf 'summary-path=%s\n' "$INPUT_SUMMARY_PATH" >> "$GITHUB_OUTPUT"
 
-        patchproof "${args[@]}"
+        verification_exit=0
+        result="$(patchproof "${args[@]}")" || verification_exit=$?
+        printf '%s\n' "$result"
+        if [[ -n "$result" ]]; then
+          PATCHPROOF_RESULT="$result" node "$GITHUB_ACTION_PATH/scripts/action-result.mjs"
+        fi
+        exit "$verification_exit"

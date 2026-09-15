@@ -143,7 +143,7 @@ A successful result for a signed bundle has the shape:
 {"valid":true,"errors":[],"signature":"valid"}
 ```
 
-For an unsigned bundle that passes consistency checks, `valid` is also `true` and `signature` is `unsigned`. Consumers who require authenticated provenance must reject unsigned bundles themselves and compare `attestation.keyId` or the full public key with an out-of-band trust record.
+For an unsigned bundle that passes consistency checks, `valid` is also `true` and `signature` is `unsigned`. Consumers can enforce authentication with `--trusted-key`, and require a passing verdict with `--require-verified`. Public keys must be obtained independently of the bundle. See [Advanced workflows](advanced-workflows.md) for commit/contract pinning, key rotation, and API options.
 
 To sign an existing bundle without rerunning verification:
 
@@ -158,7 +158,7 @@ patchproof verify-bundle patchproof.signed.json
 
 `patchproof verify-bundle` checks:
 
-1. supported schema version;
+1. the complete published JSON Schema, including required fields, types, timestamps, enums, and unknown-field rejection;
 2. proof ID against commit IDs and creation time;
 3. raw diff digest, parsed file list, and aggregate statistics;
 4. policy/contract schemas, cross-references, and canonical digests;
@@ -168,8 +168,10 @@ patchproof verify-bundle patchproof.signed.json
 8. duplicate evidence, finding, and claim IDs;
 9. whole-content digest;
 10. attestation algorithm, timestamp, key ID, signed digest, and Ed25519 signature when present.
+11. command identity, required flags, duplicate command records, and contradictions between passing/skipped statuses and exit evidence;
+12. base-policy seal ref consistency and any caller-supplied trust, commit, contract, or verdict requirements.
 
-It does not resolve the recorded Git objects, reproduce the diff from a repository, rerun analyzers or commands, establish key identity, or automatically validate the complete JSON document with the published JSON Schema. A malicious creator can fabricate a self-consistent unsigned bundle; a signer can attest misleading but internally consistent evidence. A recipient should reproduce high-value evidence and establish signer trust rather than treating `valid: true` as a complete security decision.
+It does not resolve the recorded Git objects, reproduce the diff from a repository, rerun analyzers or commands, or establish real-world key identity. A malicious creator can fabricate a self-consistent unsigned bundle; a signer can attest misleading but internally consistent evidence. A recipient should reproduce high-value evidence and configure signer trust rather than treating an unconstrained `valid: true` as a complete security decision.
 
 ## Portability and privacy
 

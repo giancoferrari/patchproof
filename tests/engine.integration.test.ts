@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import { verifyPatch } from "../src/engine.js";
+import { diagnoseRepository } from "../src/commands/doctor.js";
+import type { VerificationProgress } from "../src/types.js";
 
 const exec = promisify(execFile);
 const temporaryDirectories: string[] = [];
@@ -15,7 +17,7 @@ async function git(cwd: string, ...args: string[]): Promise<string> {
 }
 
 afterEach(async () => {
-  await Promise.all(temporaryDirectories.splice(0).map((path) => rm(path, { recursive: true, force: true })));
+  await Promise.all(temporaryDirectories.splice(0).map((path) => rm(path, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })));
 });
 
 async function createTwoCommitRepository(): Promise<{
@@ -110,6 +112,30 @@ function verificationOptions(root: string, baseCommit: string, headRef: string) 
 }
 
 describe("verification engine", () => {
+  it("preflights real commits and pins a reviewed contract before command execution", async () => {
+    const { root, baseCommit, headCommit } = await createTwoCommitRepository();
+    const diagnosis = await diagnoseRepository(root, { base: baseCommit });
+    expect(diagnosis.ready).toBe(true);
+    expect(diagnosis.checks.map((check) => check.name)).toContain("Trusted policy");
+    expect(diagnosis.contractDigest).toMatch(/^[a-f\d]{64}$/u);
+    const events: VerificationProgress[] = [];
+    const options = { ...verificationOptions(root, baseCommit, headCommit), onProgress: (event: VerificationProgress) => events.push(event) };
+    await expect(verifyPatch({ ...options, expectedContractDigest: "0".repeat(64) })).rejects.toThrow(/approved digest/u);
+    expect(events).toHaveLength(0);
+    const bundle = await verifyPatch({ ...options, expectedContractDigest: diagnosis.contractDigest! });
+    expect(bundle.verdict.status).toBe("verified");
+    expect(events.map((event) => `${event.phase}:${event.status}`)).toEqual(["analysis:started", "analysis:completed", "command:started", "command:completed"]);
+  });
+
+  it("preflight explains dirty checkout and missing-ref failures without changing files", async () => {
+    const { root, baseCommit } = await createTwoCommitRepository();
+    await writeFile(join(root, "local.txt"), "local work");
+    const diagnosis = await diagnoseRepository(root, { base: baseCommit });
+    expect(diagnosis.ready).toBe(false);
+    expect(diagnosis.checks.find((check) => check.name === "Command checkout")).toMatchObject({ ok: false, remediation: expect.stringContaining("Commit or stash") });
+    const missing = await diagnoseRepository(root, { base: "missing-base" });
+    expect(missing.checks.find((check) => check.name === "Comparison")?.ok).toBe(false);
+  });
   it("verifies a real two-commit repository using base-sealed policy", async () => {
     const { root, baseCommit } = await createTwoCommitRepository();
 

@@ -145,6 +145,7 @@ describe("verify command", () => {
       ...commandOptions(root, baseCommit, headCommit, true),
       report: "artifacts/report.html",
       sarif: "artifacts/proof.sarif.json",
+      summary: "artifacts/summary.md",
     };
 
     await runVerification(options);
@@ -154,6 +155,7 @@ describe("verify command", () => {
       proof: string;
       report: string;
       sarif: string;
+      summary: string;
     };
     expect(output.verdict.status).toBe("verified");
     expect(output.proof).toBe(join(root, "artifacts", "proof.json"));
@@ -162,6 +164,7 @@ describe("verify command", () => {
     expect(process.exitCode).toBeUndefined();
     expect(await readFile(output.report, "utf8")).toContain("<!doctype html>");
     expect(JSON.parse(await readFile(output.sarif, "utf8"))).toMatchObject({ version: "2.1.0" });
+    expect(await readFile(output.summary, "utf8")).toContain("## PatchProof: verified");
     expect(verifyProofBundle(await readProofBundle(output.proof)).valid).toBe(true);
   });
 
@@ -195,5 +198,12 @@ describe("verify command", () => {
     expect(output.verdict.status).toBe("rejected");
     expect(output.verdict.blockingFindings).toBeGreaterThan(0);
     expect(process.exitCode).toBe(1);
+  });
+
+  it("rejects colliding outputs before running commands or writing artifacts", async () => {
+    const { root, baseCommit, headCommit } = await createVerificationRepository();
+    const options = commandOptions(root, baseCommit, headCommit, true);
+    await expect(runVerification({ ...options, summary: options.output })).rejects.toThrow(/must be different/u);
+    await expect(runVerification({ ...options, output: options.policy })).rejects.toThrow(/must not overwrite/u);
   });
 });

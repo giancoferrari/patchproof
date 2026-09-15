@@ -5,3 +5,4 @@ export * from "./keys.js";
 export * from "./report.js";
 export * from "./templates.js";
 export * from "./verify.js";
+export * from "./compare.js";

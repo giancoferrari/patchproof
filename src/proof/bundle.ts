@@ -22,6 +22,7 @@ import { canonicalJson, sha256, stableId } from "../utils/hash.js";
 import { evaluateClaims } from "./claims.js";
 import { verifyEvidenceChain } from "./evidence.js";
 import { computeVerdict } from "./verdict.js";
+import { parseProofBundle, proofStructureErrors } from "./schema.js";
 
 export interface BundleInput {
   packageVersion: string;
@@ -116,6 +117,9 @@ export function signProofBundle(
     throw new Error(`Refusing to sign an invalid proof bundle: ${verification.errors.join(" ")}`);
   }
   const privateKey = createPrivateKey(privateKeyPem);
+  if (privateKey.asymmetricKeyType !== "ed25519") {
+    throw new Error("PatchProof signing requires an Ed25519 private key.");
+  }
   const publicKeyPem = createPublicKey(privateKey)
     .export({ type: "spki", format: "pem" })
     .toString();
@@ -147,7 +151,31 @@ export interface BundleVerificationResult {
   signature: "valid" | "invalid" | "unsigned";
 }
 
-export function verifyProofBundle(bundle: ProofBundle): BundleVerificationResult {
+export interface BundleVerificationOptions {
+  requireSignature?: boolean;
+  /** Public PEM keys obtained independently from the proof producer. Empty means trust nobody. */
+  trustedPublicKeys?: readonly string[];
+  expectedHead?: string;
+  expectedBase?: string;
+  expectedContractDigest?: string;
+  requireBasePolicy?: boolean;
+  requireVerified?: boolean;
+}
+
+export function verifyProofBundle(input: unknown, options: BundleVerificationOptions = {}): BundleVerificationResult {
+  try {
+    return verifyBundleContent(input, options);
+  } catch (error) {
+    return { valid: false, signature: "invalid", errors: [`Unable to verify proof bundle: ${error instanceof Error ? error.message : String(error)}`] };
+  }
+}
+
+function verifyBundleContent(input: unknown, options: BundleVerificationOptions): BundleVerificationResult {
+  const structureErrors = proofStructureErrors(input);
+  if (structureErrors.length > 0) {
+    return { valid: false, errors: structureErrors, signature: "invalid" };
+  }
+  const bundle = input as ProofBundle;
   const errors: string[] = [];
   if (bundle.schemaVersion !== PROOF_SCHEMA_VERSION) {
     errors.push(`Unsupported proof schema ${bundle.schemaVersion}.`);
@@ -188,6 +216,9 @@ export function verifyProofBundle(bundle: ProofBundle): BundleVerificationResult
   if (sha256(canonicalJson(bundle.contract.value)) !== bundle.contract.digest) {
     errors.push("The contract digest does not match the bundled contract.");
   }
+  if (bundle.policy.seal.source === "base-commit" && bundle.policy.seal.sourceRef !== bundle.patch.baseCommit) {
+    errors.push("The sealed policy ref does not match the patch base commit.");
+  }
 
   const chain = verifyEvidenceChain(bundle.evidence);
   errors.push(...chain.errors);
@@ -196,6 +227,26 @@ export function verifyProofBundle(bundle: ProofBundle): BundleVerificationResult
   }
 
   if (parsedPolicy.success) {
+    const commandIds = new Set<string>();
+    for (const record of bundle.evidence.filter((item) => item.type === "command")) {
+      const commandId = record.metadata["commandId"];
+      const command = parsedPolicy.data.commands.find((item) => item.id === commandId);
+      if (!command) {
+        errors.push(`Command evidence ${record.id} does not reference a declared policy command.`);
+        continue;
+      }
+      if (commandIds.has(command.id)) errors.push(`Duplicate command evidence for ${command.id}.`);
+      commandIds.add(command.id);
+      if (record.producer !== `command:${command.id}` || record.metadata["required"] !== command.required) {
+        errors.push(`Command evidence ${record.id} does not match its policy command identity or requirement.`);
+      }
+      if (record.status === "passed" && (record.exitCode !== 0 || record.metadata["timedOut"] === true || record.metadata["aborted"] === true)) {
+        errors.push(`Passing command evidence ${record.id} has an inconsistent exit status.`);
+      }
+      if (record.status === "skipped" && record.exitCode !== null) {
+        errors.push(`Skipped command evidence ${record.id} must have a null exit code.`);
+      }
+    }
     for (const analyzer of createBuiltinAnalyzers(parsedPolicy.data)) {
       const records = bundle.evidence.filter(
         (record) =>
@@ -303,10 +354,14 @@ export function verifyProofBundle(bundle: ProofBundle): BundleVerificationResult
           signature: _signature,
           ...unsignedAttestation
         } = bundle.attestation;
+        const publicKey = createPublicKey(bundle.attestation.publicKey);
+        if (publicKey.asymmetricKeyType !== "ed25519") {
+          throw new Error("The attestation requires an Ed25519 public key.");
+        }
         const valid = cryptoVerify(
           null,
           Buffer.from(canonicalJson(unsignedAttestation), "utf8"),
-          createPublicKey(bundle.attestation.publicKey),
+          publicKey,
           Buffer.from(bundle.attestation.signature, "base64"),
         );
         signature = valid ? "valid" : "invalid";
@@ -318,6 +373,40 @@ export function verifyProofBundle(bundle: ProofBundle): BundleVerificationResult
     }
   }
 
+  if ((options.requireSignature || options.trustedPublicKeys !== undefined) && signature === "unsigned") {
+    errors.push("A signed proof is required by the verifier.");
+  }
+  if (options.trustedPublicKeys !== undefined && signature === "valid" && bundle.attestation) {
+    try {
+      const embedded = createPublicKey(bundle.attestation.publicKey).export({ type: "spki", format: "der" });
+      const trusted = options.trustedPublicKeys.map((pem) => {
+        const key = createPublicKey(pem);
+        if (key.asymmetricKeyType !== "ed25519") throw new Error("Trusted keys must be Ed25519 public keys.");
+        return key.export({ type: "spki", format: "der" });
+      });
+      if (!trusted.some((key) => key.equals(embedded))) {
+        errors.push("The signing key is not in the verifier's trusted key list.");
+      }
+    } catch (error) {
+      errors.push(`Unable to check trusted keys: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  for (const [name, expected, actual, pattern] of [
+    ["head commit", options.expectedHead, bundle.patch.headCommit, /^(?:[a-f\d]{40}|[a-f\d]{64})$/iu],
+    ["base commit", options.expectedBase, bundle.patch.baseCommit, /^(?:[a-f\d]{40}|[a-f\d]{64})$/iu],
+    ["contract digest", options.expectedContractDigest, bundle.contract.digest, /^[a-f\d]{64}$/iu],
+  ] as const) {
+    if (expected !== undefined && (!pattern.test(expected) || expected.toLowerCase() !== actual.toLowerCase())) {
+      errors.push(`The proof ${name} does not match the verifier's expected full digest.`);
+    }
+  }
+  if (options.requireBasePolicy && bundle.policy.seal.source !== "base-commit") {
+    errors.push("The verifier requires a policy sealed to the base commit.");
+  }
+  if (options.requireVerified && bundle.verdict.status !== "verified") {
+    errors.push(`The verifier requires a verified verdict; this proof is ${bundle.verdict.status}.`);
+  }
+
   return { valid: errors.length === 0, errors, signature };
 }
 
@@ -326,5 +415,11 @@ export async function writeProofBundle(path: string, bundle: ProofBundle): Promi
 }
 
 export async function readProofBundle(path: string): Promise<ProofBundle> {
-  return JSON.parse(await readFile(path, "utf8")) as ProofBundle;
+  let value: unknown;
+  try {
+    value = JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    throw new Error(`Unable to read proof bundle '${path}': ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+  }
+  return parseProofBundle(value);
 }

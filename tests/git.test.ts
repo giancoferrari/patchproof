@@ -103,6 +103,23 @@ diff --git a/tests/a.test.ts b/tests/a.test.ts
 });
 
 describe("GitRepository", () => {
+  it("waits for both ref lookups before returning a resolution failure", async () => {
+    let finishHead: (() => void) | undefined;
+    let headCompleted = false;
+    const headReady = new Promise<void>((resolve) => { finishHead = resolve; });
+    const executor: GitExecutor = async (args) => {
+      if (args.includes("missing^{commit}")) return { stdout: "", stderr: "missing ref", exitCode: 128 };
+      await headReady;
+      headCompleted = true;
+      return { stdout: "a".repeat(40), stderr: "", exitCode: 0 };
+    };
+    const result = new GitRepository(process.cwd(), executor).resolveComparisonRefs("missing", "HEAD");
+    const assertion = expect(result).rejects.toThrow(/missing/u);
+    expect(headCompleted).toBe(false);
+    finishHead!();
+    await assertion;
+    expect(headCompleted).toBe(true);
+  });
   it("resolves refs and reads files without invoking a shell", async () => {
     const commit = "b".repeat(40);
     const seen: readonly string[][] = [];

@@ -56,7 +56,7 @@ A fully compromised verifier host, trusted base branch, or policy author is out 
 | Credential added to patch | Added-line detectors redact findings and report common secret formats | It is not full-history, entropy, binary, decoded, or whole-tree scanning; the unredacted value remains in the bundled raw diff |
 | Risky dependency change | Manifest/lockfile pairing, install hooks, non-registry sources, and Node package deltas are reported | No package download, provenance verification, license resolution, or vulnerability database lookup occurs |
 | Bundle edited after creation | A whole-content digest, nested digests, evidence manifests, and recomputed claims/verdict detect inconsistent edits; Ed25519 authenticates the complete content digest | Anyone can recompute an unsigned bundle and its unkeyed digests; signatures still require external key trust |
-| Signer impersonation | Key ID and public key are embedded | Embedded keys are self-asserted; PatchProof has no PKI, allowlist, revocation, or identity binding |
+| Signer impersonation | Optional verifier-supplied trusted public-key allowlist; Ed25519 algorithm enforcement | Trusted keys must come from an independent channel; PatchProof has no PKI, revocation, or real-world identity binding |
 | Secret leaks in command output | Named environment redactions, secret-like values in the command environment, and built-in patterns are removed before storage | Redaction is best effort and occurs after a command has already read the secret; it cannot prevent network exfiltration |
 | Malicious proof executes code in report | Dynamic values are HTML-escaped and embedded JSON escapes script-sensitive characters | Consumers should still treat reports as untrusted files and keep browsers updated |
 
@@ -84,7 +84,7 @@ The comparison is base-to-head, not automatically merge-base-to-head. Select the
 
 The contract digest proves which contract is bundled, not when or by whom it was approved. The generated default scope permits `.patchproof/contract.yml` so each candidate can carry a task-specific contract. Clean-checkout enforcement binds it to the candidate commit when commands run, but the candidate can still choose weaker claims.
 
-For high-assurance use, review the contract before implementation and preserve its digest in a trusted issue, approval record, base commit, or CI input. Treat model-drafted contracts as untrusted proposals until a human reviews every claim and evidence requirement.
+For high-assurance use, review the contract before implementation and preserve its digest in a trusted issue, approval record, base commit, or CI input. Pass `--expected-contract-digest` to verification to reject changed requirements before repository commands run, and to `verify-bundle` when accepting evidence. Treat model-drafted contracts as untrusted proposals until a human reviews every claim and evidence requirement.
 
 ## Model and network boundary
 
@@ -96,7 +96,7 @@ Ollama defaults to loopback. An OpenAI-compatible endpoint may be remote; its op
 
 `verify-bundle` checks the schema version; full content digest; proof ID; diff digest and derived file statistics; policy/contract schemas, cross-references, and digests; evidence chain; one finding manifest per enabled analyzer; claim and verdict recomputation; duplicate IDs; and optional attestation metadata/signature. Signing refuses a bundle that fails these checks.
 
-It does not run the published JSON Schema automatically, resolve the recorded Git objects, rerun analyzers, or rerun commands. A malicious creator can fabricate a new, internally consistent unsigned bundle and recompute its unkeyed hashes. Even a valid signature proves only that the key holder signed those claims, not that the commands ran honestly or the analyzer findings match an independently reproduced repository.
+Imported proofs are validated against the complete published JSON Schema without coercion or default insertion. Verification also checks command identity, duplicate command records, exit-status contradictions, and base-policy seal refs. It does not resolve the recorded Git objects, rerun analyzers, or rerun commands. A malicious creator can fabricate a new, internally consistent unsigned bundle and recompute its unkeyed hashes. Even a valid signature proves only that the key holder signed those claims, not that the commands ran honestly or the analyzer findings match an independently reproduced repository.
 
 An unsigned bundle can report `valid` with signature state `unsigned`. Here, `valid` means the implemented consistency checks pass, not that the bundle is authentic or that its `verified` verdict reflects real execution.
 
@@ -110,7 +110,7 @@ An unsigned bundle can report `valid` with signature state `unsigned`. Here, `va
 6. Keep `inheritEnv` minimal, avoid credentials in policy `env`, and constrain network/filesystem access outside PatchProof.
 7. Run all required commands; do not treat `incomplete` as success.
 8. Sign the JSON bundle with a protected key.
-9. Verify the bundle and compare its key ID with a fingerprint obtained through a separate trusted channel.
+9. Verify with `--trusted-key`, `--expected-head`, `--expected-base`, `--expected-contract-digest`, `--require-base-policy`, and `--require-verified`, using expected values obtained through a separate trusted channel.
 10. Retain the JSON bundle; HTML and SARIF are projections, not the source of truth.
 
 ## Non-goals

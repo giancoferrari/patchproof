@@ -6,11 +6,13 @@ import { verifyPatch } from "../engine.js";
 import { GitRepository } from "../git/index.js";
 import {
   proofBundleToSarif,
+  renderProofSummary,
   signProofBundle,
   writeProofBundle,
 } from "../proof/index.js";
 import { renderProofReport } from "../report/index.js";
 import { PACKAGE_VERSION } from "../version.js";
+import type { VerificationProgress } from "../types.js";
 
 export interface VerifyCommandOptions {
   cwd: string;
@@ -24,6 +26,8 @@ export interface VerifyCommandOptions {
   report?: string | boolean;
   sarif?: string;
   signKey?: string;
+  summary?: string;
+  expectedContractDigest?: string;
   json: boolean;
 }
 
@@ -34,6 +38,17 @@ async function ensureParent(path: string): Promise<void> {
 export async function runVerification(options: VerifyCommandOptions): Promise<void> {
   const repository = await GitRepository.discover(resolve(options.cwd));
   const cwd = repository.root;
+  const requestedPaths = [options.output, typeof options.report === "string" ? options.report : undefined, options.sarif, options.summary]
+    .filter((path): path is string => path !== undefined).map((path) => resolve(cwd, path));
+  const pathKey = (path: string): string => process.platform === "win32" ? path.toLowerCase() : path;
+  if (new Set(requestedPaths.map(pathKey)).size !== requestedPaths.length) {
+    throw new Error("Proof, report, SARIF, and summary output paths must be different.");
+  }
+  const protectedPaths = [options.policy, options.contract, options.signKey].filter((path): path is string => path !== undefined)
+    .map((path) => pathKey(resolve(cwd, path)));
+  if (requestedPaths.some((path) => protectedPaths.includes(pathKey(path)))) {
+    throw new Error("Output paths must not overwrite the policy, contract, or signing key.");
+  }
   const baseRef = options.base ?? (await repository.resolveDefaultBaseRef());
   let bundle = await verifyPatch({
     cwd,
@@ -44,6 +59,10 @@ export async function runVerification(options: VerifyCommandOptions): Promise<vo
     runCommands: options.commands,
     explicitPolicy: options.trustWorkingPolicy,
     packageVersion: PACKAGE_VERSION,
+    ...(options.expectedContractDigest !== undefined ? { expectedContractDigest: options.expectedContractDigest } : {}),
+    ...(!options.json ? { onProgress: (event: VerificationProgress) => {
+      process.stderr.write(`  ${event.message}\n`);
+    } } : {}),
   });
   if (options.signKey) {
     bundle = signProofBundle(bundle, await readFile(resolve(cwd, options.signKey), "utf8"));
@@ -73,6 +92,11 @@ export async function runVerification(options: VerifyCommandOptions): Promise<vo
     await ensureParent(sarifPath);
     await writeFile(sarifPath, `${JSON.stringify(proofBundleToSarif(bundle), null, 2)}\n`, "utf8");
   }
+  if (options.summary) {
+    const summaryPath = resolve(cwd, options.summary);
+    await ensureParent(summaryPath);
+    await writeFile(summaryPath, renderProofSummary(bundle), "utf8");
+  }
 
   if (options.json) {
     process.stdout.write(`${JSON.stringify({
@@ -81,6 +105,7 @@ export async function runVerification(options: VerifyCommandOptions): Promise<vo
       proof: outputPath,
       report: reportPath,
       sarif: options.sarif ? resolve(cwd, options.sarif) : null,
+      summary: options.summary ? resolve(cwd, options.summary) : null,
     })}\n`);
   } else {
     const verdictColor =
@@ -95,6 +120,13 @@ export async function runVerification(options: VerifyCommandOptions): Promise<vo
     process.stdout.write(`  findings  ${bundle.verdict.blockingFindings} blocking, ${bundle.verdict.warnings} warnings\n`);
     process.stdout.write(`  proof     ${outputPath}\n`);
     if (reportPath) process.stdout.write(`  report    ${reportPath}\n`);
+    if (options.summary) process.stdout.write(`  summary   ${resolve(cwd, options.summary)}\n`);
+    for (const finding of bundle.findings.filter((item) => item.severity !== "info").slice(0, 10)) {
+      const clean = (text: string): string => text.replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/gu, " ");
+      const location = finding.location ? ` ${clean(finding.location.path)}${finding.location.line ? `:${finding.location.line}` : ""}` : "";
+      process.stdout.write(`\n  ${finding.severity}:${location} ${clean(finding.title)}\n`);
+      if (finding.remediation) process.stdout.write(`    Fix: ${clean(finding.remediation)}\n`);
+    }
   }
 
   if (bundle.verdict.status === "rejected" || bundle.verdict.status === "error") {

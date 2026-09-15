@@ -139,7 +139,7 @@ describe("proof bundles", () => {
     const tampered = { ...bundle, createdAt: "not-a-date" };
     const result = verifyProofBundle(tampered);
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain("The proof timestamp is invalid.");
+    expect(result.errors.join(" ")).toMatch(/createdAt.*date-time/u);
   });
 
   it("produces SARIF with stable findings and physical locations", () => {

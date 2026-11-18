@@ -1,269 +1,80 @@
-# PatchProof
+# ![PatchProof — Local verification for AI-written patches](docs/assets/social-preview.jpg)
 
-Review AI-written patches with the Git diff, test results, and verification policy in one offline report.
+PatchProof compares two Git commits, runs the checks defined on the trusted base, and shows the evidence behind each claim in an offline HTML report. Use it to catch a patch that skips a test, changes files outside its scope, or weakens its own verification policy.
 
 [![CI](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml)
 
+[Quickstart](#quickstart) · [37-second walkthrough](#watch-patchproof-catch-a-skipped-test) · [CLI guide](docs/cli-guide.md) · [GitHub Action](docs/cli-guide.md#github-action)
+
 ## Watch PatchProof catch a skipped test
 
-A pagination patch passes both required checks after it skips the test that rejects zero. In this 37-second walkthrough, follow the finding to line 9, see the fix, and watch the corrected patch pass verification.
+A pagination patch should default to 20 when the page size is missing and still reject zero. Both repository checks pass, but the patch skips the zero test. Follow the blocking finding to line 9, then watch the corrected commit pass the same policy.
 
-[![Animated walkthrough showing the rejected patch, the skipped test on line 9, and the verified fix](docs/assets/patchproof-walkthrough.gif)](docs/assets/patchproof-walkthrough.mp4)
+<details>
+<summary>Play the captioned walkthrough (37 seconds)</summary>
 
-[Download the captioned video (720p MP4, 0.8 MB)](https://raw.githubusercontent.com/giancoferrari/patchproof/main/docs/assets/patchproof-walkthrough.mp4)
+[![Walkthrough showing the skipped test on line 9 and the corrected patch passing verification](docs/assets/patchproof-walkthrough.gif)](docs/assets/patchproof-walkthrough.mp4)
 
-**Try a report yourself.** [Save the sample HTML report](https://raw.githubusercontent.com/giancoferrari/patchproof/main/examples/patchproof-report.html) and open it in a browser, or open `examples/patchproof-report.html` in a checkout. In this example, follow the blocking finding to the disabled cursor test. The report works offline. [Inspect the sample proof JSON](examples/demo-proof.json).
+</details>
 
-## What it checks
+[Download the video (720p MP4, 0.8 MB)](https://raw.githubusercontent.com/giancoferrari/patchproof/main/docs/assets/patchproof-walkthrough.mp4) · [View a sample report screenshot](docs/assets/patchproof-report.png)
 
-- The verification policy came from the trusted base commit and was not changed by the patch.
-- Changed paths stay inside declared scope and below size limits.
-- Tests were not deleted, skipped, or obviously weakened.
-- Source changes include a qualifying test change when policy or contract requires one.
-- Added text does not match supported credential patterns.
-- Dependency manifest and lockfile changes receive structural review.
-- Command evidence runs only from a clean checkout at the exact candidate head.
-- Required repository commands pass.
-- Every contract claim has the evidence it declared in advance.
-- The complete proof content, derived claims/verdict, evidence order, and optional signature remain internally consistent.
-- Imported bundles conform to the complete published JSON Schema before their contents are used.
-- Optional consumer requirements enforce trusted signing keys, exact commits, an approved contract, a base-sealed policy, and a passing verdict.
+**Try a report without installing anything.** [Download the sample HTML report](https://github.com/giancoferrari/patchproof/raw/refs/heads/main/examples/patchproof-report.html) and open the saved file in your browser. This separate example links a blocking finding to a disabled cursor test. You can also [inspect the underlying JSON](examples/demo-proof.json).
 
-## Advanced review workflow (current checkout)
+## Quickstart
+
+You’ll need Git and Node.js 22.12 or newer to build the current CLI. For the packaged CLI, see the [v0.1.0 installation instructions](docs/cli-guide.md#installation).
+
+**1. Install PatchProof from source.** Run these commands from the directory where you keep development tools.
 
 ```sh
-patchproof doctor --base main
-patchproof verify --base main --summary .patchproof/proofs/review.md
-patchproof compare before.json after.json --fail-on-regression
-patchproof verify-bundle after.json --repository . --trusted-key ci-public.pem --require-verified
-```
-
-Get actionable findings and fixes in the terminal, a Markdown review summary, and the GitHub job summary. Compare candidate runs to identify regressions; pin an approved contract before commands run; require a known signer and exact candidate commit when accepting evidence. See [Advanced workflows](docs/advanced-workflows.md) for complete examples and trust boundaries. These additions are in the current checkout and are not part of the published `v0.1.0` release.
-
-PatchProof does **not** prove arbitrary semantic correctness, sandbox commands, scan the whole repository for secrets, query vulnerability databases, or establish the real-world identity of a signing key. See [the threat model](docs/threat-model.md).
-
-## Requirements
-
-- Node.js 20.12 or newer to run the packaged CLI. Use Node.js 22.12 or newer for development.
-- Git available on `PATH`
-- A Git repository with a committed PatchProof policy at the selected base ref
-
-## Install from this checkout
-
-```sh
+git clone https://github.com/giancoferrari/patchproof.git
+cd patchproof
 npm ci
-npm run build
 npm install --global .
 patchproof --version
 ```
 
-For a project-local install from the GitHub release asset:
-
-```sh
-npm install --save-dev https://github.com/giancoferrari/patchproof/releases/download/v0.1.0/giancoferrari-patchproof-0.1.0.tgz
-npx patchproof --version
-```
-
-The package identity is `@giancoferrari/patchproof`; the executable remains `patchproof`.
-
-## Five-minute workflow
-
-Run initialization on the repository's trusted base branch, inspect the generated files, and commit them before asking PatchProof to verify later changes:
+**2. Set up the repository you want to review.** From its trusted base branch (here, `main`), initialize PatchProof. Review the commands in `.patchproof/policy.yml` and the claims in `.patchproof/contract.yml` before committing them.
 
 ```sh
 patchproof init
 patchproof doctor
 git add .gitignore .patchproof/policy.yml .patchproof/contract.yml
-git commit -m "chore: establish PatchProof policy"
+git commit -m "Establish PatchProof verification policy"
 ```
 
-Create the implementation branch, make the source and test changes, and commit them. Then verify the committed patch from a clean checkout:
+**3. Verify a committed change.** Switch to your feature branch, commit the implementation and its tests, then run verification from the clean checkout.
 
 ```sh
-git switch -c feature/verified-change
-# Make and commit the implementation and its tests.
-patchproof verify --base main --head HEAD --sarif patchproof.sarif
-```
-
-By default PatchProof writes:
-
-- one `.json` file named after the generated proof ID: the source-of-truth proof bundle
-- one `.html` file with the same generated proof ID: a standalone offline report
-- the path passed to `--sarif`: optional SARIF 2.1.0 findings
-
-Use explicit paths when another tool needs stable filenames:
-
-```sh
-patchproof verify --base main --head HEAD \
-  --output patchproof.json \
-  --report patchproof.html \
-  --sarif patchproof.sarif \
-  --json
-```
-
-Exit codes are stable automation inputs:
-
-| Code | Meaning |
-| ---: | --- |
-| `0` | `verified`: no current rejection or incompleteness condition applies |
-| `1` | `rejected`, a verification error, or invalid CLI usage |
-| `2` | `incomplete`: no blocking failure, but required evidence is missing or skipped |
-
-### Evidence is bound to the checkout
-
-The diff is computed between committed refs. Before and after running commands, PatchProof requires the checkout to be clean and its `HEAD` to equal the resolved candidate head. A mismatch stops verification. This keeps command evidence and the committed patch aligned:
-
-```sh
-git status --porcelain
-git rev-parse HEAD
+patchproof doctor --base main
 patchproof verify --base main --head HEAD
 ```
 
-The first command should print nothing, and `HEAD` must be the commit being verified. `--no-commands` intentionally skips these checkout guards along with command execution.
+Open the HTML file printed next to `report` to inspect the verdict. Its companion JSON file contains the commits, policy, findings, and command results. Both files are saved in `.patchproof/proofs/` by default.
 
-## Policy and contract
+## Read the verdict
 
-`patchproof init` detects common `package.json` scripts and creates two strict YAML documents:
-
-- `.patchproof/policy.yml` defines trusted commands, explicit environment inheritance, scope, thresholds, analyzers, and names of environment variables whose values must be redacted. Verification reads it from the base commit by default.
-- `.patchproof/contract.yml` defines falsifiable claims and the exact command, rule, path, or test-change evidence required for each claim.
-
-Unknown fields, duplicate identifiers, disabled-rule references, and unknown command references are rejected. Read [Policies and contracts](docs/policies-and-contracts.md) for complete schemas and examples.
-
-## Commands
-
-| Command | Purpose |
+| Verdict | What it tells you |
 | --- | --- |
-| `patchproof init` | Create policy, contract, and ignore entries without replacing existing configuration |
-| `patchproof doctor` | Check Node.js, Git, and configuration readiness |
-| `patchproof doctor --base REF` | Preflight trusted policy, contract references, comparison refs, and command checkout |
-| `patchproof verify` | Build a proof from a committed base/head comparison |
-| `patchproof report PROOF_FILE` | Render an internally consistent bundle as standalone HTML |
-| `patchproof keygen` | Create a local Ed25519 key pair |
-| `patchproof sign PROOF_FILE` | Sign an existing bundle |
-| `patchproof verify-bundle PROOF_FILE` | Check digests, the evidence chain, and any embedded signature |
-| `patchproof compare BEFORE AFTER` | Compare findings, claim support, commands, and verdicts; optionally gate regressions |
-| `patchproof contract` | Draft a contract through Ollama or an explicit OpenAI-compatible endpoint |
+| **Verified** | All required commands passed, all claims have passing evidence, and there are no blocking findings. |
+| **Rejected** | A blocking finding, a failed required command, or a disproven blocking claim needs attention. |
+| **Incomplete** | No blocking failure was found, but a claim or required command still lacks passing evidence. |
 
-Run `patchproof COMMAND --help` for all options.
+A verdict covers the configured checks and claims. Reviewers still decide whether those checks cover the behavior that matters. Repository commands run with the permissions of the process that launched PatchProof. [Read the threat model](docs/threat-model.md).
 
-### Skip command execution
+## Documentation
 
-```sh
-patchproof verify --base main --no-commands
-```
+| If you want to… | Start here |
+| --- | --- |
+| Choose commands, limit changed paths, or detect weakened tests | [Policies and contracts](docs/policies-and-contracts.md) |
+| Automate verification or use the TypeScript API | [CLI and integration guide](docs/cli-guide.md) |
+| Compare candidate commits or verify a signed bundle against Git | [Advanced review workflows](docs/advanced-workflows.md) |
+| Interpret or integrate proof JSON | [Bundle format](docs/proof-bundle.md) · [JSON Schema](schemas/proof-bundle.schema.json) |
+| Draft contract claims with a local model | [Local models](docs/local-models.md) |
+| Understand how a verdict is computed | [Architecture](docs/architecture.md) |
 
-Configured commands are recorded as `skipped`; required commands therefore produce an `incomplete` verdict. This is useful for inspecting deterministic findings without claiming full verification.
+The current checkout identifies as `0.2.0`. The packaged GitHub release is [v0.1.0](https://github.com/giancoferrari/patchproof/releases/tag/v0.1.0). See the [changelog](CHANGELOG.md) for features available on `main`.
 
-### Working-tree policy escape hatch
-
-```sh
-patchproof verify --base main --trust-working-policy
-```
-
-This changes the policy seal source to `explicit-file`. It is intentionally weaker because the candidate checkout controls the policy. Use it for policy development, not as equivalent evidence to a base-anchored policy.
-
-## Sign and verify a bundle
-
-```sh
-patchproof keygen
-patchproof verify --base main \
-  --output patchproof.signed.json \
-  --report patchproof.signed.html \
-  --sign-key .patchproof/keys/patchproof-private.pem
-patchproof verify-bundle patchproof.signed.json
-```
-
-The private-key directory is added to `.gitignore` by `patchproof init`. Every bundle has a whole-content digest and recomputable consistency checks. A valid embedded signature additionally proves that the complete bundle was attested by possession of that key; consumers must still obtain the expected public-key fingerprint through a trusted channel. Details are in [Proof bundles](docs/proof-bundle.md).
-
-## GitHub Action
-
-The repository includes a composite action. Checkout history is required so PatchProof can resolve the trusted base:
-
-```yaml
-name: PatchProof
-on:
-  pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
-
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - id: patchproof
-        uses: giancoferrari/patchproof@v0.1.0
-        with:
-          base-ref: origin/main
-          head-ref: HEAD
-          setup-command: npm ci --ignore-scripts --no-audit --no-fund
-          proof-path: .patchproof/proofs/patchproof.json
-          report-path: .patchproof/proofs/patchproof.html
-          sarif-path: .patchproof/proofs/patchproof.sarif
-```
-
-The action builds the tagged PatchProof source, optionally runs the trusted `setup-command` in the target checkout, then runs the same CLI. It exposes `proof-path`, `report-path`, and `sarif-path` outputs. The example installs the target repository's Node dependencies without lifecycle scripts; use an equivalent preparation command for other ecosystems. Its checkout must be clean when configured commands start.
-
-## Optional local contract drafting
-
-After starting Ollama and installing a model, PatchProof can turn a task into strict contract YAML:
-
-```sh
-patchproof contract \
-  --provider ollama \
-  --model qwen2.5-coder:7b \
-  --task "Reject profile updates that reuse any of the last five passwords" \
-  --repository-summary "Node.js service; npm test runs Vitest; tests live under tests" \
-  --output .patchproof/contract.yml
-```
-
-Review the generated contract before implementation. The model proposes claims; it never supplies verification evidence. See [Local models](docs/local-models.md).
-
-## Programmatic API
-
-```ts
-import { PACKAGE_VERSION, verifyPatch, verifyProofBundle } from "@giancoferrari/patchproof";
-
-const bundle = await verifyPatch({
-  cwd: process.cwd(),
-  baseRef: "origin/main",
-  headRef: "HEAD",
-  policyPath: ".patchproof/policy.yml",
-  contractPath: ".patchproof/contract.yml",
-  runCommands: true,
-  explicitPolicy: false,
-  packageVersion: PACKAGE_VERSION,
-});
-
-console.log(bundle.verdict.status);
-console.log(verifyProofBundle(bundle));
-```
-
-The public API also exports the Git adapter, analyzers, configuration validators, command runner, report renderer, SARIF converter, canonicalization utilities, and signing primitives.
-
-## Design notes
-
-- [Architecture](docs/architecture.md)
-- [Threat model](docs/threat-model.md)
-- [Proof bundle format](docs/proof-bundle.md)
-- [Policies and contracts](docs/policies-and-contracts.md)
-- [Local and OpenAI-compatible models](docs/local-models.md)
-- [Security policy](SECURITY.md)
-- [Contributing](CONTRIBUTING.md)
-- [Roadmap](ROADMAP.md)
-- [Advanced review and trust workflows](docs/advanced-workflows.md)
-
-## Project status
-
-The current checkout identifies itself as `0.2.0` and reads and writes [proof schema 1.0](schemas/proof-bundle.schema.json). Pin a commit or released package in automated verification environments so reviewers can reproduce the generator version.
-
-## License
-
-PatchProof is available under the [MIT License](LICENSE).
+[Contributing](CONTRIBUTING.md) · [Roadmap](ROADMAP.md) · [Security policy](SECURITY.md) · [MIT license](LICENSE)

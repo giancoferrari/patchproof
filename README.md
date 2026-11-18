@@ -5,11 +5,15 @@ Review AI-written patches with the Git diff, test results, and verification poli
 [![CI](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml)
 
-Both required checks passed in the example below. PatchProof rejected the change because the patch disabled an existing test. Open the blocking finding to inspect the changed line, read the rule evidence, and see the proposed fix.
+## Watch PatchProof catch a skipped test
 
-![PatchProof review showing two passing checks and the diff that disabled the cursor test](docs/assets/patchproof-report.png)
+A pagination patch passes both required checks after it skips the test that rejects zero. In this 37-second walkthrough, follow the finding to line 9, see the fix, and watch the corrected patch pass verification.
 
-**Try the report.** Open [the standalone HTML file](https://raw.githubusercontent.com/giancoferrari/patchproof/main/examples/patchproof-report.html) by saving it and opening it in a browser, or open `examples/patchproof-report.html` in a checkout. The report works offline. [Inspect the sample proof JSON](examples/demo-proof.json).
+[![Animated walkthrough showing the rejected patch, the skipped test on line 9, and the verified fix](docs/assets/patchproof-walkthrough.gif)](docs/assets/patchproof-walkthrough.mp4)
+
+[Download the captioned video (720p MP4, 0.8 MB)](https://raw.githubusercontent.com/giancoferrari/patchproof/main/docs/assets/patchproof-walkthrough.mp4)
+
+**Try a report yourself.** [Save the sample HTML report](https://raw.githubusercontent.com/giancoferrari/patchproof/main/examples/patchproof-report.html) and open it in a browser, or open `examples/patchproof-report.html` in a checkout. In this example, follow the blocking finding to the disabled cursor test. The report works offline. [Inspect the sample proof JSON](examples/demo-proof.json).
 
 ## What it checks
 

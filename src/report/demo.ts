@@ -12,13 +12,14 @@ import { createProofBundle } from "../proof/bundle.js";
 import { evaluateClaims } from "../proof/claims.js";
 import { sealEvidence } from "../proof/evidence.js";
 import { computeVerdict } from "../proof/verdict.js";
+import { PACKAGE_VERSION } from "../version.js";
 
 export function createDemoBundle(): ProofBundle {
   const diff = `diff --git a/src/pagination.ts b/src/pagination.ts
 index 1f6be01..c94da45 100644
 --- a/src/pagination.ts
 +++ b/src/pagination.ts
-@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {
+@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {
 +  if (value.length === 0) return null;
    return JSON.parse(Buffer.from(value, "base64url").toString());
  }
@@ -26,7 +27,7 @@ diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts
 index 77a2111..20d0f30 100644
 --- a/tests/pagination.test.ts
 +++ b/tests/pagination.test.ts
-@@ -41,7 +41,7 @@ describe("decodeCursor", () => {
+@@ -44,3 +44,3 @@ describe("decodeCursor", () => {
 -  it("rejects malformed cursors", () => {
 +  it.skip("rejects malformed cursors", () => {
      expect(() => decodeCursor("%%%")) .toThrow();
@@ -265,7 +266,7 @@ index 77a2111..20d0f30 100644
   };
 
   return createProofBundle({
-    packageVersion: "0.1.0",
+    packageVersion: PACKAGE_VERSION,
     patch,
     policy,
     policySeal,

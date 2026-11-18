@@ -171,7 +171,7 @@ patchproof verify-bundle patchproof.signed.json
 11. command identity, required flags, duplicate command records, and contradictions between passing/skipped statuses and exit evidence;
 12. base-policy seal ref consistency and any caller-supplied trust, commit, contract, or verdict requirements.
 
-It does not resolve the recorded Git objects, reproduce the diff from a repository, rerun analyzers or commands, or establish real-world key identity. A malicious creator can fabricate a self-consistent unsigned bundle; a signer can attest misleading but internally consistent evidence. A recipient should reproduce high-value evidence and configure signer trust rather than treating an unconstrained `valid: true` as a complete security decision.
+With `--repository`, the verifier reproduces the diff and checks the base policy and candidate contract against their committed blobs. Both commits must be available locally. Without that option, the verifier uses only the bundled data. Independent execution is needed to reproduce command results. Use a trusted public key when signer identity matters.
 
 ## Portability and privacy
 

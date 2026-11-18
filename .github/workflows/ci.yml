@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            node: 20.12.x
+            node: 20.19.x
           - os: ubuntu-latest
             node: 22.x
           - os: ubuntu-latest
@@ -96,6 +96,13 @@ jobs:
           node --input-type=module -e "const api = await import('./package-smoke/node_modules/@giancoferrari/patchproof/dist/index.js'); if (typeof api.verifyProofBundle !== 'function') throw new Error('public API import failed')"
           test -f package-smoke/node_modules/@giancoferrari/patchproof/schemas/proof-bundle.schema.json
           node scripts/smoke-package.mjs package-smoke/node_modules/@giancoferrari/patchproof
+
+      - name: Check the installed CLI on the minimum supported runtime
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20.12.x
+
+      - run: node scripts/smoke-package.mjs package-smoke/node_modules/@giancoferrari/patchproof
 
       - name: Upload npm tarball
         uses: actions/upload-artifact@v7

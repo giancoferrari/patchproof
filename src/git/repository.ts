@@ -129,6 +129,7 @@ export class GitRepository implements GitRepositoryLike {
     const args = [
       "diff",
       "--no-ext-diff",
+      "--no-textconv",
       "--binary",
       "--find-renames",
       "--find-copies",

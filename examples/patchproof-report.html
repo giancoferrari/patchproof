@@ -243,6 +243,85 @@ pre {
   .digest-row dd { grid-column: 1 / -1; }
 }
 
+.rail { background: #122d39; color: white; display: flex; flex-direction: column; }
+.brand { font-size: 20px; letter-spacing: -.035em; }
+.brand-mark { background: #c2eded; color: #153a43; }
+.rail nav a { color: #c5d4da; justify-content: space-between; padding-inline: 12px; }
+.rail nav a:hover, .rail nav a[aria-current="true"] { background: #274957; color: white; }
+.nav-count { font: 11px var(--mono); color: #cae2e9; }
+.rail-meta { margin-top: auto; border-color: #39535f; color: #bed0d6; }
+.rail-meta code { color: white; }
+.hero { background: #f2f7f8; padding-top: 18px; padding-bottom: 0; }
+.report-context { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--rule); color: var(--muted); font: 12px var(--mono); }
+.report-context span { display: inline-flex; align-items: center; gap: 8px; }
+.hero-row { padding-top: 26px; }
+.hero h1 { margin-top: 10px; font-size: 2.5rem; line-height: 1.08; letter-spacing: -.038em; }
+.hero-actions { flex-shrink: 0; }
+.intro { min-width: 0; }
+.intro, .report-context, .finding, .evidence-item, .claim { overflow-wrap: anywhere; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 22px 0 0; border-bottom: 0; }
+.metric, .metric + .metric { min-width: 0; margin: 0; border: 0; padding: 14px 8px 16px 0; }
+.metric dd { font: 650 24px/1.35 var(--font); font-variant-numeric: tabular-nums; }
+.metric small { font-size: 15px; color: var(--muted); }
+.changes { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.changes span:first-child { color: #176844; }
+.changes span:last-child { color: #993d42; }
+.section { padding-block: 30px; }
+.section h2 { font-size: 1.45rem; }
+.section-intro { font-size: .91rem; }
+.finding { border-top: 1px solid var(--rule); padding: 18px 0; }
+.finding-heading, .finding-links, .diff-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.finding h3 { margin: 8px 0 3px; font-size: 1.14rem; }
+.finding p { margin: 4px 0; color: var(--muted); max-width: 75ch; }
+.finding .fix { margin: 8px 0; color: var(--ink); }
+.finding-with-patch { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.excerpt { min-width: 0; margin: 10px 0; overflow: hidden; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+.excerpt figcaption { display: flex; align-items: center; gap: 8px; padding: 10px; color: var(--muted); font: 12px var(--mono); overflow-wrap: anywhere; }
+.excerpt pre { margin: 0; padding: 0; border-radius: 0; background: white; white-space: pre-wrap; }
+.excerpt pre span { display: block; padding: 5px 8px; }
+.excerpt i { font-style: normal; color: var(--muted); }
+.excerpt-added { background: #e0f3e8; }
+.excerpt-removed { background: #f9e5e4; }
+@media(max-width: 1100px) { .finding-with-patch { display: block; } }
+.fix strong { margin-right: 4px; }
+.rule-name, .file-kind, .finding-links { font: 12px var(--mono); color: var(--muted); }
+.finding-links a { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; }
+.severity-blocking, .status-rejected, .status-failed, .status-disproven, .status-error { background: #f8e1df; color: #862b27; }
+.status-proven, .status-passed, .status-verified { background: #dceee5; color: #155c3f; }
+.severity-warning { background: #f5eac6; color: #6a4d10; }
+.path-search { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.path-search input, .diff-pager button { min-height: 40px; font: inherit; border: 1px solid var(--rule); background: white; color: var(--ink); border-radius: 6px; padding: 6px 9px; }
+.patch-file { border-block-start: 1px solid var(--rule); }
+.patch-file summary { display: flex; gap: 10px; align-items: center; min-height: 50px; cursor: pointer; list-style: none; }
+.patch-file summary::-webkit-details-marker { display: none; }
+.patch-file[open] summary .icon { transform: rotate(90deg); }
+.file-path { flex: 1; overflow-wrap: anywhere; font: 600 13px var(--mono); }
+.patch-file summary .changes { font: 12px var(--mono); }
+.patch-view { margin-bottom: 15px; }
+.diff-grid { max-height: 32rem; overflow: auto; border: 1px solid var(--rule); background: var(--surface); font: 12px/1.65 var(--mono); tab-size: 2; }
+.diff-row { display: grid; grid-template-columns: 4em 4em 1fr; width: max-content; min-width: 100%; white-space: pre; }
+.diff-row span:nth-child(-n+2) { padding-right: 1em; text-align: right; color: var(--muted); user-select: none; }
+.diff-row span:last-child { padding-inline: 8px; }
+.diff-add { background: #e0f3e8; }
+.diff-del { background: #f9e5e4; }
+.diff-hunk { background: #ddebf1; color: var(--proof-blue-deep); }
+.diff-target { outline: 2px solid var(--proof-blue-deep); outline-offset: -2px; }
+.diff-pager { margin-bottom: 6px; }
+[hidden] { display: none !important; }
+@media (max-width: 900px) {
+  .rail { flex-direction: row; }
+  .rail-meta { display: none; }
+  .section, details[id] { scroll-margin-top: 68px; }
+}
+@media (max-width: 620px) {
+  .hero h1 { font-size: 1.85rem; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-actions { margin-top: 12px; }
+  .nav-count { display: none; }
+  .rail nav a { padding-inline: 6px; }
+  .path-search { margin-top: 12px; flex-wrap: wrap; }
+  .file-kind { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
@@ -264,102 +343,60 @@ pre {
   <a class="skip-link" href="#report-main">Skip to report</a>
   <div class="shell">
     <aside class="rail" aria-label="Report navigation">
-      <div class="brand"><span class="brand-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></span><span>PatchProof</span></div>
-      <nav>
-        <a href="#overview" aria-current="true">Overview</a>
-        <a href="#claims">Claims</a>
-        <a href="#findings">Findings</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#files">Files</a>
-        <a href="#integrity">Integrity</a>
-      </nav>
-      <div class="rail-meta">Portable proof bundle<code>schema 1.0</code></div>
-    </aside>
+    <div class="brand"><span class="brand-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></span><span>PatchProof</span></div>
+    <nav><a href="#overview" aria-current="true">Overview</a><a href="#findings">Findings <span class="nav-count">2</span></a><a href="#files">Changed files <span class="nav-count">2</span></a><a href="#claims">Claims <span class="nav-count">3</span></a><a href="#evidence">Evidence <span class="nav-count">9</span></a><a href="#integrity">Integrity</a></nav>
+    <div class="rail-meta">Proof bundle<code>Schema 1.0</code></div>
+  </aside>
     <div class="content">
-      <header class="hero verdict-rejected" id="overview">
-    <div class="hero-row">
-      <div class="verdict-lockup">
-        <div class="verdict-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg></div>
-        <div>
-          <h1>Harden cursor pagination: rejected</h1>
-          <p class="hero-summary">The patch has blocking findings or disproven required claims.</p>
-          <div class="ref-line">
-            <span>7df2b0a279cf</span>
-            <span class="ref-arrow" aria-label="to">→</span>
-            <span>d874cf3f83a0</span>
-            <span>·</span>
-            <span>acme-api</span>
-            <span>·</span>
-            <span>Jul 21, 2026, 11:12 AM</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-actions">
-        <button class="button" type="button" onclick="window.print()">Print report</button>
-        <button class="button button-primary" type="button" data-copy="11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg> Copy chain digest</button>
-      </div>
-    </div>
+      <header class="hero" id="overview">
+    <div class="report-context"><span><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> acme-api</span><time datetime="2026-07-21T09:12:06.615Z">2026-07-21 09:12 UTC</time></div>
+    <div class="hero-row"><div class="intro"><span class="status status-rejected"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Rejected</span>
+      <h1>Harden cursor pagination</h1>
+      <p class="hero-summary">The patch has blocking findings or disproven required claims.</p>
+      <div class="ref-line"><code>7df2b0a2</code><span aria-label="to">→</span><code>d874cf3f</code></div>
+    </div><div class="hero-actions"><button class="button" type="button" onclick="window.print()">Print report</button></div></div>
     <dl class="metrics">
-    <div class="metric"><dt>Claims proven</dt><dd>2/3</dd></div>
-    <div class="metric"><dt>Evidence passed</dt><dd>8/9</dd></div>
-    <div class="metric"><dt>Blocking findings</dt><dd>1</dd></div>
-    <div class="metric"><dt>Changed lines</dt><dd>3</dd></div>
-  </dl>
+      <div class="metric"><dt>Blocking findings</dt><dd>1</dd></div>
+      <div class="metric"><dt>Claims proven</dt><dd>2<small> / 3</small></dd></div>
+      <div class="metric"><dt>Required checks passed</dt><dd>2<small> / 2</small></dd></div>
+      <div class="metric"><dt>Changed lines</dt><dd class="changes"><span>+2</span> <span>−1</span></dd></div>
+    </dl>
   </header>
       <main class="main" id="report-main">
-        <section class="section" aria-labelledby="graph-title">
-    <div class="section-head"><div><h2 id="graph-title">Proof graph</h2><p class="section-intro">The verdict is connected to claims, then to the evidence records that support or challenge them.</p></div></div>
-    <div class="graph-layout">
-      <div class="graph-canvas">
-        <svg viewBox="0 0 670 310" role="img" aria-labelledby="proof-graph-label proof-graph-description">
-          <title id="proof-graph-label">Patch proof relationship graph</title>
-          <desc id="proof-graph-description">Verdict rejected, connected to 3 claims and 9 evidence records.</desc>
-          <path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 48, 142 48"/><path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 116, 142 116"/><path class="graph-edge" d="M 112 155 C 126 155, 128 184, 142 184"/>
-          <path class="graph-edge graph-edge-passed" d="M 326 116 C 390 116, 410 96, 474 96"/><path class="graph-edge" d="M 326 184 C 390 184, 410 204, 474 204"/>
-          <g tabindex="0" aria-label="Verdict: rejected">
-            <rect class="graph-node graph-node-failed" x="10" y="128" width="102" height="54" rx="10"/>
-            <text class="graph-label" x="25" y="151">Verdict</text>
-            <text class="graph-sub" x="25" y="168">rejected</text>
-          </g>
-          <g tabindex="0" aria-label="Claim empty-cursor-safe: proven">
-        <rect class="graph-node graph-node-proven" x="142" y="26" width="184" height="44" rx="8"/>
-        <text class="graph-label" x="155" y="46">Empty cursors no longer c…</text>
-        <text class="graph-sub" x="155" y="61">proven · empty-cursor-safe</text>
-      </g><g tabindex="0" aria-label="Claim schema-compatible: proven">
-        <rect class="graph-node graph-node-proven" x="142" y="94" width="184" height="44" rx="8"/>
-        <text class="graph-label" x="155" y="114">The public pagination res…</text>
-        <text class="graph-sub" x="155" y="129">proven · schema-compatible</text>
-      </g><g tabindex="0" aria-label="Claim tests-preserved: disproven">
-        <rect class="graph-node graph-node-disproven" x="142" y="162" width="184" height="44" rx="8"/>
-        <text class="graph-label" x="155" y="182">Existing cursor protectio…</text>
-        <text class="graph-sub" x="155" y="197">disproven · tests-preserved</text>
-      </g>
-          <g tabindex="0" aria-label="Evidence evidence-policy-integrity: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="24" width="162" height="36" rx="7"/>
-        <text class="graph-label" x="486" y="41">patchproof/analyzer/po</text>
-        <text class="graph-sub" x="486" y="54">passed</text>
-      </g><g tabindex="0" aria-label="Evidence evidence-scope: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="78" width="162" height="36" rx="7"/>
-        <text class="graph-label" x="486" y="95">patchproof/analyzer/sc</text>
-        <text class="graph-sub" x="486" y="108">passed</text>
-      </g><g tabindex="0" aria-label="Evidence evidence-secret-scan: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="132" width="162" height="36" rx="7"/>
-        <text class="graph-label" x="486" y="149">patchproof/analyzer/se</text>
-        <text class="graph-sub" x="486" y="162">passed</text>
-      </g><g tabindex="0" aria-label="Evidence evidence-test-integrity: failed">
-        <rect class="graph-node graph-node-failed" x="474" y="186" width="162" height="36" rx="7"/>
-        <text class="graph-label" x="486" y="203">patchproof/analyzer/te</text>
-        <text class="graph-sub" x="486" y="216">failed</text>
-      </g><g tabindex="0" aria-label="Evidence evidence-dependency-review: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="240" width="162" height="36" rx="7"/>
-        <text class="graph-label" x="486" y="257">patchproof/analyzer/de</text>
-        <text class="graph-sub" x="486" y="270">passed</text>
-      </g>
-        </svg>
-      </div>
-      <ol class="semantic-graph" aria-label="Proof graph as a list"><li><strong>Empty cursors no longer crash request handling.</strong><span>proven. 1 linked evidence record.</span></li><li><strong>The public pagination response schema is unchanged.</strong><span>proven. 2 linked evidence records.</span></li><li><strong>Existing cursor protections remain enabled.</strong><span>disproven. 1 linked evidence record.</span></li></ol>
+        <section class="section" id="findings" aria-labelledby="findings-title">
+    <div class="section-head">
+      <div><h2 id="findings-title">Findings</h2></div>
+      <div class="toolbar"><label><span class="sr-only">Filter findings</span><select class="filter" data-filter="finding"><option value="all">All severities</option><option value="blocking">Blocking</option><option value="warning">Warning</option><option value="info">Info</option></select></label><span class="result-count" data-count-for="finding">2 shown</span></div>
+    </div><article class="finding" data-filter-kind="finding" data-status="blocking">
+    <div class="finding-heading"><span class="status severity-blocking"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg> blocking</span><span class="rule-name">test-integrity</span></div>
+    <div class="finding-with-patch"><div><h3>Existing protection was skipped</h3><p>The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.</p>
+    <p class="fix"><strong>Suggested fix</strong> Restore the active test and fix decodeCursor without weakening malformed-input coverage.</p>
+    </div><figure class="excerpt"><figcaption><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> tests/pagination.test.ts</figcaption><pre><span class="excerpt-removed"><i>44</i> −   it(&quot;rejects malformed cursors&quot;, () =&gt; {</span><span class="excerpt-added"><i>44</i> +   it.skip(&quot;rejects malformed cursors&quot;, () =&gt; {</span><span class="excerpt-context"><i>45</i>       expect(() =&gt; decodeCursor(&quot;%%%&quot;)) .toThrow();</span></pre></figure></div>
+    <div class="finding-links"><a href="#file-1" data-file-link="1" data-line="44"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> tests/pagination.test.ts:44</a>
+    <a href="#evidence-evidence-test-integrity"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> Inspect evidence</a></div>
+  </article><article class="finding" data-filter-kind="finding" data-status="warning">
+    <div class="finding-heading"><span class="status severity-warning"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg> warning</span><span class="rule-name">contract-coverage</span></div>
+    <div class=""><div><h3>Schema compatibility lacks direct evidence</h3><p>Type checking passed, but no response-schema snapshot or contract test was declared for this claim.</p>
+    <p class="fix"><strong>Suggested fix</strong> Attach a response contract test or schema-diff command to schema-compatible.</p>
+    </div></div>
+    <div class="finding-links"><a href="#file-0" data-file-link="0"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> src/pagination.ts</a>
     </div>
+  </article>
   </section>
+        <section class="section" id="files" aria-labelledby="files-title"><div class="section-head">
+    <h2 id="files-title">Changed files</h2>
+    <label class="path-search">Filter by path <input type="search" data-path-search autocomplete="off"></label>
+    </div><details class="patch-file" id="file-0" data-index="0">
+    <summary><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg><span class="file-path">src/pagination.ts</span><span class="file-kind">modified</span><span class="changes"><span>+1</span> <span>−0</span></span></summary>
+
+    <div class="patch-view"></div>
+  </details><details class="patch-file" id="file-1" data-index="1">
+    <summary><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg><span class="file-path">tests/pagination.test.ts</span><span class="file-kind">modified</span><span class="changes"><span>+1</span> <span>−1</span></span></summary>
+
+    <div class="patch-view"></div>
+  </details>
+    <p class="empty" hidden data-files-empty role="status">No matching file paths.</p>
+    <noscript>Enable JavaScript to inspect unified diffs.</noscript></section>
         <section class="section" id="claims" aria-labelledby="claims-title">
     <div class="section-head">
       <div><h2 id="claims-title">Claims</h2><p class="section-intro">Each claim is evaluated only against the evidence requirements declared in the task contract.</p></div>
@@ -397,21 +434,54 @@ pre {
     <span class="status status-disproven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Disproven</span>
   </article></div>
   </section>
-        <section class="section" id="findings" aria-labelledby="findings-title">
-    <div class="section-head">
-      <div><h2 id="findings-title">Findings</h2><p class="section-intro">Blocking conditions, warnings, and informational observations from deterministic analyzers.</p></div>
-      <div class="toolbar"><label><span class="sr-only">Filter findings</span><select class="filter" data-filter="finding"><option value="all">All severities</option><option value="blocking">Blocking</option><option value="warning">Warning</option><option value="info">Info</option></select></label><span class="result-count" data-count-for="finding">2 shown</span></div>
-    </div><table class="data-table"><thead><tr><th style="width:130px">Severity</th><th>Finding</th><th style="width:25%">Location</th><th style="width:18%">Rule</th></tr></thead><tbody><tr data-filter-kind="finding" data-status="blocking">
-    <td data-label="Severity"><span class="status severity-blocking"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg> blocking</span></td>
-    <td data-label="Finding"><div class="finding-title">Existing protection was skipped</div><div class="finding-description">The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.</div></td>
-    <td data-label="Location" class="mono">tests/pagination.test.ts:44</td>
-    <td data-label="Rule" class="mono">test-integrity</td>
-  </tr><tr data-filter-kind="finding" data-status="warning">
-    <td data-label="Severity"><span class="status severity-warning"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg> warning</span></td>
-    <td data-label="Finding"><div class="finding-title">Schema compatibility lacks direct evidence</div><div class="finding-description">Type checking passed, but no response-schema snapshot or contract test was declared for this claim.</div></td>
-    <td data-label="Location" class="mono">src/pagination.ts</td>
-    <td data-label="Rule" class="mono">contract-coverage</td>
-  </tr></tbody></table>
+        <section class="section" aria-labelledby="graph-title">
+    <div class="section-head"><div><h2 id="graph-title">Proof graph</h2><p class="section-intro">The verdict is connected to claims, then to the evidence records that support or challenge them.</p></div></div>
+    <div class="graph-layout">
+      <div class="graph-canvas">
+        <svg viewBox="0 0 670 310" role="img" aria-labelledby="proof-graph-label proof-graph-description">
+          <title id="proof-graph-label">Patch proof relationship graph</title>
+          <desc id="proof-graph-description">Verdict rejected, connected to 3 claims and 9 evidence records.</desc>
+          <path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 48, 142 48"/><path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 116, 142 116"/><path class="graph-edge" d="M 112 155 C 126 155, 128 184, 142 184"/>
+          <path class="graph-edge graph-edge-passed" d="M 326 48 C 390 48, 410 150, 474 150"/><path class="graph-edge graph-edge-passed" d="M 326 116 C 390 116, 410 42, 474 42"/><path class="graph-edge graph-edge-passed" d="M 326 116 C 390 116, 410 204, 474 204"/><path class="graph-edge" d="M 326 184 C 390 184, 410 96, 474 96"/>
+          <g tabindex="0" aria-label="Verdict: rejected">
+            <rect class="graph-node graph-node-failed" x="10" y="128" width="102" height="54" rx="10"/>
+            <text class="graph-label" x="25" y="151">Verdict</text>
+            <text class="graph-sub" x="25" y="168">rejected</text>
+          </g>
+          <g tabindex="0" aria-label="Claim empty-cursor-safe: proven">
+        <rect class="graph-node graph-node-proven" x="142" y="26" width="184" height="44" rx="8"/>
+        <text class="graph-label" x="155" y="46">Empty cursors no longer c…</text>
+        <text class="graph-sub" x="155" y="61">proven · empty-cursor-safe</text>
+      </g><g tabindex="0" aria-label="Claim schema-compatible: proven">
+        <rect class="graph-node graph-node-proven" x="142" y="94" width="184" height="44" rx="8"/>
+        <text class="graph-label" x="155" y="114">The public pagination res…</text>
+        <text class="graph-sub" x="155" y="129">proven · schema-compatible</text>
+      </g><g tabindex="0" aria-label="Claim tests-preserved: disproven">
+        <rect class="graph-node graph-node-disproven" x="142" y="162" width="184" height="44" rx="8"/>
+        <text class="graph-label" x="155" y="182">Existing cursor protectio…</text>
+        <text class="graph-sub" x="155" y="197">disproven · tests-preserved</text>
+      </g>
+          <g tabindex="0" aria-label="Evidence evidence-scope: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="24" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="41">patchproof/analyzer/sc</text>
+        <text class="graph-sub" x="486" y="54">passed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-test-integrity: failed">
+        <rect class="graph-node graph-node-failed" x="474" y="78" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="95">patchproof/analyzer/te</text>
+        <text class="graph-sub" x="486" y="108">failed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-tests: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="132" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="149">command:tests</text>
+        <text class="graph-sub" x="486" y="162">passed</text>
+      </g><g tabindex="0" aria-label="Evidence evidence-types: passed">
+        <rect class="graph-node graph-node-passed" x="474" y="186" width="162" height="36" rx="7"/>
+        <text class="graph-label" x="486" y="203">command:types</text>
+        <text class="graph-sub" x="486" y="216">passed</text>
+      </g>
+        </svg>
+      </div>
+      <ol class="semantic-graph" aria-label="Proof graph as a list"><li><strong>Empty cursors no longer crash request handling.</strong><span>proven. 1 linked evidence record.</span></li><li><strong>The public pagination response schema is unchanged.</strong><span>proven. 2 linked evidence records.</span></li><li><strong>Existing cursor protections remain enabled.</strong><span>disproven. 1 linked evidence record.</span></li></ol>
+    </div>
   </section>
         <section class="section" id="evidence" aria-labelledby="evidence-title">
     <div class="section-head">
@@ -519,20 +589,17 @@ Time: 2.11 s</code></pre>
     </div>
   </details></div>
   </section>
-        <section class="section" id="files" aria-labelledby="files-title">
-    <div class="section-head"><div><h2 id="files-title">Changed files</h2><p class="section-intro">The exact patch surface used by scope and integrity rules.</p></div></div>
-    <table class="data-table"><thead><tr><th>File</th><th style="width:110px">Change</th><th style="width:90px">Added</th><th style="width:90px">Deleted</th><th style="width:90px">Binary</th></tr></thead><tbody><tr><td data-label="File" class="mono">src/pagination.ts</td><td data-label="Change">modified</td><td data-label="Added" class="mono">+1</td><td data-label="Deleted" class="mono">−0</td><td data-label="Binary">No</td></tr><tr><td data-label="File" class="mono">tests/pagination.test.ts</td><td data-label="Change">modified</td><td data-label="Added" class="mono">+1</td><td data-label="Deleted" class="mono">−1</td><td data-label="Binary">No</td></tr></tbody></table>
-  </section>
         <section class="section" id="integrity" aria-labelledby="integrity-title">
     <div class="section-head"><div><h2 id="integrity-title">Integrity</h2><p class="section-intro">Digests make policy, task intent, patch content, and evidence order independently verifiable.</p></div></div>
     <div class="integrity-grid">
       <div class="integrity-status">
-        <span class="status status-incomplete"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>Incomplete</span>
+        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
         <strong>Unsigned proof bundle</strong>
-        <p>The hash chain is complete, but no signing key was used.</p>
+        <p>Verify the recorded digests with the JSON bundle.</p>
       </div>
       <dl class="digest-list">
-        <div class="digest-row"><dt>Patch diff</dt><dd>745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6</dd><button class="copy" type="button" data-copy="745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
+        <div class="digest-row"><dt>Bundle content</dt><dd>4de4a96f4dd08aa771571eb099a98ef5b2dd395915990ac74438379de804f261</dd><button class="copy" type="button" data-copy="4de4a96f4dd08aa771571eb099a98ef5b2dd395915990ac74438379de804f261" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
+        <div class="digest-row"><dt>Patch diff</dt><dd>c10ee5afa54855fe193045204ecdd3eee7d9a70a0baf703424d019d82803307b</dd><button class="copy" type="button" data-copy="c10ee5afa54855fe193045204ecdd3eee7d9a70a0baf703424d019d82803307b" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
         <div class="digest-row"><dt>Policy</dt><dd>c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534</dd><button class="copy" type="button" data-copy="c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
         <div class="digest-row"><dt>Contract</dt><dd>51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8</dd><button class="copy" type="button" data-copy="51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
         <div class="digest-row"><dt>Evidence chain</dt><dd>11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c</dd><button class="copy" type="button" data-copy="11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c" data-copied="false" aria-label="Copy value"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button></div>
@@ -540,10 +607,10 @@ Time: 2.11 s</code></pre>
     </div>
   </section>
       </main>
-      <footer class="footer">Generated by PatchProof 0.1.0. The bundled JSON is the source of truth; this HTML is an offline projection.</footer>
+      <footer class="footer">Generated by PatchProof 0.2.0. The bundled JSON is the source of truth; this HTML is an offline projection.</footer>
     </div>
   </div>
-  <script type="application/json" id="patchproof-data">{"schemaVersion":"1.0","id":"proof_c3e10c7fd8aa6090ef1e","createdAt":"2026-07-21T09:12:06.615Z","generator":{"name":"patchproof","version":"0.1.0","node":"v24.15.0","platform":"win32-x64"},"patch":{"repositoryRoot":".","repositoryName":"acme-api","branch":"agent/fix-pagination","baseRef":"main","headRef":"agent/fix-pagination","baseCommit":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","headCommit":"d874cf3f83a0a63d08ef80dc555eb2aa66282f9e","diff":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });","diffDigest":"745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6","files":[{"path":"src/pagination.ts","previousPath":"src/pagination.ts","kind":"modified","additions":1,"deletions":0,"binary":false,"patch":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"},{"path":"tests/pagination.test.ts","previousPath":"tests/pagination.test.ts","kind":"modified","additions":1,"deletions":1,"binary":false,"patch":"diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });"}],"stats":{"filesChanged":2,"additions":2,"deletions":1,"testFilesChanged":1}},"policy":{"seal":{"source":"base-commit","sourceRef":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","path":".patchproof/policy.yml","digest":"c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534"},"value":{"version":1,"commands":[{"id":"tests","run":"npm test","description":"Run the full test suite","timeoutMs":300000,"required":true},{"id":"types","run":"npm run typecheck","description":"Check TypeScript","timeoutMs":180000,"required":true}],"scope":{"allowed":["src/**","tests/**"],"denied":[".github/workflows/**",".patchproof/policy.yml"]},"thresholds":{"maxChangedFiles":20,"maxChangedLines":500,"requireTestsForSourceChanges":true},"rules":{"policyIntegrity":true,"testIntegrity":true,"secretScan":true,"dependencyReview":true,"scope":true,"diffSize":true},"model":{"provider":"none"},"redactions":["API_KEY","TOKEN","PASSWORD"]}},"contract":{"digest":"51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8","value":{"version":1,"id":"cursor-pagination-fix","title":"Harden cursor pagination","task":"Reject empty and malformed cursors without changing the public response schema.","claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true}},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]}},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]}}],"outOfScope":["src/auth/**","src/billing/**"]}},"evidence":[{"id":"evidence-policy-integrity","type":"rule","producer":"patchproof/analyzer/policy-integrity","status":"passed","startedAt":"2026-07-21T09:12:02.970Z","completedAt":"2026-07-21T09:12:02.980Z","durationMs":10,"summary":"Verification policy remained anchored to the base revision","relatedFiles":[],"metadata":{"ruleId":"policy-integrity","analyzerId":"policy-integrity","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":null,"digest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950"},{"id":"evidence-scope","type":"rule","producer":"patchproof/analyzer/scope","status":"passed","startedAt":"2026-07-21T09:12:03.000Z","completedAt":"2026-07-21T09:12:03.011Z","durationMs":11,"summary":"Every changed file is within declared scope","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"scope","analyzerId":"scope","matchedFiles":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950","digest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c"},{"id":"evidence-secret-scan","type":"rule","producer":"patchproof/analyzer/secret-scan","status":"passed","startedAt":"2026-07-21T09:12:03.012Z","completedAt":"2026-07-21T09:12:03.024Z","durationMs":12,"summary":"No high-confidence secret patterns found in added lines","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"secret-scan","analyzerId":"secret-scan","scannedAddedLines":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c","digest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6"},{"id":"evidence-test-integrity","type":"rule","producer":"patchproof/analyzer/test-integrity","status":"failed","startedAt":"2026-07-21T09:12:03.025Z","completedAt":"2026-07-21T09:12:03.032Z","durationMs":7,"summary":"One existing test was changed to a skipped state","details":"tests/pagination.test.ts:44 added it.skip for the malformed-cursor regression test.","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"test-integrity","analyzerId":"test-integrity","skippedTestsAdded":1,"findingIds":["finding-test-skip-1"],"findingsDigest":"9ca2022c3a5a2a112b58e2c3fa4140629361ce5213d657e979050f070c05fdaf"},"previousDigest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6","digest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6"},{"id":"evidence-dependency-review","type":"rule","producer":"patchproof/analyzer/dependency-review","status":"passed","startedAt":"2026-07-21T09:12:03.033Z","completedAt":"2026-07-21T09:12:03.035Z","durationMs":2,"summary":"No dependency manifests or lockfiles changed","relatedFiles":[],"metadata":{"ruleId":"dependency-review","analyzerId":"dependency-review","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6","digest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883"},{"id":"evidence-diff-size","type":"rule","producer":"patchproof/analyzer/diff-size","status":"passed","startedAt":"2026-07-21T09:12:03.036Z","completedAt":"2026-07-21T09:12:03.037Z","durationMs":1,"summary":"Patch size is within policy","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"diff-size","analyzerId":"diff-size","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883","digest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9"},{"id":"evidence-missing-test-changes","type":"rule","producer":"patchproof/analyzer/missing-test-changes","status":"passed","startedAt":"2026-07-21T09:12:03.038Z","completedAt":"2026-07-21T09:12:03.039Z","durationMs":1,"summary":"One qualifying test file change found","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"missing-test-changes","analyzerId":"missing-test-changes","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9","digest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a"},{"id":"evidence-tests","type":"command","producer":"command:tests","status":"passed","startedAt":"2026-07-21T09:12:03.040Z","completedAt":"2026-07-21T09:12:05.382Z","durationMs":2342,"summary":"Test command exited successfully","command":"npm test","exitCode":0,"stdout":"PASS tests/pagination.test.ts\nTests: 1 skipped, 42 passed, 43 total\nTime: 2.11 s","stderr":"","relatedFiles":[],"metadata":{"commandId":"tests","required":true},"previousDigest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a","digest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b"},{"id":"evidence-types","type":"command","producer":"command:types","status":"passed","startedAt":"2026-07-21T09:12:05.390Z","completedAt":"2026-07-21T09:12:06.601Z","durationMs":1211,"summary":"TypeScript check exited successfully","command":"npm run typecheck","exitCode":0,"stdout":"\u003e acme-api@4.8.0 typecheck\n\u003e tsc --noEmit","stderr":"","relatedFiles":[],"metadata":{"commandId":"types","required":true},"previousDigest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b","digest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"}],"findings":[{"id":"finding-test-skip-1","ruleId":"test-integrity","title":"Existing protection was skipped","description":"The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.","severity":"blocking","location":{"path":"tests/pagination.test.ts","line":44},"relatedFiles":["tests/pagination.test.ts"],"fingerprint":"664313a153d4ae017ba1b40c05bc4d0c154a51b42becda027e3e7e841a591d53","remediation":"Restore the active test and fix decodeCursor without weakening malformed-input coverage."},{"id":"finding-schema-gap-1","ruleId":"contract-coverage","title":"Schema compatibility lacks direct evidence","description":"Type checking passed, but no response-schema snapshot or contract test was declared for this claim.","severity":"warning","relatedFiles":["src/pagination.ts"],"fingerprint":"05a599a98bab2580a4d1ff32bae6d155393e033e083c427f1d959d8515e15aad","remediation":"Attach a response contract test or schema-diff command to schema-compatible."}],"claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true},"status":"proven","evidenceIds":["evidence-tests"],"findingIds":[],"explanation":"All 3 evidence requirements passed."},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]},"status":"proven","evidenceIds":["evidence-scope","evidence-types"],"findingIds":[],"explanation":"All 2 evidence requirements passed."},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]},"status":"disproven","evidenceIds":["evidence-test-integrity"],"findingIds":["finding-test-skip-1"],"explanation":"rule test-integrity found a blocking condition"}],"verdict":{"status":"rejected","summary":"The patch has blocking findings or disproven required claims.","blockingFindings":1,"warnings":1,"provenClaims":2,"disprovenClaims":1,"unprovenClaims":0,"requiredCommandsPassed":2,"requiredCommandsTotal":2},"chainDigest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c","contentDigest":"fc7f66dee06ba0f98bdb13323e12418919acc5db945a392b8457e55f51e91bfa"}</script>
+  <script type="application/json" id="patchproof-data">{"schemaVersion":"1.0","id":"proof_c3e10c7fd8aa6090ef1e","createdAt":"2026-07-21T09:12:06.615Z","generator":{"name":"patchproof","version":"0.2.0","node":"v24.15.0","platform":"win32-x64"},"patch":{"repositoryRoot":".","repositoryName":"acme-api","branch":"agent/fix-pagination","baseRef":"main","headRef":"agent/fix-pagination","baseCommit":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","headCommit":"d874cf3f83a0a63d08ef80dc555eb2aa66282f9e","diff":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -44,3 +44,3 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });","diffDigest":"c10ee5afa54855fe193045204ecdd3eee7d9a70a0baf703424d019d82803307b","files":[{"path":"src/pagination.ts","previousPath":"src/pagination.ts","kind":"modified","additions":1,"deletions":0,"binary":false,"patch":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"},{"path":"tests/pagination.test.ts","previousPath":"tests/pagination.test.ts","kind":"modified","additions":1,"deletions":1,"binary":false,"patch":"diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -44,3 +44,3 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });"}],"stats":{"filesChanged":2,"additions":2,"deletions":1,"testFilesChanged":1}},"policy":{"seal":{"source":"base-commit","sourceRef":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","path":".patchproof/policy.yml","digest":"c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534"},"value":{"version":1,"commands":[{"id":"tests","run":"npm test","description":"Run the full test suite","timeoutMs":300000,"required":true},{"id":"types","run":"npm run typecheck","description":"Check TypeScript","timeoutMs":180000,"required":true}],"scope":{"allowed":["src/**","tests/**"],"denied":[".github/workflows/**",".patchproof/policy.yml"]},"thresholds":{"maxChangedFiles":20,"maxChangedLines":500,"requireTestsForSourceChanges":true},"rules":{"policyIntegrity":true,"testIntegrity":true,"secretScan":true,"dependencyReview":true,"scope":true,"diffSize":true},"model":{"provider":"none"},"redactions":["API_KEY","TOKEN","PASSWORD"]}},"contract":{"digest":"51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8","value":{"version":1,"id":"cursor-pagination-fix","title":"Harden cursor pagination","task":"Reject empty and malformed cursors without changing the public response schema.","claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true}},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]}},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]}}],"outOfScope":["src/auth/**","src/billing/**"]}},"evidence":[{"id":"evidence-policy-integrity","type":"rule","producer":"patchproof/analyzer/policy-integrity","status":"passed","startedAt":"2026-07-21T09:12:02.970Z","completedAt":"2026-07-21T09:12:02.980Z","durationMs":10,"summary":"Verification policy remained anchored to the base revision","relatedFiles":[],"metadata":{"ruleId":"policy-integrity","analyzerId":"policy-integrity","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":null,"digest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950"},{"id":"evidence-scope","type":"rule","producer":"patchproof/analyzer/scope","status":"passed","startedAt":"2026-07-21T09:12:03.000Z","completedAt":"2026-07-21T09:12:03.011Z","durationMs":11,"summary":"Every changed file is within declared scope","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"scope","analyzerId":"scope","matchedFiles":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950","digest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c"},{"id":"evidence-secret-scan","type":"rule","producer":"patchproof/analyzer/secret-scan","status":"passed","startedAt":"2026-07-21T09:12:03.012Z","completedAt":"2026-07-21T09:12:03.024Z","durationMs":12,"summary":"No high-confidence secret patterns found in added lines","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"secret-scan","analyzerId":"secret-scan","scannedAddedLines":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c","digest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6"},{"id":"evidence-test-integrity","type":"rule","producer":"patchproof/analyzer/test-integrity","status":"failed","startedAt":"2026-07-21T09:12:03.025Z","completedAt":"2026-07-21T09:12:03.032Z","durationMs":7,"summary":"One existing test was changed to a skipped state","details":"tests/pagination.test.ts:44 added it.skip for the malformed-cursor regression test.","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"test-integrity","analyzerId":"test-integrity","skippedTestsAdded":1,"findingIds":["finding-test-skip-1"],"findingsDigest":"9ca2022c3a5a2a112b58e2c3fa4140629361ce5213d657e979050f070c05fdaf"},"previousDigest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6","digest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6"},{"id":"evidence-dependency-review","type":"rule","producer":"patchproof/analyzer/dependency-review","status":"passed","startedAt":"2026-07-21T09:12:03.033Z","completedAt":"2026-07-21T09:12:03.035Z","durationMs":2,"summary":"No dependency manifests or lockfiles changed","relatedFiles":[],"metadata":{"ruleId":"dependency-review","analyzerId":"dependency-review","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6","digest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883"},{"id":"evidence-diff-size","type":"rule","producer":"patchproof/analyzer/diff-size","status":"passed","startedAt":"2026-07-21T09:12:03.036Z","completedAt":"2026-07-21T09:12:03.037Z","durationMs":1,"summary":"Patch size is within policy","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"diff-size","analyzerId":"diff-size","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883","digest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9"},{"id":"evidence-missing-test-changes","type":"rule","producer":"patchproof/analyzer/missing-test-changes","status":"passed","startedAt":"2026-07-21T09:12:03.038Z","completedAt":"2026-07-21T09:12:03.039Z","durationMs":1,"summary":"One qualifying test file change found","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"missing-test-changes","analyzerId":"missing-test-changes","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9","digest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a"},{"id":"evidence-tests","type":"command","producer":"command:tests","status":"passed","startedAt":"2026-07-21T09:12:03.040Z","completedAt":"2026-07-21T09:12:05.382Z","durationMs":2342,"summary":"Test command exited successfully","command":"npm test","exitCode":0,"stdout":"PASS tests/pagination.test.ts\nTests: 1 skipped, 42 passed, 43 total\nTime: 2.11 s","stderr":"","relatedFiles":[],"metadata":{"commandId":"tests","required":true},"previousDigest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a","digest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b"},{"id":"evidence-types","type":"command","producer":"command:types","status":"passed","startedAt":"2026-07-21T09:12:05.390Z","completedAt":"2026-07-21T09:12:06.601Z","durationMs":1211,"summary":"TypeScript check exited successfully","command":"npm run typecheck","exitCode":0,"stdout":"\u003e acme-api@4.8.0 typecheck\n\u003e tsc --noEmit","stderr":"","relatedFiles":[],"metadata":{"commandId":"types","required":true},"previousDigest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b","digest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"}],"findings":[{"id":"finding-test-skip-1","ruleId":"test-integrity","title":"Existing protection was skipped","description":"The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.","severity":"blocking","location":{"path":"tests/pagination.test.ts","line":44},"relatedFiles":["tests/pagination.test.ts"],"fingerprint":"664313a153d4ae017ba1b40c05bc4d0c154a51b42becda027e3e7e841a591d53","remediation":"Restore the active test and fix decodeCursor without weakening malformed-input coverage."},{"id":"finding-schema-gap-1","ruleId":"contract-coverage","title":"Schema compatibility lacks direct evidence","description":"Type checking passed, but no response-schema snapshot or contract test was declared for this claim.","severity":"warning","relatedFiles":["src/pagination.ts"],"fingerprint":"05a599a98bab2580a4d1ff32bae6d155393e033e083c427f1d959d8515e15aad","remediation":"Attach a response contract test or schema-diff command to schema-compatible."}],"claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true},"status":"proven","evidenceIds":["evidence-tests"],"findingIds":[],"explanation":"All 3 evidence requirements passed."},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]},"status":"proven","evidenceIds":["evidence-scope","evidence-types"],"findingIds":[],"explanation":"All 2 evidence requirements passed."},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]},"status":"disproven","evidenceIds":["evidence-test-integrity"],"findingIds":["finding-test-skip-1"],"explanation":"rule test-integrity found a blocking condition"}],"verdict":{"status":"rejected","summary":"The patch has blocking findings or disproven required claims.","blockingFindings":1,"warnings":1,"provenClaims":2,"disprovenClaims":1,"unprovenClaims":0,"requiredCommandsPassed":2,"requiredCommandsTotal":2},"chainDigest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c","contentDigest":"4de4a96f4dd08aa771571eb099a98ef5b2dd395915990ac74438379de804f261"}</script>
   <script>
 (() => {
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -589,6 +656,133 @@ Time: 2.11 s</code></pre>
   if (collapse) collapse.addEventListener('click', () => details.forEach((item) => { item.open = false; }));
 
   const links = $$('.rail nav a');
+  const fileItems = $$('.patch-file');
+  const search = document.querySelector('[data-path-search]');
+  const filterPaths = () => {
+    const query = (search?.value || '').toLowerCase();
+    fileItems.forEach((item) => {
+      item.hidden = !item.querySelector('.file-path').textContent.toLowerCase().includes(query);
+    });
+    document.querySelector('[data-files-empty]').hidden = !fileItems.length || fileItems.some((item) => !item.hidden);
+  };
+  search?.addEventListener('input', filterPaths);
+
+  let proof;
+  function showPatch(item, targetLine) {
+    const view = item.querySelector('.patch-view');
+    if (!view || (view.childElementCount && !targetLine)) return;
+    proof ??= JSON.parse(document.getElementById('patchproof-data').textContent);
+    const file = proof.patch.files[Number(item.dataset.index)];
+    const rows = [];
+    let oldLine, newLine;
+    let matchIndex = -1;
+    for (const text of (file.patch || '').split(/\r?\n/)) {
+      const header = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(text);
+      if (header) {
+        oldLine = Number(header[1]);
+        newLine = Number(header[2]);
+        rows.push({ text, kind: 'hunk' });
+      } else if (newLine !== undefined && text) {
+        const prefix = text[0];
+        const left = prefix === '-' || prefix === ' ' ? oldLine++ : '';
+        const right = prefix === '+' || prefix === ' ' ? newLine++ : '';
+        if (right === targetLine) matchIndex = rows.length;
+        rows.push({ text, left, right, kind: prefix === '+' ? 'add' : prefix === '-' ? 'del' : 'context' });
+      }
+    }
+    const pageSize = 120;
+    let page = Math.max(0, Math.floor(matchIndex / pageSize));
+    view.replaceChildren();
+    if (!rows.length) {
+      const message = document.createElement('p');
+      message.className = 'empty';
+      message.textContent = 'This file has no text hunks in the recorded patch.';
+      view.append(message);
+      return;
+    }
+    if (targetLine && matchIndex < 0) {
+      const note = document.createElement('p');
+      note.className = 'empty';
+      note.textContent = 'Line ' + targetLine + ' is outside the recorded hunks.';
+      view.append(note);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'diff-grid';
+    grid.tabIndex = 0;
+    grid.setAttribute('role', 'region');
+    grid.setAttribute('aria-label', 'Unified diff for ' + file.path + ', old and new line numbers');
+    const previous = document.createElement('button');
+    const next = document.createElement('button');
+    const counter = document.createElement('span');
+    function paint() {
+      const start = page * pageSize;
+      const fragment = document.createDocumentFragment();
+      rows.slice(start, start + pageSize).forEach((row, i) => {
+        const line = document.createElement('div');
+        line.className = 'diff-row diff-' + row.kind;
+        if (start + i === matchIndex) line.classList.add('diff-target');
+        for (const value of [row.left, row.right, row.text]) {
+          const cell = document.createElement('span');
+          cell.textContent = String(value ?? '');
+          line.append(cell);
+        }
+        fragment.append(line);
+      });
+      grid.replaceChildren(fragment);
+      previous.disabled = page === 0;
+      next.disabled = start + pageSize >= rows.length;
+      counter.textContent = 'Page ' + (page + 1) + ' of ' + Math.ceil(rows.length / pageSize);
+    }
+    if (rows.length > pageSize) {
+      const pager = document.createElement('div');
+      pager.className = 'diff-pager';
+      previous.type = next.type = 'button';
+      previous.textContent = 'Previous';
+      next.textContent = 'Next';
+      previous.onclick = () => { page--; paint(); };
+      next.onclick = () => { page++; paint(); };
+      counter.setAttribute('role', 'status');
+      pager.append(previous, counter, next);
+      view.append(pager);
+    }
+    view.append(grid);
+    paint();
+    const highlighted = grid.querySelector('.diff-target');
+    if (highlighted) grid.scrollTop = highlighted.getBoundingClientRect().top - grid.getBoundingClientRect().top - grid.clientHeight / 2;
+  }
+  fileItems.forEach((item) => item.addEventListener('toggle', () => {
+    if (item.open) showPatch(item);
+  }));
+
+  function reveal(id, lineNumber) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    if (target.matches('.patch-file')) {
+      if (target.hidden && search) { search.value = ''; filterPaths(); }
+      target.open = true;
+      showPatch(target, lineNumber);
+    }
+    if (target.matches('.evidence-item')) {
+      if (target.classList.contains('hidden')) {
+        const select = document.querySelector('[data-filter="evidence"]');
+        select.value = 'all';
+        select.dispatchEvent(new Event('change'));
+      }
+      target.open = true;
+    }
+  }
+  function revealHash() {
+    let id;
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+    reveal(id);
+  }
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    reveal(link.getAttribute('href').slice(1), Number(link.dataset.line) || undefined);
+  });
+  window.addEventListener('hashchange', revealHash);
+  revealHash();
   const sections = links
     .map((link) => document.querySelector(link.getAttribute('href')))
     .filter(Boolean);

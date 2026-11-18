@@ -1,1 +1,3 @@
-export const PACKAGE_VERSION = "0.1.0";
+import manifest from "../package.json" with { type: "json" };
+
+export const PACKAGE_VERSION = manifest.version;

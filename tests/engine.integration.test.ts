@@ -6,6 +6,8 @@ import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import { verifyPatch } from "../src/engine.js";
 import { diagnoseRepository } from "../src/commands/doctor.js";
+import { verifyProofAgainstRepository, verifyProofBundle } from "../src/proof/index.js";
+import { rebuildProof } from "./helpers/proof.js";
 import type { VerificationProgress } from "../src/types.js";
 
 const exec = promisify(execFile);
@@ -112,6 +114,29 @@ function verificationOptions(root: string, baseCommit: string, headRef: string) 
 }
 
 describe("verification engine", () => {
+  it("checks a received proof against committed objects from a dirty, different checkout", async () => {
+    const { root, baseCommit, headCommit } = await createTwoCommitRepository();
+    const bundle = await verifyPatch(verificationOptions(root, baseCommit, headCommit));
+    await git(root, "checkout", "--detach", baseCommit);
+    await writeFile(join(root, ".patchproof", "contract.yml"), "local edit");
+    expect(await verifyProofAgainstRepository(bundle, root, { expectedHead: headCommit })).toMatchObject({ valid: true });
+    expect(await git(root, "rev-parse", "HEAD")).toBe(baseCommit);
+    expect((await verifyProofAgainstRepository(bundle, root, { requireSignature: true })).valid).toBe(false);
+    expect((await verifyProofAgainstRepository(bundle, root, { contractPath: "missing.yml" })).errors).toContain("The contract is missing from the candidate commit.");
+    expect((await verifyProofAgainstRepository(bundle, root, { policyPath: "other.yml" })).valid).toBe(false);
+
+    const edited = structuredClone(bundle);
+    edited.patch.diff += "\n";
+    edited.contract.value.title = "Uncommitted requirement";
+    edited.policy.value.thresholds.maxChangedLines += 1;
+    const consistent = rebuildProof(edited);
+    expect(verifyProofBundle(consistent).valid).toBe(true);
+    expect((await verifyProofAgainstRepository(consistent, root)).errors).toEqual([
+      "The committed Git diff differs from the proof.",
+      "The policy at the base commit differs from the proof.",
+      "The contract at the candidate commit differs from the proof.",
+    ]);
+  }, 20_000);
   it("preflights real commits and pins a reviewed contract before command execution", async () => {
     const { root, baseCommit, headCommit } = await createTwoCommitRepository();
     const diagnosis = await diagnoseRepository(root, { base: baseCommit });

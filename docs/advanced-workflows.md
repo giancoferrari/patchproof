@@ -51,6 +51,10 @@ Use full 40- or 64-character commit hashes, not branch names or abbreviated hash
 
 All checks must pass for exit `0`. Failure exits `1`. The JSON shape stays `{ valid, errors, signature }`. A proof signed by an unknown key can have `signature: "valid"` and `valid: false`: the signature is authentic to that key, but the key is untrusted. Malformed files also return a machine-readable failure.
 
+### Check the proof against Git
+
+To check the source of a received bundle, include `--repository <directory>` with the acceptance options above. PatchProof reads the two recorded commits, reproduces their Git diff, and compares the normalized base policy and candidate contract with the proof. It reads committed blobs even when the working tree has local edits or another branch checked out. Supply `--policy` and `--contract` when your repository uses custom paths. The repository must contain both commits. A byte difference in Git diff output, missing object, working-tree policy seal, or configuration mismatch fails the check. A passing result establishes agreement on those source inputs. Command execution and signer identity have separate trust requirements.
+
 ## 4. Compare successive candidates
 
 ```sh

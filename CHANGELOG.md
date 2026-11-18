@@ -4,6 +4,10 @@ Notable user-visible changes are recorded here. PatchProof follows semantic vers
 
 ## Unreleased
 
+- The offline report now opens with the verdict, ranked findings, suggested fixes, and a source excerpt for a blocking finding when available. Reviewers can filter changed paths and inspect numbered Git hunks with links from findings.
+- `verify-bundle --repository <directory>` checks the diff, trusted base policy, and candidate contract against local Git objects. The command works from a dirty or unrelated checkout of the repository.
+- Updated the runtime matcher and validator, removed an unused glob dependency, and upgraded the test runner. CI exercises the packaged CLI on its minimum supported Node version.
+
 ### Trust and correctness
 
 - Validate imported bundles against the complete published JSON Schema before use, preserving the original signed content.

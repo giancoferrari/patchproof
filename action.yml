@@ -54,7 +54,7 @@ inputs:
   node-version:
     description: Node.js version used to build and execute PatchProof.
     required: false
-    default: 20.12.x
+    default: 22.x
   setup-command:
     description: Optional trusted command that prepares the target repository before verification.
     required: false

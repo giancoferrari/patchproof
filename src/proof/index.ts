@@ -6,3 +6,4 @@ export * from "./verdict.js";
 export * from "./schema.js";
 export * from "./summary.js";
 export * from "./compare.js";
+export * from "./repository.js";

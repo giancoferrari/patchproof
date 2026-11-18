@@ -6,7 +6,10 @@ describe("standalone report", () => {
   it("renders the complete proof investigation surface", () => {
     const html = renderProofReport(createDemoBundle());
     expect(html).toContain("Proof graph");
-    expect(html).toContain("Harden cursor pagination: rejected");
+    expect(html).toContain("<h1>Harden cursor pagination</h1>");
+    expect(html).toContain('href="#file-1" data-file-link="1"');
+    expect(html).toContain("Suggested fix");
+    expect(html).toContain('id="file-1"');
     expect(html).toContain("Existing protection was skipped");
     expect(html).toContain("Evidence chain");
     expect(html).toContain("prefers-reduced-motion");

@@ -9,6 +9,7 @@ import {
 } from "./icons.js";
 import { REPORT_SCRIPT } from "./script.js";
 import { REPORT_STYLES } from "./styles.js";
+import { parseUnifiedPatch } from "../analyzers/utils.js";
 
 function short(value: string, length = 12): string {
   return value.length <= length ? value : value.slice(0, length);
@@ -49,64 +50,42 @@ function copyButton(value: string): string {
   return `<button class="copy" type="button" data-copy="${escapeHtml(value)}" data-copied="false" aria-label="Copy value">${icon("copy")}</button>`;
 }
 
-function nav(): string {
-  return `
-    <aside class="rail" aria-label="Report navigation">
-      <div class="brand"><span class="brand-mark">${icon("shield")}</span><span>PatchProof</span></div>
-      <nav>
-        <a href="#overview" aria-current="true">Overview</a>
-        <a href="#claims">Claims</a>
-        <a href="#findings">Findings</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#files">Files</a>
-        <a href="#integrity">Integrity</a>
-      </nav>
-      <div class="rail-meta">Portable proof bundle<code>schema 1.0</code></div>
-    </aside>`;
-}
-
-function metrics(bundle: ProofBundle): string {
-  const passed = bundle.evidence.filter((record) => record.status === "passed").length;
-  return `<dl class="metrics">
-    <div class="metric"><dt>Claims proven</dt><dd>${bundle.verdict.provenClaims}/${bundle.claims.length}</dd></div>
-    <div class="metric"><dt>Evidence passed</dt><dd>${passed}/${bundle.evidence.length}</dd></div>
-    <div class="metric"><dt>Blocking findings</dt><dd>${bundle.verdict.blockingFindings}</dd></div>
-    <div class="metric"><dt>Changed lines</dt><dd>${bundle.patch.stats.additions + bundle.patch.stats.deletions}</dd></div>
-  </dl>`;
+function nav(bundle: ProofBundle): string {
+  const entries = [
+    ["overview", "Overview", ""], ["findings", "Findings", bundle.findings.length],
+    ["files", "Changed files", bundle.patch.files.length], ["claims", "Claims", bundle.claims.length],
+    ["evidence", "Evidence", bundle.evidence.length], ["integrity", "Integrity", ""],
+  ] as const;
+  return `<aside class="rail" aria-label="Report navigation">
+    <div class="brand"><span class="brand-mark">${icon("shield")}</span><span>PatchProof</span></div>
+    <nav>${entries.map(([id, label, count]) => `<a href="#${id}"${id === "overview" ? ' aria-current="true"' : ""}>${label}${count !== "" ? ` <span class="nav-count">${count}</span>` : ""}</a>`).join("")}</nav>
+    <div class="rail-meta">Proof bundle<code>Schema ${escapeHtml(bundle.schemaVersion)}</code></div>
+  </aside>`;
 }
 
 function hero(bundle: ProofBundle): string {
-  const verdict = bundle.verdict.status;
-  return `<header class="hero verdict-${escapeHtml(verdict)}" id="overview">
-    <div class="hero-row">
-      <div class="verdict-lockup">
-        <div class="verdict-symbol">${verdictIcon(verdict)}</div>
-        <div>
-          <h1>${escapeHtml(bundle.contract.value.title)}: ${escapeHtml(verdict)}</h1>
-          <p class="hero-summary">${escapeHtml(bundle.verdict.summary)}</p>
-          <div class="ref-line">
-            <span>${escapeHtml(short(bundle.patch.baseCommit))}</span>
-            <span class="ref-arrow" aria-label="to">→</span>
-            <span>${escapeHtml(short(bundle.patch.headCommit))}</span>
-            <span>·</span>
-            <span>${escapeHtml(bundle.patch.repositoryName)}</span>
-            <span>·</span>
-            <span>${escapeHtml(new Date(bundle.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }))}</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-actions">
-        <button class="button" type="button" onclick="window.print()">Print report</button>
-        <button class="button button-primary" type="button" data-copy="${escapeHtml(bundle.chainDigest)}">${icon("copy")} Copy chain digest</button>
-      </div>
-    </div>
-    ${metrics(bundle)}
+  const { verdict, patch } = bundle;
+  const date = new Date(bundle.createdAt).toISOString().slice(0, 16).replace("T", " ");
+  return `<header class="hero" id="overview">
+    <div class="report-context"><span>${icon("file")} ${escapeHtml(patch.repositoryName)}</span><time datetime="${escapeHtml(bundle.createdAt)}">${date} UTC</time></div>
+    <div class="hero-row"><div class="intro">${status(verdict.status)}
+      <h1>${escapeHtml(bundle.contract.value.title)}</h1>
+      <p class="hero-summary">${escapeHtml(verdict.summary)}</p>
+      <div class="ref-line"><code>${escapeHtml(short(patch.baseCommit, 8))}</code><span aria-label="to">→</span><code>${escapeHtml(short(patch.headCommit, 8))}</code></div>
+    </div><div class="hero-actions"><button class="button" type="button" onclick="window.print()">Print report</button></div></div>
+    <dl class="metrics">
+      <div class="metric"><dt>Blocking findings</dt><dd>${verdict.blockingFindings}</dd></div>
+      <div class="metric"><dt>Claims proven</dt><dd>${verdict.provenClaims}<small> / ${bundle.claims.length}</small></dd></div>
+      <div class="metric"><dt>Required checks passed</dt><dd>${verdict.requiredCommandsPassed}<small> / ${verdict.requiredCommandsTotal}</small></dd></div>
+      <div class="metric"><dt>Changed lines</dt><dd class="changes"><span>+${patch.stats.additions}</span> <span>−${patch.stats.deletions}</span></dd></div>
+    </dl>
   </header>`;
 }
 
 function graph(bundle: ProofBundle): string {
   const claims = bundle.claims.slice(0, 4);
-  const shownEvidence = bundle.evidence.slice(0, 5);
+  const linked = new Set(claims.flatMap((claim) => claim.evidenceIds));
+  const shownEvidence = bundle.evidence.filter((record) => linked.has(record.id)).slice(0, 5);
   const claimY = (index: number): number => 48 + index * 68;
   const evidenceY = (index: number): number => 42 + index * 54;
   const height = Math.max(310, claims.length * 68 + 45, shownEvidence.length * 54 + 35);
@@ -201,25 +180,57 @@ function claimsSection(bundle: ProofBundle): string {
   </section>`;
 }
 
-function findingRow(finding: Finding): string {
-  const location = finding.location
-    ? `${finding.location.path}${finding.location.line ? `:${finding.location.line}` : ""}`
-    : finding.relatedFiles.join(", ") || "Repository";
-  return `<tr data-filter-kind="finding" data-status="${escapeHtml(finding.severity)}">
-    <td data-label="Severity"><span class="status severity-${escapeHtml(finding.severity)}">${severityIcon(finding.severity)} ${escapeHtml(finding.severity)}</span></td>
-    <td data-label="Finding"><div class="finding-title">${escapeHtml(finding.title)}</div><div class="finding-description">${escapeHtml(finding.description)}</div></td>
-    <td data-label="Location" class="mono">${escapeHtml(location)}</td>
-    <td data-label="Rule" class="mono">${escapeHtml(finding.ruleId)}</td>
-  </tr>`;
+function findingPreview(finding: Finding, patch: string | undefined): string {
+  if (finding.severity !== "blocking" || finding.ruleId === "secret-scan" || !finding.location?.line || !patch || patch.length > 150_000) return "";
+  const lines = parseUnifiedPatch(patch);
+  const index = lines.findIndex((line) => line.newLine === finding.location?.line);
+  if (index < 0) return "";
+  const sample = lines.slice(Math.max(0, index - 1), index + 2);
+  return `<figure class="excerpt"><figcaption>${icon("file")} ${escapeHtml(finding.location.path)}</figcaption><pre>${sample.map((line) => {
+    const mark = line.kind === "added" ? "+" : line.kind === "removed" ? "−" : " ";
+    const snippet = line.content.length > 180 ? line.content.slice(0, 180) + "…" : line.content;
+    return `<span class="excerpt-${line.kind}"><i>${line.newLine ?? line.oldLine}</i> ${mark} ${escapeHtml(snippet)}</span>`;
+  }).join("")}</pre></figure>`;
+}
+
+function findingRow(finding: Finding, files: Map<string, number>, evidence: Map<string, string>, preview: string): string {
+  const path = finding.location?.path ?? finding.relatedFiles[0];
+  const index = path === undefined ? undefined : files.get(path);
+  const line = finding.location?.line;
+  const location = path ? escapeHtml(path + (line ? `:${line}` : "")) : "";
+  const producer = evidence.get(finding.id);
+  return `<article class="finding" data-filter-kind="finding" data-status="${escapeHtml(finding.severity)}">
+    <div class="finding-heading"><span class="status severity-${escapeHtml(finding.severity)}">${severityIcon(finding.severity)} ${escapeHtml(finding.severity)}</span><span class="rule-name">${escapeHtml(finding.ruleId)}</span></div>
+    <div class="${preview ? "finding-with-patch" : ""}"><div><h3>${escapeHtml(finding.title)}</h3><p>${escapeHtml(finding.description)}</p>
+    ${finding.remediation ? `<p class="fix"><strong>Suggested fix</strong> ${escapeHtml(finding.remediation)}</p>` : ""}
+    </div>${preview}</div>
+    <div class="finding-links">${index === undefined ? location : `<a href="#file-${index}" data-file-link="${index}"${line ? ` data-line="${line}"` : ""}>${icon("file")} ${location}</a>`}
+    ${producer ? `<a href="#evidence-${escapeHtml(producer)}">${icon("link")} Inspect evidence</a>` : ""}</div>
+  </article>`;
 }
 
 function findingsSection(bundle: ProofBundle): string {
+  const files = new Map(bundle.patch.files.map((file, index) => [file.path, index]));
+  const evidence = new Map<string, string>();
+  for (const record of bundle.evidence) {
+    const ids = record.metadata["findingIds"];
+    if (record.type === "rule" && Array.isArray(ids)) {
+      for (const id of ids) if (typeof id === "string") evidence.set(id, record.id);
+    }
+  }
+  const rank = { blocking: 0, warning: 1, info: 2 };
   const body = bundle.findings.length
-    ? `<table class="data-table"><thead><tr><th style="width:130px">Severity</th><th>Finding</th><th style="width:25%">Location</th><th style="width:18%">Rule</th></tr></thead><tbody>${bundle.findings.map(findingRow).join("")}</tbody></table>`
-    : '<p class="empty">No findings were produced by the enabled rules.</p>';
+    ? bundle.findings.slice().sort((a, b) => rank[a.severity] - rank[b.severity]).map((finding, position) => {
+        const fileIndex = finding.location && files.get(finding.location.path);
+        const preview = position === 0 && fileIndex !== undefined
+          ? findingPreview(finding, bundle.patch.files[fileIndex]?.patch)
+          : "";
+        return findingRow(finding, files, evidence, preview);
+      }).join("")
+    : '<p class="empty">The enabled rules produced no findings.</p>';
   return `<section class="section" id="findings" aria-labelledby="findings-title">
     <div class="section-head">
-      <div><h2 id="findings-title">Findings</h2><p class="section-intro">Blocking conditions, warnings, and informational observations from deterministic analyzers.</p></div>
+      <div><h2 id="findings-title">Findings</h2></div>
       <div class="toolbar"><label><span class="sr-only">Filter findings</span><select class="filter" data-filter="finding"><option value="all">All severities</option><option value="blocking">Blocking</option><option value="warning">Warning</option><option value="info">Info</option></select></label><span class="result-count" data-count-for="finding">${bundle.findings.length} shown</span></div>
     </div>${body}
   </section>`;
@@ -263,13 +274,17 @@ function evidenceSection(bundle: ProofBundle): string {
 }
 
 function filesSection(bundle: ProofBundle): string {
-  const rows = bundle.patch.files
-    .map((file) => `<tr><td data-label="File" class="mono">${escapeHtml(file.path)}</td><td data-label="Change">${escapeHtml(file.kind)}</td><td data-label="Added" class="mono">+${file.additions}</td><td data-label="Deleted" class="mono">−${file.deletions}</td><td data-label="Binary">${file.binary ? "Yes" : "No"}</td></tr>`)
-    .join("");
-  return `<section class="section" id="files" aria-labelledby="files-title">
-    <div class="section-head"><div><h2 id="files-title">Changed files</h2><p class="section-intro">The exact patch surface used by scope and integrity rules.</p></div></div>
-    ${rows ? `<table class="data-table"><thead><tr><th>File</th><th style="width:110px">Change</th><th style="width:90px">Added</th><th style="width:90px">Deleted</th><th style="width:90px">Binary</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="empty">The compared refs contain no file changes.</p>'}
-  </section>`;
+  const files = bundle.patch.files.map((file, index) => `<details class="patch-file" id="file-${index}" data-index="${index}">
+    <summary>${icon("chevron")}<span class="file-path">${escapeHtml(file.path)}</span><span class="file-kind">${escapeHtml(file.kind)}</span><span class="changes"><span>+${file.additions}</span> <span>−${file.deletions}</span></span></summary>
+${file.previousPath && file.previousPath !== file.path ? `    <p>Previous path: <code>${escapeHtml(file.previousPath)}</code></p>` : ""}
+    ${file.binary ? '<p class="empty">Binary file. The proof JSON contains the Git patch.</p>' : '<div class="patch-view"></div>'}
+  </details>`).join("");
+  return `<section class="section" id="files" aria-labelledby="files-title"><div class="section-head">
+    <h2 id="files-title">Changed files</h2>
+    ${files ? '<label class="path-search">Filter by path <input type="search" data-path-search autocomplete="off"></label>' : ""}
+    </div>${files || '<p class="empty">The compared commits contain no file changes.</p>'}
+    <p class="empty" hidden data-files-empty role="status">No matching file paths.</p>
+    <noscript>Enable JavaScript to inspect unified diffs.</noscript></section>`;
 }
 
 function digestRow(label: string, value: string): string {
@@ -282,11 +297,12 @@ function integritySection(bundle: ProofBundle): string {
     <div class="section-head"><div><h2 id="integrity-title">Integrity</h2><p class="section-intro">Digests make policy, task intent, patch content, and evidence order independently verifiable.</p></div></div>
     <div class="integrity-grid">
       <div class="integrity-status">
-        ${signed ? status("verified") : status("incomplete")}
+        ${icon("shield")}
         <strong>${signed ? "Signed proof bundle" : "Unsigned proof bundle"}</strong>
-        <p>${signed ? `Ed25519 attestation from key ${escapeHtml(signed.keyId)}.` : "The hash chain is complete, but no signing key was used."}</p>
+        <p>${signed ? `Ed25519 key ${escapeHtml(signed.keyId)}. Check signer trust with verify-bundle --trusted-key.` : "Verify the recorded digests with the JSON bundle."}</p>
       </div>
       <dl class="digest-list">
+        ${digestRow("Bundle content", bundle.contentDigest)}
         ${digestRow("Patch diff", bundle.patch.diffDigest)}
         ${digestRow("Policy", bundle.policy.seal.digest)}
         ${digestRow("Contract", bundle.contract.digest)}
@@ -316,15 +332,15 @@ export function renderProofReport(bundle: ProofBundle, options: ReportOptions = 
 <body>
   <a class="skip-link" href="#report-main">Skip to report</a>
   <div class="shell">
-    ${nav().trim()}
+    ${nav(bundle)}
     <div class="content">
       ${hero(bundle)}
       <main class="main" id="report-main">
-        ${graph(bundle)}
-        ${claimsSection(bundle)}
         ${findingsSection(bundle)}
-        ${evidenceSection(bundle)}
         ${filesSection(bundle)}
+        ${claimsSection(bundle)}
+        ${graph(bundle)}
+        ${evidenceSection(bundle)}
         ${integritySection(bundle)}
       </main>
       <footer class="footer">Generated by PatchProof ${escapeHtml(bundle.generator.version)}. The bundled JSON is the source of truth; this HTML is an offline projection.</footer>

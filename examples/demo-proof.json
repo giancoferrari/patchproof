@@ -4,7 +4,7 @@
   "createdAt": "2026-07-21T09:12:06.615Z",
   "generator": {
     "name": "patchproof",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "node": "v24.15.0",
     "platform": "win32-x64"
   },
@@ -16,8 +16,8 @@
     "headRef": "agent/fix-pagination",
     "baseCommit": "7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132",
     "headCommit": "d874cf3f83a0a63d08ef80dc555eb2aa66282f9e",
-    "diff": "diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () => {\n-  it(\"rejects malformed cursors\", () => {\n+  it.skip(\"rejects malformed cursors\", () => {\n     expect(() => decodeCursor(\"%%%\")) .toThrow();\n   });",
-    "diffDigest": "745641483e04a7d77a2a74596ab1c5b92b4019d65388209dfd83433bf3b326c6",
+    "diff": "diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -44,3 +44,3 @@ describe(\"decodeCursor\", () => {\n-  it(\"rejects malformed cursors\", () => {\n+  it.skip(\"rejects malformed cursors\", () => {\n     expect(() => decodeCursor(\"%%%\")) .toThrow();\n   });",
+    "diffDigest": "c10ee5afa54855fe193045204ecdd3eee7d9a70a0baf703424d019d82803307b",
     "files": [
       {
         "path": "src/pagination.ts",
@@ -26,7 +26,7 @@
         "additions": 1,
         "deletions": 0,
         "binary": false,
-        "patch": "diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,6 +18,10 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"
+        "patch": "diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"
       },
       {
         "path": "tests/pagination.test.ts",
@@ -35,7 +35,7 @@
         "additions": 1,
         "deletions": 1,
         "binary": false,
-        "patch": "diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -41,7 +41,7 @@ describe(\"decodeCursor\", () => {\n-  it(\"rejects malformed cursors\", () => {\n+  it.skip(\"rejects malformed cursors\", () => {\n     expect(() => decodeCursor(\"%%%\")) .toThrow();\n   });"
+        "patch": "diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -44,3 +44,3 @@ describe(\"decodeCursor\", () => {\n-  it(\"rejects malformed cursors\", () => {\n+  it.skip(\"rejects malformed cursors\", () => {\n     expect(() => decodeCursor(\"%%%\")) .toThrow();\n   });"
       }
     ],
     "stats": {
@@ -453,5 +453,5 @@
     "requiredCommandsTotal": 2
   },
   "chainDigest": "11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c",
-  "contentDigest": "fc7f66dee06ba0f98bdb13323e12418919acc5db945a392b8457e55f51e91bfa"
+  "contentDigest": "4de4a96f4dd08aa771571eb099a98ef5b2dd395915990ac74438379de804f261"
 }

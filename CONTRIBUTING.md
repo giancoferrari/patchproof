@@ -6,7 +6,7 @@ By participating, you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Report
 
 ## Development setup
 
-Requirements are Node.js 20.12 or newer and Git.
+Use Node.js 22.12 or newer and Git for development. CI also tests the development tools on Node 20.19 and the packaged CLI on Node 20.12.
 
 ```sh
 npm ci

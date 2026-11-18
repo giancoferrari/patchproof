@@ -7,6 +7,7 @@ import {
   readProofBundle,
   signProofBundle,
   verifyProofBundle,
+  verifyProofAgainstRepository,
   writeProofBundle,
   type BundleVerificationOptions,
 } from "../proof/index.js";
@@ -57,7 +58,7 @@ export async function signBundle(
 
 export async function verifyBundleCommand(
   input: string, cwd: string, json: boolean,
-  options: BundleVerificationOptions & { trustedKey?: string[] } = {},
+  options: BundleVerificationOptions & { trustedKey?: string[]; repository?: string; policy?: string; contract?: string } = {},
 ): Promise<void> {
   let result;
   try {
@@ -65,9 +66,17 @@ export async function verifyBundleCommand(
     const trustedPublicKeys = options.trustedKey
       ? await Promise.all(options.trustedKey.map((path) => readFile(resolve(cwd, path), "utf8")))
       : options.trustedPublicKeys;
-    result = verifyProofBundle(bundle, {
+    const requirements = {
       ...options, ...(trustedPublicKeys !== undefined ? { trustedPublicKeys } : {}),
-    });
+    };
+    if ((options.policy || options.contract) && !options.repository) throw new Error("--policy and --contract require --repository.");
+    result = options.repository
+      ? await verifyProofAgainstRepository(bundle, resolve(cwd, options.repository), {
+        ...requirements,
+        ...(options.policy ? { policyPath: options.policy } : {}),
+        ...(options.contract ? { contractPath: options.contract } : {}),
+      })
+      : verifyProofBundle(bundle, requirements);
   } catch (error) {
     result = { valid: false, errors: [error instanceof Error ? error.message : String(error)], signature: "invalid" as const };
   }
@@ -75,6 +84,7 @@ export async function verifyBundleCommand(
     process.stdout.write(`${JSON.stringify(result)}\n`);
   } else if (result.valid) {
     process.stdout.write(`${pc.green("Valid proof bundle")} · signature ${result.signature}\n`);
+    if (options.repository) process.stdout.write("  The patch, base policy, and candidate contract match the local Git objects.\n");
     if (options.trustedKey || options.trustedPublicKeys) {
       process.stdout.write("  Signing key matched the verifier's trusted key list.\n");
     } else if (result.signature === "valid") {

@@ -1,15 +1,15 @@
 # PatchProof
 
-Independent, inspectable evidence for AI-written code.
+Review AI-written patches with the Git diff, test results, and verification policy in one offline report.
 
 [![CI](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml/badge.svg)](https://github.com/giancoferrari/patchproof/actions/workflows/codeql.yml)
 
-PatchProof turns a Git patch into a portable proof bundle: the exact diff, a policy anchored to the trusted base commit, deterministic analyzer results, test and build output, falsifiable claims, and an optional Ed25519 signature. It is designed for teams that want stronger review evidence than "the coding agent says it works."
+Both required checks passed in the example below. PatchProof rejected the change because the patch disabled an existing test. Open the blocking finding to inspect the changed line, read the rule evidence, and see the proposed fix.
 
-PatchProof is local by default. No model is required to verify a patch. A local Ollama model, or an explicitly configured OpenAI-compatible endpoint, can optionally draft a contract; the final verdict remains deterministic.
+![PatchProof review showing two passing checks and the diff that disabled the cursor test](docs/assets/patchproof-report.png)
 
-![PatchProof offline proof explorer showing a rejected change, its claims, and linked evidence](docs/assets/patchproof-report.png)
+**Try the report.** Open [the standalone HTML file](https://raw.githubusercontent.com/giancoferrari/patchproof/main/examples/patchproof-report.html) by saving it and opening it in a browser, or open `examples/patchproof-report.html` in a checkout. The report works offline. [Inspect the sample proof JSON](examples/demo-proof.json).
 
 ## What it checks
 
@@ -32,7 +32,7 @@ PatchProof is local by default. No model is required to verify a patch. A local 
 patchproof doctor --base main
 patchproof verify --base main --summary .patchproof/proofs/review.md
 patchproof compare before.json after.json --fail-on-regression
-patchproof verify-bundle after.json --trusted-key ci-public.pem --require-verified
+patchproof verify-bundle after.json --repository . --trusted-key ci-public.pem --require-verified
 ```
 
 Get actionable findings and fixes in the terminal, a Markdown review summary, and the GitHub job summary. Compare candidate runs to identify regressions; pin an approved contract before commands run; require a known signer and exact candidate commit when accepting evidence. See [Advanced workflows](docs/advanced-workflows.md) for complete examples and trust boundaries. These additions are in the current checkout and are not part of the published `v0.1.0` release.
@@ -41,7 +41,7 @@ PatchProof does **not** prove arbitrary semantic correctness, sandbox commands, 
 
 ## Requirements
 
-- Node.js 20.12 or newer
+- Node.js 20.12 or newer to run the packaged CLI. Use Node.js 22.12 or newer for development.
 - Git available on `PATH`
 - A Git repository with a committed PatchProof policy at the selected base ref
 
@@ -225,7 +225,7 @@ Review the generated contract before implementation. The model proposes claims; 
 ## Programmatic API
 
 ```ts
-import { verifyPatch, verifyProofBundle } from "@giancoferrari/patchproof";
+import { PACKAGE_VERSION, verifyPatch, verifyProofBundle } from "@giancoferrari/patchproof";
 
 const bundle = await verifyPatch({
   cwd: process.cwd(),
@@ -235,7 +235,7 @@ const bundle = await verifyPatch({
   contractPath: ".patchproof/contract.yml",
   runCommands: true,
   explicitPolicy: false,
-  packageVersion: "0.1.0",
+  packageVersion: PACKAGE_VERSION,
 });
 
 console.log(bundle.verdict.status);
@@ -258,7 +258,7 @@ The public API also exports the Git adapter, analyzers, configuration validators
 
 ## Project status
 
-PatchProof is an early `0.1.0` release. The proof format is versioned as schema `1.0` and has a published [JSON Schema](schemas/proof-bundle.schema.json), but compatibility guarantees and independent verifier tooling are still maturing. Pin the package version in automated verification environments and review generated evidence as part of code review.
+The current checkout identifies itself as `0.2.0` and reads and writes [proof schema 1.0](schemas/proof-bundle.schema.json). Pin a commit or released package in automated verification environments so reviewers can reproduce the generator version.
 
 ## License
 

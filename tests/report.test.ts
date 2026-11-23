@@ -14,7 +14,13 @@ describe("standalone report", () => {
     expect(html).toContain("Evidence chain");
     expect(html).toContain("prefers-reduced-motion");
     expect(html).toContain("Skip to report");
-    expect(html).not.toContain("linear-gradient");
+    expect(html).toContain('class="wordmark"');
+    expect(html).toContain('<body class="verdict-rejected">');
+    // The report must stay fully offline: no remote scripts, stylesheets, images, or fonts.
+    expect(html).not.toMatch(/(?:src|href)="https?:/);
+    expect(html).not.toMatch(/@import|@font-face/);
+    // House style: the interface never uses em dashes.
+    expect(html).not.toMatch(/\u2014|&mdash;|&#8212;/);
   });
 
   it("escapes user-controlled text in markup and embedded JSON", () => {

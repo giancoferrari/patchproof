@@ -42,7 +42,11 @@ export const REPORT_SCRIPT = String.raw`
   if (expand) expand.addEventListener('click', () => details.forEach((item) => { item.open = true; }));
   if (collapse) collapse.addEventListener('click', () => details.forEach((item) => { item.open = false; }));
 
-  const links = $$('.rail nav a');
+  const links = $$('.topbar nav a');
+  const topbar = document.querySelector('.topbar');
+  const markScrolled = () => { if (topbar) topbar.dataset.scrolled = String(window.scrollY > 8); };
+  window.addEventListener('scroll', markScrolled, { passive: true });
+  markScrolled();
   const fileItems = $$('.patch-file');
   const search = document.querySelector('[data-path-search]');
   const filterPaths = () => {

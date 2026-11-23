@@ -9,329 +9,421 @@
   <style>
 :root {
   color-scheme: light;
-  --proof-blue: oklch(0.57 0.16 230);
-  --proof-blue-deep: oklch(0.41 0.125 230);
-  --annotation-orange: oklch(0.65 0.185 35);
-  --verified: oklch(0.52 0.135 150);
-  --verified-soft: oklch(0.95 0.035 150);
-  --warning: oklch(0.88 0.105 88);
-  --warning-soft: oklch(0.965 0.045 88);
-  --failed: oklch(0.555 0.195 25);
-  --failed-soft: oklch(0.95 0.045 25);
-  --canvas: oklch(1 0 0);
-  --surface: oklch(0.965 0.008 230);
-  --surface-strong: oklch(0.925 0.014 230);
-  --ink: oklch(0.19 0.025 235);
-  --muted: oklch(0.455 0.03 235);
-  --rule: oklch(0.85 0.014 230);
-  --focus: oklch(0.57 0.16 230 / 0.28);
-  --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --rail: 226px;
+  --paper: #fbfaf8;
+  --sheet: #ffffff;
+  --wash: #f3f2ee;
+  --wash-strong: #e9e8e3;
+  --ink: #111110;
+  --ink-soft: #3b3b38;
+  --muted: #696864;
+  --quiet: #84837d;
+  --ash: #bdbdba;
+  --rule: #e3e2dd;
+  --rule-strong: #cdccc6;
+  --pass: #1d6646;
+  --pass-wash: #e4f1e9;
+  --fail: #a12f29;
+  --fail-wash: #fbe7e4;
+  --warn: #75560b;
+  --warn-wash: #f7edcb;
+  --diff-add: #e8f4ec;
+  --diff-del: #fbeae7;
+  --font: "Inter Display", Inter, "Helvetica Neue", "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
+  --gutter: clamp(18px, 4vw, 56px);
+  --radius: 18px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --topbar: 60px;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 2.2 -.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+
+  /* Verdict atmosphere. Rejected is the default; other verdicts override the five stops. */
+  --atmo-base: #e3a17f;
+  --atmo-1: #e9c65c;
+  --atmo-2: #e27b3f;
+  --atmo-3: #d8464e;
+  --atmo-4: #aaa6d2;
+  --atmo-5: #f3d6c9;
+}
+.verdict-verified {
+  --atmo-base: #b8cfc1;
+  --atmo-1: #dfe3a8;
+  --atmo-2: #7cbf9c;
+  --atmo-3: #4f9ea3;
+  --atmo-4: #b9b3e2;
+  --atmo-5: #eef1e6;
+}
+.verdict-incomplete {
+  --atmo-base: #e9d3a2;
+  --atmo-1: #f3e4a4;
+  --atmo-2: #e9b558;
+  --atmo-3: #e3926e;
+  --atmo-4: #c6c0dd;
+  --atmo-5: #f6ecd6;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; background: var(--canvas); }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--topbar) + 16px); background: var(--paper); }
 body {
   margin: 0;
   color: var(--ink);
-  background: var(--canvas);
+  background: var(--paper);
   font-family: var(--font);
   font-size: 15px;
   line-height: 1.55;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-button, select { font: inherit; }
+button, select, input { font: inherit; color: inherit; }
 button, a, select, summary { -webkit-tap-highlight-color: transparent; }
-a { color: var(--proof-blue-deep); text-underline-offset: 3px; }
-a:hover { color: var(--proof-blue); }
-:focus-visible { outline: 2px solid var(--proof-blue); outline-offset: 3px; }
+a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+code { font-family: var(--mono); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
 .skip-link {
-  position: fixed; z-index: 60; top: 8px; left: 8px; transform: translateY(-150%);
-  padding: 9px 13px; color: var(--canvas); background: var(--proof-blue-deep); border-radius: 7px;
+  position: fixed; z-index: 60; top: 10px; left: 10px; transform: translateY(-160%);
+  padding: 9px 14px; color: var(--sheet); background: var(--ink); border-radius: 999px; text-decoration: none;
 }
 .skip-link:focus { transform: translateY(0); }
 .icon { width: 1.05em; height: 1.05em; flex: 0 0 auto; }
-.shell { min-height: 100vh; display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); }
-.rail {
-  position: sticky; top: 0; align-self: start; height: 100vh; padding: 22px 16px;
-  background: var(--surface); border-right: 1px solid var(--rule); overflow-y: auto;
+.hidden { display: none !important; }
+[hidden] { display: none !important; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 40; height: var(--topbar);
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px;
+  padding: 0 var(--gutter); background: var(--paper); border-bottom: 1px solid transparent;
+  transition: border-color 220ms var(--ease);
 }
-.brand { display: flex; align-items: center; gap: 10px; margin: 2px 8px 28px; font-weight: 760; letter-spacing: -0.025em; }
-.brand-mark {
-  width: 29px; height: 29px; display: grid; place-items: center; color: var(--canvas);
-  background: var(--proof-blue-deep); border-radius: 7px;
+.topbar[data-scrolled="true"] { border-bottom-color: var(--rule); }
+.brand { display: inline-flex; align-items: center; width: max-content; color: var(--ink); }
+.wordmark { display: block; height: 24px; width: auto; }
+.topbar nav { display: flex; align-items: center; gap: 2px; }
+.topbar nav a {
+  position: relative; display: inline-flex; align-items: flex-start; gap: 2px; min-height: 40px; padding: 10px 11px;
+  color: var(--muted); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap;
+  border-radius: 999px; transition: color 160ms var(--ease), background-color 160ms var(--ease);
 }
-.rail nav { display: grid; gap: 3px; }
-.rail nav a {
-  min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-  color: var(--muted); text-decoration: none; border-radius: 7px; font-weight: 590;
+.topbar nav a:hover { color: var(--ink); background: var(--wash); }
+.topbar nav a[aria-current="true"] { color: var(--ink); }
+.topbar nav a[aria-current="true"]::after {
+  content: ""; position: absolute; left: 11px; right: 11px; bottom: 7px; height: 1px; background: var(--ink);
 }
-.rail nav a:hover, .rail nav a[aria-current="true"] { color: var(--ink); background: var(--surface-strong); }
-.rail nav a[aria-current="true"] { color: var(--proof-blue-deep); }
-.rail-meta { margin: 30px 8px 0; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12px; }
-.rail-meta code { display: block; margin-top: 5px; color: var(--ink); font-family: var(--mono); overflow-wrap: anywhere; }
-.content { min-width: 0; }
-.hero {
-  padding: 34px clamp(22px, 4.5vw, 68px) 28px; border-bottom: 1px solid var(--rule); background: var(--canvas);
+.nav-count { font: 500 10px/1 var(--mono); color: var(--quiet); transform: translateY(-1px); }
+.topbar-action { justify-self: end; }
+.text-button {
+  min-height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 8px 2px;
+  background: none; border: 0; color: var(--ink); font-size: 13px; font-weight: 500; cursor: pointer;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px;
 }
-.hero-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
-.verdict-lockup { display: flex; gap: 15px; min-width: 0; }
-.verdict-symbol {
-  width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px;
-  background: var(--surface); color: var(--muted);
+.text-button:hover { text-decoration-thickness: 2px; }
+
+/* ---------- Hero ---------- */
+.hero { padding: clamp(40px, 7vw, 96px) var(--gutter) clamp(32px, 5vw, 56px); }
+.hero-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 40px clamp(32px, 6vw, 96px);
+  align-items: end; max-width: 1360px;
 }
-.verdict-symbol .icon { width: 23px; height: 23px; }
-.verdict-verified .verdict-symbol { color: var(--verified); background: var(--verified-soft); }
-.verdict-rejected .verdict-symbol, .verdict-error .verdict-symbol { color: var(--failed); background: var(--failed-soft); }
-.verdict-incomplete .verdict-symbol { color: var(--ink); background: var(--warning); }
-.hero h1 { margin: 0; font-size: 2rem; line-height: 1.15; letter-spacing: -0.025em; text-wrap: balance; }
-.hero-summary { max-width: 68ch; margin: 8px 0 0; color: var(--muted); text-wrap: pretty; }
-.ref-line { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 13px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.ref-arrow { color: var(--proof-blue); font-family: var(--font); font-weight: 750; }
-.hero-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-.button {
-  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 9px 13px; border-radius: 7px; border: 1px solid var(--rule); background: var(--canvas);
-  color: var(--ink); cursor: pointer; font-weight: 640; transition: background 180ms ease-out, color 180ms ease-out, transform 180ms ease-out;
+.hero-aside { display: grid; gap: 14px; color: var(--muted); font-size: 14px; line-height: 1.45; padding-bottom: 4px; }
+.hero-aside p { margin: 0; max-width: 34ch; }
+.hero-aside strong { color: var(--ink); font-weight: 500; }
+.eyebrow { color: var(--quiet); font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.ref-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink-soft); font: 12px/1.5 var(--mono); }
+.ref-line code { padding: 3px 7px; background: var(--wash); border-radius: 6px; }
+.ref-line .ref-name { color: var(--muted); }
+.ref-arrow { color: var(--quiet); }
+.intro { min-width: 0; }
+.intro h1 {
+  margin: 18px 0 0; max-width: 18ch; font-size: clamp(2.3rem, 5.2vw, 4.25rem); font-weight: 500; line-height: 1.02;
+  letter-spacing: -0.042em; text-wrap: balance;
 }
-.button:hover { background: var(--surface); }
-.button:active { transform: translateY(1px); }
-.button-primary { color: var(--canvas); background: var(--proof-blue-deep); border-color: var(--proof-blue-deep); }
-.button-primary:hover { color: var(--canvas); background: var(--proof-blue); border-color: var(--proof-blue); }
+.hero-summary { max-width: 52ch; margin: 22px 0 0; color: var(--ink-soft); font-size: 1.0625rem; line-height: 1.5; text-wrap: pretty; }
+
+/* ---------- Atmosphere (verdict-tinted grain field) ---------- */
+.atmosphere {
+  position: relative; isolation: isolate; overflow: hidden; margin: 0 var(--gutter);
+  min-height: clamp(150px, 19vw, 260px); border-radius: var(--radius); background: var(--atmo-base);
+}
+.atmosphere-field {
+  position: absolute; inset: -20%; z-index: -2; filter: blur(34px) saturate(1.08);
+  background:
+    radial-gradient(30% 52% at 22% 40%, var(--atmo-1) 0%, transparent 72%),
+    radial-gradient(28% 60% at 42% 68%, var(--atmo-2) 0%, transparent 72%),
+    radial-gradient(26% 58% at 61% 46%, var(--atmo-3) 0%, transparent 70%),
+    radial-gradient(22% 62% at 80% 40%, var(--atmo-4) 0%, transparent 74%),
+    radial-gradient(40% 34% at 50% 14%, var(--atmo-5) 0%, transparent 76%);
+  animation: drift 26s var(--ease) infinite alternate;
+}
+.atmosphere::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: var(--grain); background-size: 220px 220px; mix-blend-mode: overlay; opacity: 0.75;
+}
+.atmosphere-label {
+  position: absolute; bottom: 14px; color: var(--ink); font: 500 12px/1.4 var(--font);
+}
+.atmosphere-label.left { left: 18px; }
+.atmosphere-label.right { right: 18px; }
+@keyframes drift {
+  from { transform: translate3d(-2%, 0, 0) scale(1); }
+  to { transform: translate3d(2.5%, -3%, 0) scale(1.06); }
+}
+
+/* ---------- Metrics ---------- */
 .metrics {
-  display: flex; flex-wrap: wrap; margin: 28px 0 0; padding: 0; list-style: none;
-  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0 var(--gutter);
 }
-.metric { min-width: 145px; padding: 14px 24px 14px 0; margin-right: 24px; }
-.metric + .metric { padding-left: 24px; border-left: 1px solid var(--rule); }
-.metric dt { color: var(--muted); font-size: 12px; font-weight: 650; }
-.metric dd { margin: 2px 0 0; font-size: 20px; font-weight: 720; letter-spacing: -0.02em; }
-.main { max-width: 1280px; padding: 8px clamp(22px, 4.5vw, 68px) 90px; }
-.section { padding: 42px 0; scroll-margin-top: 16px; }
-.section + .section { border-top: 1px solid var(--rule); }
-.section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 21px; }
-.section h2 { margin: 0; font-size: 1.25rem; line-height: 1.25; letter-spacing: -0.018em; text-wrap: balance; }
-.section-intro { max-width: 68ch; margin: 5px 0 0; color: var(--muted); }
-.status {
-  display: inline-flex; align-items: center; gap: 5px; width: max-content; padding: 4px 8px;
-  border-radius: 999px; font-size: 12px; line-height: 1.35; font-weight: 690;
+.metric { min-width: 0; padding: 18px 16px 22px 0; border-bottom: 1px solid var(--rule); }
+.metric + .metric { padding-left: 16px; border-left: 1px solid var(--rule); }
+.metric dt { color: var(--muted); font-size: 12.5px; font-weight: 450; }
+.metric dd { margin: 6px 0 0; font: 450 clamp(1.6rem, 2.8vw, 2.25rem)/1.05 var(--font); letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+.metric small { color: var(--quiet); font-size: 0.55em; letter-spacing: -0.01em; }
+.changes { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.changes span:first-child { color: var(--pass); }
+.changes span:last-child { color: var(--fail); }
+
+/* ---------- Sections ---------- */
+.main { max-width: 1440px; padding: 0 var(--gutter) 40px; }
+.section {
+  display: grid; grid-template-columns: minmax(200px, 0.62fr) minmax(0, 1.55fr); gap: 24px clamp(32px, 6vw, 96px);
+  padding: clamp(48px, 6vw, 80px) 0; border-bottom: 1px solid var(--rule);
 }
-.status-proven, .status-passed, .status-verified { color: var(--canvas); background: var(--verified); }
-.status-disproven, .status-failed, .status-error, .status-rejected, .severity-blocking { color: var(--canvas); background: var(--failed); }
-.status-unproven, .status-skipped, .status-incomplete, .severity-warning { color: var(--ink); background: var(--warning); }
-.severity-info { color: var(--proof-blue-deep); background: oklch(0.94 0.035 230); }
-.graph-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(270px, .75fr); gap: 28px; align-items: start; }
-.graph-canvas { min-width: 0; padding: 16px; background: var(--surface); border-radius: 12px; overflow-x: auto; }
-.graph-canvas svg { display: block; min-width: 620px; width: 100%; height: auto; }
-.graph-edge { stroke: var(--rule); stroke-width: 2; fill: none; }
-.graph-edge-passed { stroke: var(--verified); }
-.graph-node { fill: var(--canvas); stroke: var(--rule); stroke-width: 2; }
-.graph-node-proven, .graph-node-passed { stroke: var(--verified); }
-.graph-node-disproven, .graph-node-failed, .graph-node-error { stroke: var(--failed); }
-.graph-node-unproven, .graph-node-skipped { stroke: oklch(0.72 0.11 88); }
-.graph-label { fill: var(--ink); font-family: var(--font); font-size: 11px; font-weight: 650; }
-.graph-sub { fill: var(--muted); font-family: var(--mono); font-size: 9px; }
-.semantic-graph { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
-.semantic-graph li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
-.semantic-graph strong { display: block; margin-bottom: 3px; }
-.semantic-graph span { color: var(--muted); font-size: 13px; }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.section:last-child { border-bottom: 0; }
+.section-head { align-self: start; position: sticky; top: calc(var(--topbar) + 24px); min-width: 0; }
+.section-index { display: block; margin-bottom: 14px; color: var(--quiet); font: 500 11px/1 var(--mono); letter-spacing: 0.06em; }
+.section h2 { margin: 0; font-size: clamp(1.6rem, 2.4vw, 2.1rem); font-weight: 500; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; }
+.section-intro { max-width: 36ch; margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; text-wrap: pretty; }
+.section-body { min-width: 0; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 22px; }
 .filter {
-  min-height: 40px; padding: 8px 32px 8px 10px; color: var(--ink); background: var(--canvas);
-  border: 1px solid var(--rule); border-radius: 7px;
+  min-height: 40px; max-width: 100%; padding: 8px 30px 8px 14px; color: var(--ink); background: var(--sheet);
+  border: 1px solid var(--rule-strong); border-radius: 999px; font-size: 13px; cursor: pointer;
+  transition: border-color 160ms var(--ease);
 }
-.result-count { color: var(--muted); font-size: 13px; }
+.filter:hover { border-color: var(--ink); }
+.result-count { color: var(--quiet); font: 12px var(--mono); }
+.toolbar-actions { display: flex; flex-basis: 100%; gap: 18px; }
+
+/* ---------- Status chips ---------- */
+.status {
+  display: inline-flex; align-items: center; gap: 6px; width: max-content; padding: 4px 10px 4px 8px;
+  border-radius: 999px; font-size: 12px; line-height: 1.35; font-weight: 550; text-transform: capitalize;
+  color: var(--ink-soft); background: var(--wash);
+}
+.status .icon { width: 14px; height: 14px; }
+.status-proven, .status-passed, .status-verified { color: var(--pass); background: var(--pass-wash); }
+.status-disproven, .status-failed, .status-error, .status-rejected, .severity-blocking { color: var(--fail); background: var(--fail-wash); }
+.status-unproven, .status-skipped, .status-incomplete, .severity-warning { color: var(--warn); background: var(--warn-wash); }
+.severity-info { color: var(--ink-soft); background: var(--wash); }
+.status-lg { padding: 6px 14px 6px 11px; font-size: 13px; }
+
+/* ---------- Findings ---------- */
+.finding { padding: 28px 0; border-top: 1px solid var(--rule); overflow-wrap: anywhere; }
+.finding:first-child { padding-top: 0; border-top: 0; }
+.finding-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.rule-name, .file-kind { color: var(--muted); font: 12px var(--mono); }
+.finding h3 { margin: 14px 0 6px; font-size: 1.35rem; font-weight: 500; line-height: 1.22; letter-spacing: -0.022em; text-wrap: balance; }
+.finding p { margin: 6px 0; max-width: 62ch; color: var(--muted); }
+.finding .fix { margin-top: 14px; color: var(--ink); }
+.fix strong { display: block; margin-bottom: 2px; color: var(--quiet); font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.finding-with-patch { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.finding-links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; margin-top: 10px; color: var(--muted); font: 12px var(--mono); }
+.finding-links a { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; color: var(--ink); }
+.excerpt { min-width: 0; margin: 14px 0 0; overflow: hidden; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; }
+.excerpt figcaption { display: flex; align-items: center; gap: 8px; padding: 11px 14px; color: var(--muted); font: 12px var(--mono); border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
+.excerpt pre { margin: 0; padding: 6px 0; max-height: none; border-radius: 0; background: var(--sheet); white-space: pre-wrap; }
+.excerpt pre span { display: block; padding: 5px 14px; }
+.excerpt i { display: inline-block; min-width: 2.4em; font-style: normal; color: var(--quiet); }
+.excerpt-added { background: var(--diff-add); }
+.excerpt-removed { background: var(--diff-del); }
+
+/* ---------- Changed files ---------- */
+.path-search { display: grid; gap: 6px; margin-top: 22px; color: var(--muted); font-size: 12.5px; }
+.path-search input {
+  min-height: 40px; width: 100%; max-width: 280px; padding: 8px 14px; background: var(--sheet); color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 999px; font-size: 13px;
+}
+.path-search input:hover { border-color: var(--ink); }
+.patch-file { border-top: 1px solid var(--rule); }
+.patch-file:last-of-type { border-bottom: 1px solid var(--rule); }
+.patch-file summary { display: flex; gap: 12px; align-items: center; min-height: 56px; cursor: pointer; list-style: none; }
+.patch-file summary::-webkit-details-marker { display: none; }
+.patch-file summary .icon { color: var(--quiet); transition: transform 220ms var(--ease); }
+.patch-file[open] summary .icon { transform: rotate(90deg); color: var(--ink); }
+.patch-file summary:hover .file-path { text-decoration: underline; text-underline-offset: 4px; }
+.file-path { flex: 1; min-width: 0; overflow-wrap: anywhere; font: 500 13px var(--mono); }
+.patch-file summary .changes { font: 12px var(--mono); }
+.patch-view { margin-bottom: 18px; }
+.diff-grid { max-height: 32rem; overflow: auto; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; font: 12px/1.7 var(--mono); tab-size: 2; }
+.diff-row { display: grid; grid-template-columns: 4em 4em 1fr; width: max-content; min-width: 100%; white-space: pre; }
+.diff-row span:nth-child(-n+2) { padding-right: 1em; text-align: right; color: var(--quiet); user-select: none; }
+.diff-row span:last-child { padding-inline: 10px; }
+.diff-add { background: var(--diff-add); }
+.diff-del { background: var(--diff-del); }
+.diff-hunk { background: var(--wash); color: var(--muted); }
+.diff-target { outline: 2px solid var(--ink); outline-offset: -2px; }
+.diff-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; color: var(--muted); font-size: 13px; }
+.diff-pager button {
+  min-height: 40px; padding: 6px 14px; background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 999px; cursor: pointer;
+}
+.diff-pager button:disabled { color: var(--quiet); cursor: not-allowed; }
+
+/* ---------- Claims ---------- */
 .claim-list { border-top: 1px solid var(--rule); }
 .claim {
-  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; column-gap: 13px;
-  align-items: start;
-  padding: 19px 0; border-bottom: 1px solid var(--rule);
+  display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; column-gap: 16px; align-items: start;
+  padding: 22px 0; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere;
 }
-.claim-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 7px; background: var(--surface); color: var(--muted); }
-.claim[data-status="proven"] .claim-mark { color: var(--verified); background: var(--verified-soft); }
-.claim[data-status="disproven"] .claim-mark { color: var(--failed); background: var(--failed-soft); }
-.claim h3 { margin: 2px 0 4px; font-size: 1rem; line-height: 1.38; text-wrap: pretty; }
-.claim-id { font-family: var(--mono); color: var(--muted); font-size: 11px; }
-.claim p { margin: 7px 0 0; max-width: 76ch; color: var(--muted); }
-.evidence-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.evidence-link { font-family: var(--mono); font-size: 11px; color: var(--proof-blue-deep); text-decoration: none; padding: 3px 6px; background: var(--surface); border-radius: 4px; }
-.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.data-table th { padding: 9px 10px; text-align: left; color: var(--muted); background: var(--surface); font-size: 12px; font-weight: 680; }
-.data-table td { padding: 12px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
-.data-table th:first-child, .data-table td:first-child { padding-left: 0; }
-.data-table th:last-child, .data-table td:last-child { padding-right: 0; }
-.finding-title { font-weight: 650; }
-.finding-description { margin-top: 3px; color: var(--muted); font-size: 13px; }
-.mono { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.claim-mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--muted); background: var(--wash); }
+.claim-mark .icon { width: 16px; height: 16px; }
+[data-status="proven"] > .claim-mark, [data-status="passed"] .claim-mark { color: var(--pass); background: var(--pass-wash); }
+[data-status="disproven"] > .claim-mark, [data-status="failed"] .claim-mark, [data-status="error"] .claim-mark { color: var(--fail); background: var(--fail-wash); }
+[data-status="unproven"] > .claim-mark, [data-status="skipped"] .claim-mark { color: var(--warn); background: var(--warn-wash); }
+.claim h3 { margin: 4px 0 4px; font-size: 1.08rem; font-weight: 500; line-height: 1.35; letter-spacing: -0.012em; text-wrap: pretty; }
+.claim-id { color: var(--quiet); font: 11px var(--mono); }
+.claim p { margin: 6px 0 0; max-width: 66ch; color: var(--muted); }
+.evidence-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.evidence-link {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; color: var(--ink-soft); background: var(--wash);
+  border-radius: 999px; font: 11px var(--mono); text-decoration: none; transition: background-color 160ms var(--ease);
+}
+.evidence-link:hover { background: var(--wash-strong); color: var(--ink); }
+
+/* ---------- Proof graph ---------- */
+.graph-layout { display: grid; gap: 24px; }
+.graph-canvas { min-width: 0; padding: 18px; background: var(--wash); border-radius: var(--radius); overflow-x: auto; }
+.graph-canvas svg { display: block; min-width: 620px; width: 100%; height: auto; }
+.graph-edge { stroke: var(--rule-strong); stroke-width: 1.5; fill: none; }
+.graph-edge-passed { stroke: var(--ink); }
+.graph-node { fill: var(--sheet); stroke: var(--rule-strong); stroke-width: 1.5; }
+.graph-node-proven, .graph-node-passed { stroke: var(--pass); }
+.graph-node-disproven, .graph-node-failed, .graph-node-error { stroke: var(--fail); }
+.graph-node-unproven, .graph-node-skipped { stroke: #c79a2a; }
+.graph-verdict { fill: var(--ink); stroke: none; }
+.graph-verdict-label { fill: var(--sheet); font-family: var(--font); font-size: 11px; font-weight: 600; }
+.graph-verdict-sub { fill: var(--ash); font-family: var(--mono); font-size: 9px; }
+.graph-label { fill: var(--ink); font-family: var(--font); font-size: 11px; font-weight: 550; }
+.graph-sub { fill: var(--muted); font-family: var(--mono); font-size: 9px; }
+.graph-canvas g[tabindex]:focus { outline: none; }
+.graph-canvas g[tabindex]:focus-visible rect { stroke: var(--ink); stroke-width: 2.5; }
+.semantic-graph { margin: 0; padding: 0; list-style: none; counter-reset: claim; border-top: 1px solid var(--rule); }
+.semantic-graph li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 0 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); counter-increment: claim; }
+.semantic-graph li::before { content: counter(claim, decimal-leading-zero); color: var(--quiet); font: 11px/1.9 var(--mono); }
+.semantic-graph strong { display: block; font-weight: 500; }
+.semantic-graph span { grid-column: 2; color: var(--muted); font-size: 13px; }
+
+/* ---------- Evidence ---------- */
 .evidence-list { border-top: 1px solid var(--rule); }
-.evidence-item { border-bottom: 1px solid var(--rule); }
+.evidence-item { border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
 .evidence-item summary {
-  min-height: 58px; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto; gap: 12px;
-  align-items: center; padding: 10px 0; cursor: pointer; list-style: none;
+  min-height: 64px; display: grid; grid-template-columns: 32px minmax(0, 1fr) auto 20px; gap: 16px;
+  align-items: center; padding: 12px 0; cursor: pointer; list-style: none;
 }
 .evidence-item summary::-webkit-details-marker { display: none; }
-.evidence-item summary::after { content: "+"; font-size: 18px; color: var(--muted); }
-.evidence-item[open] summary::after { content: "−"; }
-.evidence-summary strong { display: block; }
-.evidence-summary span { display: block; color: var(--muted); font-size: 12px; }
-.evidence-body { padding: 0 0 20px 40px; }
-.metadata { display: flex; flex-wrap: wrap; gap: 7px 20px; margin: 0 0 13px; color: var(--muted); font-size: 12px; }
-.metadata dt { font-weight: 650; }
+.evidence-item summary::after { content: "+"; justify-self: end; color: var(--muted); font-size: 20px; font-weight: 300; line-height: 1; }
+.evidence-item[open] summary::after { content: "\2212"; }
+.evidence-item summary:hover strong { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.evidence-summary strong { display: block; font-weight: 500; }
+.evidence-summary span { display: block; color: var(--muted); font: 11.5px/1.6 var(--mono); }
+.evidence-body { padding: 0 0 22px 48px; }
+.metadata { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 14px; color: var(--muted); font-size: 12px; }
+.metadata dt { color: var(--quiet); font: 500 10.5px/1.6 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
 .metadata dd { margin: 0; font-family: var(--mono); color: var(--ink); }
 pre {
-  max-height: 430px; margin: 10px 0 0; padding: 14px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
-  color: var(--ink); background: var(--surface); border-radius: 7px; font: 12px/1.6 var(--mono); tab-size: 2;
+  max-height: 430px; margin: 10px 0 0; padding: 16px 18px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  color: var(--ink); background: var(--wash); border-radius: 14px; font: 12px/1.65 var(--mono); tab-size: 2;
 }
-.empty { padding: 24px 0; color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-.integrity-grid { display: grid; grid-template-columns: minmax(220px, .65fr) minmax(0, 1.35fr); gap: 28px; }
-.integrity-status { padding: 20px; background: var(--surface); border-radius: 12px; }
-.integrity-status strong { display: block; font-size: 1.08rem; }
-.integrity-status p { margin: 6px 0 0; color: var(--muted); }
-.digest-list { margin: 0; }
-.digest-row { display: grid; grid-template-columns: 145px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule); }
-.digest-row dt { color: var(--muted); font-size: 12px; }
-.digest-row dd { margin: 0; font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
+.empty { margin: 0; padding: 22px 0; color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+
+/* ---------- Integrity ---------- */
+.integrity-grid { display: grid; grid-template-columns: minmax(200px, 0.7fr) minmax(0, 1.3fr); gap: 32px; align-items: start; }
+.integrity-status { padding: 24px; background: var(--wash); border-radius: var(--radius); }
+.integrity-status .mark { display: block; width: 46px; height: auto; margin-bottom: 26px; }
+.integrity-status strong { display: block; font-size: 1.2rem; font-weight: 500; letter-spacing: -0.02em; }
+.integrity-status p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.digest-list { margin: 0; border-top: 1px solid var(--rule); }
+.digest-row { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.digest-row dt { color: var(--muted); font-size: 13px; }
+.digest-row dd { margin: 0; font: 11px/1.55 var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
 .copy {
-  width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); background: transparent;
-  border: 0; border-radius: 7px; cursor: pointer;
+  width: 40px; height: 40px; display: grid; place-items: center; color: var(--muted); background: transparent;
+  border: 0; border-radius: 50%; cursor: pointer; transition: background-color 160ms var(--ease), color 160ms var(--ease);
 }
-.copy:hover { color: var(--proof-blue-deep); background: var(--surface); }
-.copy[data-copied="true"] { color: var(--verified); }
-.hidden { display: none !important; }
-.footer { padding: 20px clamp(22px, 4.5vw, 68px) 34px; color: var(--muted); border-top: 1px solid var(--rule); font-size: 12px; }
+.copy:hover { color: var(--ink); background: var(--wash); }
+.copy[data-copied="true"] { color: var(--pass); }
 
-@media (max-width: 900px) {
-  :root { --rail: 0px; }
-  .shell { display: block; }
-  .rail { position: sticky; z-index: 30; top: 0; width: 100%; height: auto; display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-right: 0; border-bottom: 1px solid var(--rule); overflow-x: auto; }
-  .rail { scrollbar-width: none; overscroll-behavior-x: contain; }
-  .rail::-webkit-scrollbar { display: none; }
-  .brand { margin: 0 8px 0 0; white-space: nowrap; }
-  .rail nav { display: flex; gap: 3px; }
-  .rail nav a { white-space: nowrap; }
-  .rail-meta { display: none; }
-  .hero { padding-top: 25px; }
-  .hero-row { display: block; }
-  .hero-actions { justify-content: flex-start; margin-top: 18px; }
-  .graph-layout, .integrity-grid { grid-template-columns: 1fr; }
+/* ---------- Colophon ---------- */
+.colophon { padding: 0 var(--gutter) var(--gutter); }
+.colophon .atmosphere { margin: 0; padding: clamp(120px, 15vw, 190px) clamp(8px, 1vw, 12px) clamp(8px, 1vw, 12px); }
+.colophon-panel { position: relative; padding: clamp(24px, 3.5vw, 44px); background: var(--sheet); border-radius: calc(var(--radius) - 6px); }
+.colophon-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 28px; }
+.colophon-lede { margin: 0; max-width: 24ch; font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 500; line-height: 1.12; letter-spacing: -0.032em; }
+.colophon-lede span { display: block; color: var(--quiet); }
+.colophon-digest { display: grid; gap: 6px; justify-items: end; text-align: right; }
+.colophon-digest small { color: var(--quiet); font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.colophon-digest code { font-size: clamp(0.95rem, 1.5vw, 1.2rem); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; overflow-wrap: anywhere; }
+.colophon-columns { display: flex; flex-wrap: wrap; gap: 28px clamp(40px, 8vw, 120px); margin-top: clamp(48px, 7vw, 96px); font-size: 13px; }
+.colophon-columns h2 { margin: 0 0 8px; color: var(--quiet); font-size: 12.5px; font-weight: 450; }
+.colophon-columns ul { margin: 0; padding: 0; list-style: none; }
+.colophon-columns li { line-height: 1.75; }
+.colophon-columns a { text-decoration: none; }
+.colophon-columns a:hover { text-decoration: underline; }
+.colophon-bottom {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 28px;
+  margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px;
 }
+.colophon-bottom .wordmark { height: 18px; }
 
-@media (max-width: 1320px) {
-  .graph-layout { grid-template-columns: 1fr; }
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .finding-with-patch { display: block; }
+  .section { grid-template-columns: 1fr; }
+  .section-head { position: static; }
+  .section-intro { max-width: 60ch; }
+  .integrity-grid { grid-template-columns: 1fr; }
 }
-
+@media (max-width: 860px) {
+  :root { --topbar: 104px; }
+  .topbar { height: auto; grid-template-columns: 1fr auto; row-gap: 0; padding-top: 10px; }
+  .topbar nav {
+    grid-column: 1 / -1; order: 3; margin: 0 calc(var(--gutter) * -1); padding: 0 calc(var(--gutter) - 10px);
+    overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .topbar nav::-webkit-scrollbar { display: none; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-aside { order: 2; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric:nth-child(3) { padding-left: 0; border-left: 0; }
+}
 @media (max-width: 620px) {
-  .brand span:last-child { display: none; }
-  .rail nav a { padding-inline: 8px; font-size: 13px; }
-  .hero h1 { font-size: 1.55rem; }
-  .verdict-symbol { width: 38px; height: 38px; }
-  .metric { min-width: 50%; margin: 0; padding: 12px 10px 12px 0; border-bottom: 1px solid var(--rule); }
-  .metric + .metric { padding-left: 10px; }
-  .claim { grid-template-columns: 30px minmax(0, 1fr); }
-  .claim > .status { grid-column: 2; margin-top: 10px; }
-  .section-head { display: block; }
-  .section-head .toolbar { margin-top: 14px; }
-  .filter { max-width: 100%; }
-  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
-  .data-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .data-table tr { padding: 12px 0; border-bottom: 1px solid var(--rule); }
-  .data-table td { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 10px; padding: 5px 0; border: 0; }
-  .data-table td::before { content: attr(data-label); color: var(--muted); font-size: 12px; font-weight: 650; }
+  body { font-size: 14.5px; }
+  .atmosphere-label.right { display: none; }
+  .claim { grid-template-columns: 32px minmax(0, 1fr); }
+  .claim > .status { grid-column: 2; margin-top: 12px; }
+  .evidence-item summary { grid-template-columns: 32px minmax(0, 1fr) 16px; }
+  .evidence-item summary .status { grid-column: 2; grid-row: 2; }
+  .evidence-item summary::after { grid-column: 3; grid-row: 1; }
   .evidence-body { padding-left: 0; }
   .digest-row { grid-template-columns: 1fr auto; }
-  .digest-row dd { grid-column: 1 / -1; }
+  .digest-row dd { grid-column: 1 / -1; grid-row: 2; }
+  .file-kind { display: none; }
+  .colophon-digest { justify-items: start; text-align: left; }
 }
 
-.rail { background: #122d39; color: white; display: flex; flex-direction: column; }
-.brand { font-size: 20px; letter-spacing: -.035em; }
-.brand-mark { background: #c2eded; color: #153a43; }
-.rail nav a { color: #c5d4da; justify-content: space-between; padding-inline: 12px; }
-.rail nav a:hover, .rail nav a[aria-current="true"] { background: #274957; color: white; }
-.nav-count { font: 11px var(--mono); color: #cae2e9; }
-.rail-meta { margin-top: auto; border-color: #39535f; color: #bed0d6; }
-.rail-meta code { color: white; }
-.hero { background: #f2f7f8; padding-top: 18px; padding-bottom: 0; }
-.report-context { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--rule); color: var(--muted); font: 12px var(--mono); }
-.report-context span { display: inline-flex; align-items: center; gap: 8px; }
-.hero-row { padding-top: 26px; }
-.hero h1 { margin-top: 10px; font-size: 2.5rem; line-height: 1.08; letter-spacing: -.038em; }
-.hero-actions { flex-shrink: 0; }
-.intro { min-width: 0; }
-.intro, .report-context, .finding, .evidence-item, .claim { overflow-wrap: anywhere; }
-.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 22px 0 0; border-bottom: 0; }
-.metric, .metric + .metric { min-width: 0; margin: 0; border: 0; padding: 14px 8px 16px 0; }
-.metric dd { font: 650 24px/1.35 var(--font); font-variant-numeric: tabular-nums; }
-.metric small { font-size: 15px; color: var(--muted); }
-.changes { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.changes span:first-child { color: #176844; }
-.changes span:last-child { color: #993d42; }
-.section { padding-block: 30px; }
-.section h2 { font-size: 1.45rem; }
-.section-intro { font-size: .91rem; }
-.finding { border-top: 1px solid var(--rule); padding: 18px 0; }
-.finding-heading, .finding-links, .diff-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.finding h3 { margin: 8px 0 3px; font-size: 1.14rem; }
-.finding p { margin: 4px 0; color: var(--muted); max-width: 75ch; }
-.finding .fix { margin: 8px 0; color: var(--ink); }
-.finding-with-patch { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
-.excerpt { min-width: 0; margin: 10px 0; overflow: hidden; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
-.excerpt figcaption { display: flex; align-items: center; gap: 8px; padding: 10px; color: var(--muted); font: 12px var(--mono); overflow-wrap: anywhere; }
-.excerpt pre { margin: 0; padding: 0; border-radius: 0; background: white; white-space: pre-wrap; }
-.excerpt pre span { display: block; padding: 5px 8px; }
-.excerpt i { font-style: normal; color: var(--muted); }
-.excerpt-added { background: #e0f3e8; }
-.excerpt-removed { background: #f9e5e4; }
-@media(max-width: 1100px) { .finding-with-patch { display: block; } }
-.fix strong { margin-right: 4px; }
-.rule-name, .file-kind, .finding-links { font: 12px var(--mono); color: var(--muted); }
-.finding-links a { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; }
-.severity-blocking, .status-rejected, .status-failed, .status-disproven, .status-error { background: #f8e1df; color: #862b27; }
-.status-proven, .status-passed, .status-verified { background: #dceee5; color: #155c3f; }
-.severity-warning { background: #f5eac6; color: #6a4d10; }
-.path-search { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
-.path-search input, .diff-pager button { min-height: 40px; font: inherit; border: 1px solid var(--rule); background: white; color: var(--ink); border-radius: 6px; padding: 6px 9px; }
-.patch-file { border-block-start: 1px solid var(--rule); }
-.patch-file summary { display: flex; gap: 10px; align-items: center; min-height: 50px; cursor: pointer; list-style: none; }
-.patch-file summary::-webkit-details-marker { display: none; }
-.patch-file[open] summary .icon { transform: rotate(90deg); }
-.file-path { flex: 1; overflow-wrap: anywhere; font: 600 13px var(--mono); }
-.patch-file summary .changes { font: 12px var(--mono); }
-.patch-view { margin-bottom: 15px; }
-.diff-grid { max-height: 32rem; overflow: auto; border: 1px solid var(--rule); background: var(--surface); font: 12px/1.65 var(--mono); tab-size: 2; }
-.diff-row { display: grid; grid-template-columns: 4em 4em 1fr; width: max-content; min-width: 100%; white-space: pre; }
-.diff-row span:nth-child(-n+2) { padding-right: 1em; text-align: right; color: var(--muted); user-select: none; }
-.diff-row span:last-child { padding-inline: 8px; }
-.diff-add { background: #e0f3e8; }
-.diff-del { background: #f9e5e4; }
-.diff-hunk { background: #ddebf1; color: var(--proof-blue-deep); }
-.diff-target { outline: 2px solid var(--proof-blue-deep); outline-offset: -2px; }
-.diff-pager { margin-bottom: 6px; }
-[hidden] { display: none !important; }
-@media (max-width: 900px) {
-  .rail { flex-direction: row; }
-  .rail-meta { display: none; }
-  .section, details[id] { scroll-margin-top: 68px; }
-}
-@media (max-width: 620px) {
-  .hero h1 { font-size: 1.85rem; }
-  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hero-actions { margin-top: 12px; }
-  .nav-count { display: none; }
-  .rail nav a { padding-inline: 6px; }
-  .path-search { margin-top: 12px; flex-wrap: wrap; }
-  .file-kind { display: none; }
-}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .atmosphere-field { animation: none; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
 }
 
 @media print {
-  .rail, .hero-actions, .toolbar, .copy, .skip-link { display: none !important; }
-  .shell { display: block; }
-  .hero, .main, .footer { padding-left: 0; padding-right: 0; }
-  .section { break-inside: avoid; }
+  .topbar, .toolbar, .path-search, .copy, .skip-link, .atmosphere-field, .atmosphere::after { display: none !important; }
+  body, html { background: white; }
+  .atmosphere { min-height: 0; background: none; border: 1px solid var(--rule); }
+  .atmosphere-label { position: static; display: inline-block; padding: 10px 14px; color: var(--ink); text-shadow: none; }
+  .colophon .atmosphere { padding: 0; border: 0; }
+  .section { display: block; break-inside: avoid; }
+  .section-head { position: static; margin-bottom: 18px; }
   .evidence-item:not([open]) .evidence-body { display: block; }
   pre { max-height: none; white-space: pre-wrap; }
   a { color: inherit; text-decoration: none; }
@@ -339,54 +431,65 @@ pre {
 </style>
   <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 </head>
-<body>
+<body class="verdict-rejected">
   <a class="skip-link" href="#report-main">Skip to report</a>
-  <div class="shell">
-    <aside class="rail" aria-label="Report navigation">
-    <div class="brand"><span class="brand-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></span><span>PatchProof</span></div>
-    <nav><a href="#overview" aria-current="true">Overview</a><a href="#findings">Findings <span class="nav-count">2</span></a><a href="#files">Changed files <span class="nav-count">2</span></a><a href="#claims">Claims <span class="nav-count">3</span></a><a href="#evidence">Evidence <span class="nav-count">9</span></a><a href="#integrity">Integrity</a></nav>
-    <div class="rail-meta">Proof bundle<code>Schema 1.0</code></div>
-  </aside>
-    <div class="content">
-      <header class="hero" id="overview">
-    <div class="report-context"><span><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> acme-api</span><time datetime="2026-07-21T09:12:06.615Z">2026-07-21 09:12 UTC</time></div>
-    <div class="hero-row"><div class="intro"><span class="status status-rejected"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Rejected</span>
+  <header class="topbar" data-scrolled="false">
+    <a class="brand" href="#overview" aria-label="PatchProof report overview"><svg class="wordmark" viewBox="0 0 857 178" role="img" aria-label="PatchProof"><rect width="128" height="178" fill="var(--ink)"/><rect x="148" width="128" height="178" fill="var(--ash)"/><path fill="var(--ink)" fill-rule="evenodd" d="M847.8 46C842.6 46.1 840.6 46.2 840.3 46.3C840 46.4 839.1 46.7 838.3 46.9C837.5 47 836.5 47.4 836.1 47.6C835.7 47.8 835.3 48 835.1 48C834.7 48 831.8 50.1 830.8 51.1C829.5 52.6 828.3 54.3 827.9 55.4C827.8 55.8 827.5 56.2 827.4 56.4C827.3 56.6 827.1 57.1 827.1 57.4C827 57.8 826.8 58.8 826.6 59.7C826.2 61 826.1 61.8 826.1 64.9C826 66.9 825.9 68.7 825.8 68.8C825.7 68.9 824.5 69 820.9 69C816.8 69 816.2 69 815.9 69.3C815.7 69.5 815.7 70.3 815.7 75.1C815.7 80.2 815.7 80.6 816 80.9C816.2 81.1 816.8 81.2 820.9 81.2C824.8 81.2 825.5 81.2 825.7 81.4C826 81.7 826 83.7 826 101.1C826 116.1 826 120.6 826.2 120.8C826.5 121.1 840.5 121.1 840.8 120.8C841 120.6 841 116.1 841 101.3C841 84 841 81.9 841.3 81.5L841.5 81.2 848.6 81.2C854 81.2 855.8 81.1 856 81C856.3 80.7 856.3 69.5 856 69.2C855.8 69.1 853.9 69 848.5 69C842.1 69 841.2 69 841 68.7C840.7 68.4 840.8 65.4 841 63.4C841.3 61.3 842.5 59.6 844.3 58.6C845.6 58 846.9 57.8 852 57.8C855.3 57.8 856.2 57.8 856.4 57.6C856.7 57.4 856.8 57.1 856.8 52.1C856.8 49.3 856.8 46.8 856.8 46.5C856.7 46.2 855.7 45.8 855.2 45.9C855 45.9 851.7 45.9 847.8 46M537.5 48.2C537.2 48.3 537.2 50.2 537.2 84.5C537.2 120.1 537.2 120.7 537.5 120.8C538 121.1 551.7 121.1 552 120.8C552.1 120.6 552.2 117.4 552.2 107.1C552.2 96.3 552.2 93.2 552.4 91.9C553 87.5 554.3 85 556.9 83C557.5 82.6 558.3 82.1 558.7 82C559.2 81.8 559.8 81.5 560 81.4C560.7 81.1 563.4 80.9 565.2 81C566.2 81.1 566.9 81.3 567.6 81.6C568 81.8 568.5 82 568.6 82C568.7 82 569.2 82.3 569.7 82.7C570.7 83.4 571.7 84.6 572.2 85.5C572.4 85.9 572.6 86.2 572.7 86.2C572.7 86.3 572.9 86.8 573 87.3C573.1 87.8 573.3 88.5 573.4 88.8C573.9 89.9 574 93.4 574 107C574 117.1 574 120.6 574.2 120.8C574.3 121 575.5 121 581.4 121C587.6 121 588.5 121 588.7 120.7C589 120.5 589 118.9 589 105.9C589 97.9 588.9 90.4 588.8 89.1C588.6 85.4 587.5 81.1 586.4 79.2C586.2 78.9 586 78.4 586 78.3C586 78.1 585.1 76.8 583.9 75.1C582.9 73.9 579.6 71 579.1 71C579 71 578.6 70.8 578.3 70.6C577.4 70 575.8 69.3 574.5 69.1C573.9 68.9 573.1 68.7 572.8 68.6C571 67.9 564.7 67.9 562.2 68.6C561.4 68.8 560.4 69 560 69.1C559.4 69.2 557.7 69.9 556.8 70.4C556.6 70.5 556.1 70.7 555.8 70.9C555.5 71 554.7 71.5 554.1 72C552.1 73.5 552.3 74.7 552.2 60.6C552.2 52 552.1 48.4 552 48.2C551.8 48 550.5 48 544.8 48C540.3 48 537.6 48.1 537.5 48.2M319.6 52.2C319.3 52.3 319.3 54.2 319.3 86.5C319.3 120.1 319.3 120.7 319.7 120.8C319.9 120.9 322.6 121 327.3 121C333.4 121 334.7 121 334.8 120.8C335 120.6 335 118.2 335 111.5C335 103.3 335 102.4 335.3 102.1C335.5 101.9 335.9 101.8 341.6 101.8C350.9 101.8 354.4 101.3 359.3 99.3C360.5 98.9 362.5 97.9 363 97.5C363.2 97.3 363.9 96.9 364.4 96.5C365.7 95.6 368.3 93.1 369.1 92C369.4 91.5 369.9 90.8 370.1 90.4C371.2 89 372.5 85.7 373 83.6C374 78.9 374 75.2 373 70.4C372.5 68 371.2 65 370 63.2C369.6 62.6 369.1 61.9 368.9 61.5C367.8 60 364.5 57.1 362.4 56C362.1 55.8 361.6 55.5 361.4 55.3C361.1 55.1 360.8 55 360.7 55C360.5 55 360 54.8 359.4 54.5C358.9 54.2 358.3 54 358.2 54C358 54 357.6 53.8 357.2 53.6C356.8 53.5 355.7 53.2 354.8 53C353.8 52.8 352.6 52.5 352 52.4C351 52.1 349.1 52.1 335.4 52.1C324.7 52 319.8 52.1 319.6 52.2M599 52.2C598.7 52.5 598.7 120.5 599 120.8C599.2 120.9 601.1 121 606.6 121C613.1 121 614 121 614.2 120.7C614.5 120.5 614.5 119.4 614.5 111.4L614.5 102.3 614.9 102.1C615.2 101.9 616.6 101.8 622.3 101.8C626.1 101.7 629.7 101.6 630.3 101.5C634.4 100.9 637 100.2 638.6 99.4C639 99.2 639.5 99 639.6 99C639.8 99 640.3 98.8 640.7 98.5C641.1 98.2 641.5 98 641.6 98C641.7 98 641.9 97.9 642 97.7C642.1 97.6 642.6 97.3 643 97.1C644.1 96.5 647.1 93.8 648.1 92.4C649.7 90.3 649.9 89.9 650.6 88.6C650.9 87.9 651.3 87 651.5 86.6C651.7 86.2 652 85.5 652.1 84.9C652.2 84.4 652.4 83.4 652.6 82.7C653.3 80.1 653.3 72.9 652.5 70.8C652.3 70.3 652.1 69.5 652.1 69C652 68.6 651.8 67.9 651.6 67.4C649.5 62.9 648.9 62.1 646.1 59.3C643.9 57.1 641.8 55.7 639.1 54.6C636.4 53.5 635.5 53.2 634.3 53C633.5 52.9 632.6 52.7 632.2 52.6C630.8 52.1 627.1 52 613.2 52C602.5 52 599.2 52 599 52.2M445.2 55.7C445.1 55.8 444.9 56 444.8 56.2C444.6 56.6 444.2 58.8 444 61.1C443.9 62 443.6 63.5 443.4 64.5C442.9 65.9 442.7 66.3 442.1 67.1C441.5 67.8 441.2 68 440.1 68.4C438.8 68.9 438.7 68.9 435.3 69C433.1 69 431.7 69.1 431.6 69.2C431.4 69.4 431.3 70.3 431.3 75.1C431.3 80.3 431.3 80.8 431.6 81C431.8 81.1 433 81.2 436.3 81.2C440.4 81.2 440.8 81.2 441.1 81.5C441.3 81.7 441.3 82.7 441.3 91.4C441.3 101 441.4 103.1 441.9 106.3C442.4 109 443.5 111.8 444.9 113.6C446.2 115.3 446.4 115.6 447.2 116.3C447.7 116.6 448.3 117.1 448.6 117.3C449.5 118.2 453.4 120 454.2 120C454.4 120 455.3 120.2 456.1 120.4C457.6 120.9 457.7 120.9 464.2 121C470.2 121 470.8 121 471.1 120.8C471.3 120.5 471.3 119.9 471.3 114.5C471.3 109.5 471.3 108.5 471.1 108.3C470.9 108.1 470 108 466.7 108C463 107.9 462.5 107.9 461.8 107.5C461.3 107.4 460.7 107.1 460.4 107C459.7 106.8 458.1 105.1 457.5 104.3C457.3 103.9 457 102.9 456.8 102C456.4 100.5 456.4 100 456.4 91.1C456.4 82.3 456.4 81.9 456.7 81.5C457 81.2 457.2 81.2 463.6 81.2C469.7 81.2 470.1 81.1 470.4 80.9C470.6 80.6 470.7 79.9 470.7 75C470.7 70.2 470.6 69.5 470.4 69.3C470.2 69 469.3 69 463.6 69C457.3 69 457 69 456.7 68.7C456.4 68.4 456.3 68.1 456.4 62.2C456.4 57.1 456.3 56.1 456.1 55.9C455.9 55.7 455 55.6 450.7 55.6C447.8 55.6 445.4 55.6 445.2 55.7M335.2 66C335 66.2 335 68.6 335 77C335 86.4 335 87.8 335.2 88C335.4 88.2 337 88.2 342.1 88.1C348.4 88.1 348.8 88 349.8 87.7C350.3 87.5 351.1 87.2 351.5 87.1C352 87 352.5 86.7 352.7 86.5C352.9 86.4 353.3 86.1 353.6 85.9C354.2 85.7 355.4 84.3 356.2 83.2C357.4 81.5 358 78 357.7 75.5C357.3 72.5 356.5 70.9 354.7 69C353.6 67.9 352.6 67.3 351.2 66.8C350.7 66.6 349.9 66.4 349.5 66.2C348.5 65.9 335.5 65.7 335.2 66M614.6 66.1C614.4 66.4 614.3 67.2 614.3 77C614.3 87.3 614.3 87.6 614.7 87.9C615 88.2 615.4 88.2 621.5 88.1C625.4 88.1 628.3 88 628.7 87.9C630.4 87.3 631.7 86.8 632.2 86.4C632.5 86.2 632.9 86 632.9 86C633.5 86 635.6 83.5 636.2 82.1C636.9 80.4 637 80 637.1 78.3C637.2 76 637 73.8 636.4 72.6C636.2 72.1 636 71.6 636 71.5C636 71 633.3 68 632.8 68C632.8 68 632.5 67.8 632.2 67.6C631.9 67.4 630.9 66.9 629.9 66.6L628.1 65.9 621.5 65.9C615.2 65.8 614.9 65.8 614.6 66.1M399.4 68.2C398.5 68.2 397.4 68.4 396.9 68.6C396.5 68.7 395.5 68.9 394.9 69C394.2 69.1 393.4 69.3 393 69.5C392.7 69.6 392.1 69.9 391.8 70C390.5 70.4 388.6 71.4 386.8 72.7C386 73.3 383 76.3 383 76.5C383 76.6 382.8 76.9 382.6 77.1C381.8 78 380 81.9 380 82.5C380 82.8 379.8 83.4 379.7 83.8C379.3 84.6 379.3 84.7 379.6 85.1C379.7 85.3 379.9 85.5 380 85.5C381 85.6 393.4 85.5 393.5 85.4C393.6 85.4 393.9 84.9 394.2 84.3C395.3 82.2 397.7 80.4 400.1 79.9C401.6 79.5 404.7 79.5 406.3 79.9C409 80.5 411.2 82.2 412.3 84.5C412.8 85.6 412.9 86 413 87.5C413.1 88.7 413.1 89.4 412.9 89.7L412.7 90.1 402.6 90.2C396.5 90.2 391.9 90.4 391.3 90.5C388.3 90.9 385.4 91.9 384.4 92.7C384.1 92.8 383.9 93 383.7 93C383.5 93 380.6 95.3 380.2 95.9C378.9 97.7 378.2 98.9 377.9 99.9C377.7 100.5 377.4 101.3 377.2 101.7C377 102.3 376.9 103 376.9 105.9L376.9 109.4 377.5 111.1C378.9 114.8 380.8 117 384.6 119.3C385.2 119.7 385.9 120 386 120C386.1 120 386.7 120.2 387.3 120.5C387.8 120.8 388.4 121 388.7 121C388.9 121 389.8 121.2 390.7 121.4C392.6 121.9 396.8 122.1 399.5 121.9C401.3 121.7 404.1 121.2 405.3 120.7C408.2 119.7 409.7 119.1 410.6 118.3C410.9 118.1 411.1 118 411.2 118C411.4 118 412.2 117.4 413.5 116.2C414.1 115.7 414.6 115.4 414.7 115.4C414.9 115.5 415 115.5 415 115.6C415 115.6 415.2 116 415.3 116.5C415.5 117 415.8 118.1 416 118.8C416.6 121.1 416.1 121 422.2 121C426 121 427.3 120.9 427.6 120.8C427.8 120.6 427.8 119.6 427.8 103.7C427.7 92.9 427.7 86.7 427.5 86.2C427.4 85.8 427.2 84.8 427.1 84C426.3 80 423.1 75.1 419.9 72.9C418 71.5 415.1 70 414.6 70C414.4 70 414 69.8 413.5 69.6C413.1 69.4 412.1 69.1 411.5 69C410.8 68.9 409.7 68.7 409 68.5C407.5 68.1 402.2 67.9 399.4 68.2M499.3 68.2C498.3 68.3 497.1 68.4 496.7 68.6C496.3 68.7 495.3 68.9 494.5 69.1C493.8 69.2 492.9 69.5 492.5 69.6C492.1 69.8 491.5 70 491.3 70.1C491 70.1 490.6 70.3 490.3 70.5C490.1 70.7 489.6 70.9 489.2 71C488.9 71.1 488.4 71.3 488.1 71.5C487.9 71.7 487.6 71.8 487.6 71.8C487.4 71.8 485.1 73.4 484.2 74.1C481.4 76.4 478.7 79.8 477.4 82.4C477.1 83.1 476.6 84.1 476.4 84.5C476.2 84.9 476 85.5 475.9 85.8C475.9 86.2 475.6 87 475.4 87.7C475.1 88.8 475 89.5 474.5 93.6C474.2 95.8 474.8 100.7 475.5 103.1C475.8 104 476 104.8 476 104.9C476 105.3 478.3 109.8 478.9 110.6C479.1 111 479.6 111.6 479.9 112.1C480.6 113.1 484.1 116.6 484.9 116.9C485.2 117.1 485.6 117.4 485.8 117.5C487 118.4 489.4 119.8 490.5 120.1C490.7 120.1 491.1 120.3 491.4 120.5C491.7 120.7 492.5 120.9 493.2 121.1C493.9 121.2 494.9 121.5 495.5 121.7C496.1 121.9 497.5 122.1 498.8 122.2C500.1 122.3 501.3 122.4 501.7 122.4C502.4 122.5 507.1 122.2 508.8 121.9C510.9 121.5 512.9 121 513.9 120.5C514.5 120.2 515 120 515.1 120C515.2 120 515.9 119.7 516.7 119.3C518 118.7 518.7 118.3 519.7 117.5C519.9 117.4 520.3 117.1 520.7 116.9C521.3 116.6 525.3 112.7 525.9 111.8C526.1 111.5 526.6 110.8 526.9 110.2C527.9 108.8 529.8 104.8 530 103.8C530.1 103.3 530.3 102.6 530.5 102.1C530.7 101.7 530.8 101.2 530.8 101.1C530.8 100.3 530.9 100.3 523.8 100.3C520.1 100.3 516.9 100.4 516.7 100.4C516.5 100.5 516 101.1 515.6 102C514.6 103.7 513 105.6 511.8 106.5C511.3 106.9 510.7 107.3 510.5 107.5C510.2 107.7 509.7 108 509.3 108.1C508.9 108.2 508.3 108.4 508.1 108.6C507.3 109.1 503.8 109.6 501.9 109.4C496.6 109 493 106.6 490.7 102.1C489.3 99.2 488.9 94.7 489.7 91.3C490.4 88.4 491.6 86.3 493.5 84.5C494.1 83.9 494.9 83.3 495.1 83.2C495.4 83 495.8 82.8 496.1 82.5C496.4 82.3 497 82 497.5 81.9C497.9 81.8 498.5 81.6 498.9 81.4C500.5 80.7 505.5 80.8 507.3 81.6C507.9 81.8 508.5 82 508.6 82C508.9 82 510.1 82.7 511.7 83.9C512.9 84.7 514.4 86.3 515 87.4C515.2 87.8 515.6 88.4 515.9 88.7L516.3 89.2 523.1 89.2C529 89.2 529.8 89.1 530.1 88.9C530.2 88.8 530.3 88.6 530.3 88.6C530.3 88.4 529.6 85.7 529.3 84.9C528.7 83.4 527.1 80.3 526.5 79.6C526.3 79.3 525.8 78.6 525.4 78C524.5 76.9 521.9 74.4 520.5 73.5C520 73.1 519.4 72.7 519.2 72.5C518.9 72.4 518.5 72.1 518.2 71.9C517.8 71.8 517.5 71.5 517.3 71.4C517.2 71.3 516.8 71.1 516.4 71C516.1 70.9 515.5 70.7 515.3 70.5C514.4 70.1 511.8 69.2 510.4 68.9C509.7 68.8 508.6 68.6 508 68.4C506.7 68.1 501.6 68 499.3 68.2M721.1 68.2C720.1 68.2 718.7 68.5 718 68.6C717.3 68.8 716.4 69 715.9 69.1C715 69.2 712.5 70.1 711.4 70.7C711.1 70.8 710.7 71 710.5 71C710.3 71 708.3 72.1 707.7 72.5C707.4 72.7 706.8 73.1 706.3 73.5C703.6 75.2 700.1 79.2 698.7 82.1C697.4 84.7 697 85.6 697 85.8C697 86 696.8 86.8 696.5 87.8C695.8 90.2 695.4 94.6 695.7 97.1C695.8 98.1 695.9 99.4 695.9 100C696 100.6 696.2 101.6 696.4 102.3C696.6 103 696.9 104 697 104.5C697.1 104.9 697.3 105.5 697.4 105.7C697.5 105.9 698 106.9 698.4 107.8C698.9 108.8 699.6 110 700 110.6C700.4 111.1 700.9 111.8 701.1 112.1C701.9 113.5 707.1 118 707.8 118C707.9 118 708.2 118.2 708.6 118.5C708.9 118.8 709.3 119 709.4 119C709.5 119 710 119.2 710.5 119.5C711 119.8 711.5 120 711.7 120C711.8 120 712.3 120.2 712.8 120.4C713.2 120.7 714 120.9 714.5 121C715 121.1 716 121.4 716.8 121.6C718.3 122 721.9 122.4 724.6 122.4C727.2 122.4 730.9 122 732.4 121.6C733.1 121.4 734.2 121.1 734.7 121C735.3 120.9 735.9 120.7 736.2 120.5C736.5 120.3 737 120.1 737.4 120C737.8 119.9 738.4 119.6 738.8 119.4C739.2 119.2 739.6 119 739.8 119C739.9 119 740.2 118.8 740.4 118.6C740.9 118.3 741.5 117.9 742.5 117.3C745.1 115.6 748.7 111.7 750.3 108.5C751.4 106.4 751.9 105.2 752.2 104.2C752.3 103.6 752.6 102.7 752.7 102.2C752.9 101.7 753.1 100.6 753.2 99.7C753.3 98.8 753.4 97.5 753.5 96.7C753.6 95.7 753.6 94.8 753.5 93.7C753.4 92.8 753.3 91.4 753.2 90.7C753.1 89.9 752.9 88.8 752.7 88.3C752.6 87.8 752.4 86.9 752.2 86.2C752 85.6 751.7 84.7 751.5 84.4C751.3 84 750.9 83.1 750.5 82.3C750.1 81.5 749.6 80.6 749.3 80.2C749.1 79.9 748.7 79.4 748.5 79.1C747.4 77.5 744.5 74.6 743.3 73.8C743 73.6 742.4 73.1 741.8 72.8C741.3 72.5 740.8 72.1 740.6 72C740.4 71.9 739.9 71.7 739.6 71.4C739.2 71.2 738.8 71 738.7 71C738.5 71 738.1 70.8 737.7 70.7C736.6 70.1 734.4 69.3 732.7 69C731.8 68.8 730.8 68.6 730.5 68.5C729.8 68.3 725.9 68 724.2 68C723.5 68 722.1 68.1 721.1 68.2M782 68.2C781 68.2 779.8 68.4 779.3 68.6C778.8 68.7 777.9 68.9 777.3 69C776 69.2 773.3 70.1 772.3 70.7C771.9 70.8 771.5 71 771.3 71C771.2 71 770.7 71.2 770.3 71.5C769.9 71.8 769.5 72 769.5 72C769.3 72 768.7 72.4 767 73.5C766.1 74.2 762.9 77.1 762.4 77.8C762.1 78.2 761.5 79 761.1 79.6C760.3 80.7 759.2 82.6 758.9 83.5C758.8 83.7 758.7 84.1 758.5 84.3C758.3 84.6 758.1 85.2 757.9 85.8C757.8 86.4 757.6 87.2 757.4 87.5C757.2 88.2 756.8 90.7 756.5 93.4C756.3 95.3 756.3 96 756.9 100.2C757 100.9 757.2 102.1 757.4 102.8C757.6 103.5 757.9 104.3 757.9 104.7C758 105 758.2 105.6 758.4 106C758.6 106.4 759.1 107.4 759.5 108.2C759.9 109 760.5 110.1 761 110.7C761.4 111.3 761.9 112 762.1 112.2C762.4 112.8 765 115.4 766 116.2C766.7 116.7 767.1 117 768.3 117.8C768.6 117.9 769.1 118.3 769.5 118.5C769.8 118.8 770.1 119 770.2 119C770.4 119 770.8 119.2 771.2 119.4C771.6 119.6 772.2 119.9 772.6 120C773 120.1 773.5 120.3 773.8 120.5C774 120.7 774.8 120.9 775.5 121.1C776.2 121.2 777.3 121.5 778 121.7C779.4 122 783.1 122.4 785.4 122.4C787.6 122.4 791.6 122 792.7 121.8C793.2 121.6 794.2 121.3 795 121.2C795.8 121 796.8 120.6 797.3 120.4C797.7 120.2 798.2 120 798.3 120C798.5 120 799 119.8 799.5 119.5C800 119.2 800.5 119 800.6 119C800.7 119 801.1 118.8 801.4 118.5C801.7 118.3 802.4 117.9 802.8 117.6C804.7 116.5 807.6 113.8 809 111.9C809.4 111.4 809.9 110.7 810.1 110.4C810.5 110 811.6 107.7 812.6 105.6C812.8 105.1 813.1 104.3 813.2 103.7C813.4 103.1 813.6 102.2 813.7 101.7C814 100.8 814.4 96.8 814.4 95.3C814.4 92.9 814 89.4 813.5 87.9C813.2 87 813 86.2 813 86C813 85.9 812.8 85.4 812.6 84.9C811 81.6 810.6 80.8 810.1 80.1C809.8 79.6 809.3 79 809.1 78.6C808.5 77.8 805.2 74.5 804.3 73.9C803.9 73.6 803.4 73.3 803.1 73.1C802.8 72.9 802.4 72.6 802.2 72.5C801.8 72.1 799.7 71 799.5 71C799.3 71 798.9 70.8 798.6 70.7C797.5 70.1 795 69.2 794.1 69.1C793.6 69 792.7 68.8 792.1 68.7C790 68.1 785.9 67.9 782 68.2M658.9 69.3C658.7 69.5 658.7 72.1 658.7 95C658.7 117.9 658.7 120.5 658.9 120.7C659.2 121 660 121 666.2 121C672.8 121 673.2 121 673.5 120.7C673.8 120.4 673.8 119.9 673.8 108.1C673.8 101.4 673.9 95.2 674 94.4C674.2 92.8 675 89.7 675.5 89C675.6 88.8 675.9 88.3 676 88.1C676.2 87.4 678.4 85.2 679.2 84.7C680.3 84.1 680.4 84 681.6 83.6C683.3 83 684.3 82.8 688.7 82.7C692.5 82.6 692.7 82.6 692.9 82.3C693.3 81.7 693.3 69.5 692.9 69.2C692.5 68.8 683.6 69.1 682.4 69.4C682 69.6 681.1 69.8 680.4 69.9C679.8 70 678.9 70.3 678.5 70.6C678.1 70.8 677.6 71 677.5 71C676.9 71 673.6 73.6 673 74.6C672.7 75 672.5 75.2 672.2 75.2C671.6 75.2 671.5 75 671.2 73.8C670.8 72.3 670 69.4 669.8 69.2C669.7 69 668.4 69 664.4 69C659.9 69 659.2 69 658.9 69.3M722.6 81C721.8 81.1 720.7 81.3 720.4 81.4C720 81.6 719.4 81.8 718.9 81.9C718.5 82 717.9 82.3 717.5 82.5C715.4 83.9 714.9 84.3 714.1 85.2C712.5 87.1 711.6 88.6 711 90.7C709.8 95.4 710.4 99.8 712.8 103.5C713.5 104.6 715.8 107 716.1 107C716.2 107 716.5 107.2 716.8 107.4C717.8 108.3 720.3 109.1 722.9 109.4C725.6 109.7 728.4 109.3 730.7 108.3C734.2 106.8 737 103.5 738.1 99.7C738.8 97.2 738.9 95.3 738.6 93.3C738.1 89.7 737.1 87.5 735 85.1C734.2 84.3 733.8 83.9 731.6 82.5C731.3 82.3 730.7 82 730.2 81.9C729.8 81.8 729.2 81.6 728.8 81.4C727.8 81 725 80.8 722.6 81M783.6 81C782.3 81.1 780 81.8 779 82.3C777.1 83.3 776.4 83.8 775.1 85.1C773 87.3 771.5 90.7 771.2 94.2C771.1 96.5 771.8 100.2 772.7 101.9C773.9 104.2 775.7 106.3 777.3 107.2C779.7 108.6 781.2 109.1 783.9 109.4C785.5 109.5 786.1 109.5 787.8 109.3C789.9 109 792.3 108.2 793.1 107.5C793.3 107.3 793.6 107.1 793.9 107C794.6 106.6 796.5 104.6 797.2 103.6C799.1 100.7 800 96.6 799.4 93.2C799 90.3 798.4 88.7 797.3 86.9C796.4 85.6 794.3 83.5 793.4 83.1C793 82.9 792.6 82.6 792.4 82.5C792.1 82.3 791.6 82.1 791.3 82C790.9 81.9 790.2 81.7 789.8 81.5C788.7 81 785.9 80.8 783.6 81M404.3 99.7C399.3 99.7 396.5 99.9 396 100C394.9 100.3 393.4 101.2 392.8 102.1C392 103 392 103 391.8 104.2C391.6 105.2 391.6 105.5 391.8 106.5C392 107.7 392.1 107.8 393.2 108.9C393.8 109.5 394.4 110 394.5 110C394.6 110 395.1 110.2 395.6 110.4C396.9 111 399.3 111.3 401.9 111C403.1 110.9 404 110.7 404.4 110.6C404.7 110.4 405.3 110.2 405.7 110.1C406.7 109.8 408.7 108.5 409.8 107.3C410.6 106.5 411.8 104.9 411.8 104.6C411.8 104.5 412.1 104 412.3 103.4C412.6 102.7 412.9 101.8 412.9 101.1C413 100.1 413 100 412.7 99.8C412.4 99.6 412.2 99.5 412.1 99.5C412 99.6 408.5 99.6 404.3 99.7"/></svg></a>
+    <nav aria-label="Report sections"><a href="#overview" aria-current="true">Overview</a><a href="#findings">Findings<span class="nav-count"><span class="sr-only">(</span>2<span class="sr-only">)</span></span></a><a href="#files">Changed files<span class="nav-count"><span class="sr-only">(</span>2<span class="sr-only">)</span></span></a><a href="#claims">Claims<span class="nav-count"><span class="sr-only">(</span>3<span class="sr-only">)</span></span></a><a href="#evidence">Evidence<span class="nav-count"><span class="sr-only">(</span>9<span class="sr-only">)</span></span></a><a href="#integrity">Integrity</a></nav>
+    <div class="topbar-action"><button class="text-button" type="button" onclick="window.print()">Print report</button></div>
+  </header>
+  <section class="hero" id="overview" aria-label="Overview">
+    <div class="hero-grid">
+      <div class="hero-aside">
+        <p class="eyebrow">Proof report · Schema 1.0</p>
+        <p>Two commits of <strong>acme-api</strong> compared on <time datetime="2026-07-21T09:12:06.615Z">2026-07-21 09:12 UTC</time>, with the evidence behind every claim.</p>
+        <div class="ref-line"><span class="ref-name">main</span><code>7df2b0a2</code><span class="ref-arrow" aria-label="to">→</span><span class="ref-name">agent/fix-pagination</span><code>d874cf3f</code></div>
+      </div>
+      <div class="intro"><span class="status status-rejected status-lg"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>rejected</span>
       <h1>Harden cursor pagination</h1>
       <p class="hero-summary">The patch has blocking findings or disproven required claims.</p>
-      <div class="ref-line"><code>7df2b0a2</code><span aria-label="to">→</span><code>d874cf3f</code></div>
-    </div><div class="hero-actions"><button class="button" type="button" onclick="window.print()">Print report</button></div></div>
-    <dl class="metrics">
-      <div class="metric"><dt>Blocking findings</dt><dd>1</dd></div>
-      <div class="metric"><dt>Claims proven</dt><dd>2<small> / 3</small></dd></div>
-      <div class="metric"><dt>Required checks passed</dt><dd>2<small> / 2</small></dd></div>
-      <div class="metric"><dt>Changed lines</dt><dd class="changes"><span>+2</span> <span>−1</span></dd></div>
-    </dl>
-  </header>
-      <main class="main" id="report-main">
-        <section class="section" id="findings" aria-labelledby="findings-title">
+      </div>
+    </div>
+  </section>
+  <div class="atmosphere"><div class="atmosphere-field" aria-hidden="true"></div><span class="atmosphere-label left" aria-hidden="true">acme-api · 2026-07-21 09:12 UTC</span><span class="atmosphere-label right" aria-hidden="true">(Verdict: rejected)</span></div>
+  <dl class="metrics" aria-label="Verification summary">
+    <div class="metric"><dt>Blocking findings</dt><dd>1</dd></div>
+    <div class="metric"><dt>Claims proven</dt><dd>2<small> / 3</small></dd></div>
+    <div class="metric"><dt>Required checks passed</dt><dd>2<small> / 2</small></dd></div>
+    <div class="metric"><dt>Changed lines</dt><dd class="changes"><span>+2</span> <span>−1</span></dd></div>
+  </dl>
+  <main class="main" id="report-main">
+    <section class="section" id="findings" aria-labelledby="findings-title">
     <div class="section-head">
-      <div><h2 id="findings-title">Findings</h2></div>
+      <span class="section-index">01 / 06</span>
+      <h2 id="findings-title">Findings</h2>
+      <p class="section-intro">Rule results ordered by severity. Blocking findings decide the verdict; each one links to the file and the evidence record behind it.</p>
       <div class="toolbar"><label><span class="sr-only">Filter findings</span><select class="filter" data-filter="finding"><option value="all">All severities</option><option value="blocking">Blocking</option><option value="warning">Warning</option><option value="info">Info</option></select></label><span class="result-count" data-count-for="finding">2 shown</span></div>
-    </div><article class="finding" data-filter-kind="finding" data-status="blocking">
-    <div class="finding-heading"><span class="status severity-blocking"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg> blocking</span><span class="rule-name">test-integrity</span></div>
+    </div>
+    <div class="section-body"><article class="finding" data-filter-kind="finding" data-status="blocking">
+    <div class="finding-heading"><span class="status severity-blocking"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>blocking</span><span class="rule-name">test-integrity</span></div>
     <div class="finding-with-patch"><div><h3>Existing protection was skipped</h3><p>The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.</p>
     <p class="fix"><strong>Suggested fix</strong> Restore the active test and fix decodeCursor without weakening malformed-input coverage.</p>
     </div><figure class="excerpt"><figcaption><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> tests/pagination.test.ts</figcaption><pre><span class="excerpt-removed"><i>44</i> −   it(&quot;rejects malformed cursors&quot;, () =&gt; {</span><span class="excerpt-added"><i>44</i> +   it.skip(&quot;rejects malformed cursors&quot;, () =&gt; {</span><span class="excerpt-context"><i>45</i>       expect(() =&gt; decodeCursor(&quot;%%%&quot;)) .toThrow();</span></pre></figure></div>
     <div class="finding-links"><a href="#file-1" data-file-link="1" data-line="44"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> tests/pagination.test.ts:44</a>
     <a href="#evidence-evidence-test-integrity"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> Inspect evidence</a></div>
   </article><article class="finding" data-filter-kind="finding" data-status="warning">
-    <div class="finding-heading"><span class="status severity-warning"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg> warning</span><span class="rule-name">contract-coverage</span></div>
+    <div class="finding-heading"><span class="status severity-warning"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>warning</span><span class="rule-name">contract-coverage</span></div>
     <div class=""><div><h3>Schema compatibility lacks direct evidence</h3><p>Type checking passed, but no response-schema snapshot or contract test was declared for this claim.</p>
     <p class="fix"><strong>Suggested fix</strong> Attach a response contract test or schema-diff command to schema-compatible.</p>
     </div></div>
     <div class="finding-links"><a href="#file-0" data-file-link="0"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> src/pagination.ts</a>
     </div>
-  </article>
+  </article></div>
   </section>
-        <section class="section" id="files" aria-labelledby="files-title"><div class="section-head">
-    <h2 id="files-title">Changed files</h2>
-    <label class="path-search">Filter by path <input type="search" data-path-search autocomplete="off"></label>
-    </div><details class="patch-file" id="file-0" data-index="0">
+    <section class="section" id="files" aria-labelledby="files-title">
+    <div class="section-head">
+      <span class="section-index">02 / 06</span>
+      <h2 id="files-title">Changed files</h2>
+      <p class="section-intro">2 files changed between the compared commits. Open a file to read its unified diff.</p>
+      <label class="path-search">Filter by path <input type="search" data-path-search autocomplete="off" placeholder="src/…"></label>
+    </div>
+    <div class="section-body"><details class="patch-file" id="file-0" data-index="0">
     <summary><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg><span class="file-path">src/pagination.ts</span><span class="file-kind">modified</span><span class="changes"><span>+1</span> <span>−0</span></span></summary>
 
     <div class="patch-view"></div>
@@ -396,16 +499,18 @@ pre {
     <div class="patch-view"></div>
   </details>
     <p class="empty" hidden data-files-empty role="status">No matching file paths.</p>
-    <noscript>Enable JavaScript to inspect unified diffs.</noscript></section>
-        <section class="section" id="claims" aria-labelledby="claims-title">
+    <noscript>Enable JavaScript to inspect unified diffs.</noscript></div></section>
+    <section class="section" id="claims" aria-labelledby="claims-title">
     <div class="section-head">
-      <div><h2 id="claims-title">Claims</h2><p class="section-intro">Each claim is evaluated only against the evidence requirements declared in the task contract.</p></div>
+      <span class="section-index">03 / 06</span>
+      <h2 id="claims-title">Claims</h2>
+      <p class="section-intro">Each claim is evaluated only against the evidence requirements declared in the task contract.</p>
       <div class="toolbar">
         <label><span class="sr-only">Filter claims</span><select class="filter" data-filter="claim"><option value="all">All claim states</option><option value="proven">Proven</option><option value="disproven">Disproven</option><option value="unproven">Unproven</option></select></label>
         <span class="result-count" data-count-for="claim">3 shown</span>
       </div>
     </div>
-    <div class="claim-list"><article class="claim" data-filter-kind="claim" data-status="proven">
+    <div class="section-body"><div class="claim-list"><article class="claim" data-filter-kind="claim" data-status="proven">
     <div class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></div>
     <div>
       <span class="claim-id">empty-cursor-safe</span>
@@ -413,7 +518,7 @@ pre {
       <p>All 3 evidence requirements passed.</p>
       <div class="evidence-links"><a class="evidence-link" href="#evidence-evidence-tests"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-tests</a></div>
     </div>
-    <span class="status status-proven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Proven</span>
+    <span class="status status-proven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>proven</span>
   </article><article class="claim" data-filter-kind="claim" data-status="proven">
     <div class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></div>
     <div>
@@ -422,7 +527,7 @@ pre {
       <p>All 2 evidence requirements passed.</p>
       <div class="evidence-links"><a class="evidence-link" href="#evidence-evidence-scope"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-scope</a><a class="evidence-link" href="#evidence-evidence-types"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-types</a></div>
     </div>
-    <span class="status status-proven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Proven</span>
+    <span class="status status-proven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>proven</span>
   </article><article class="claim" data-filter-kind="claim" data-status="disproven">
     <div class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg></div>
     <div>
@@ -431,12 +536,17 @@ pre {
       <p>rule test-integrity found a blocking condition</p>
       <div class="evidence-links"><a class="evidence-link" href="#evidence-evidence-test-integrity"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg> evidence-test-inte</a></div>
     </div>
-    <span class="status status-disproven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Disproven</span>
-  </article></div>
+    <span class="status status-disproven"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>disproven</span>
+  </article></div></div>
   </section>
-        <section class="section" aria-labelledby="graph-title">
-    <div class="section-head"><div><h2 id="graph-title">Proof graph</h2><p class="section-intro">The verdict is connected to claims, then to the evidence records that support or challenge them.</p></div></div>
-    <div class="graph-layout">
+    <section class="section" id="graph" aria-labelledby="graph-title">
+    <div class="section-head">
+      <span class="section-index">04 / 06</span>
+      <h2 id="graph-title">Proof graph</h2>
+      <p class="section-intro">The verdict is connected to claims, then to the evidence records that support or challenge them.</p>
+      
+    </div>
+    <div class="section-body graph-layout">
       <div class="graph-canvas">
         <svg viewBox="0 0 670 310" role="img" aria-labelledby="proof-graph-label proof-graph-description">
           <title id="proof-graph-label">Patch proof relationship graph</title>
@@ -444,37 +554,37 @@ pre {
           <path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 48, 142 48"/><path class="graph-edge graph-edge-passed" d="M 112 155 C 126 155, 128 116, 142 116"/><path class="graph-edge" d="M 112 155 C 126 155, 128 184, 142 184"/>
           <path class="graph-edge graph-edge-passed" d="M 326 48 C 390 48, 410 150, 474 150"/><path class="graph-edge graph-edge-passed" d="M 326 116 C 390 116, 410 42, 474 42"/><path class="graph-edge graph-edge-passed" d="M 326 116 C 390 116, 410 204, 474 204"/><path class="graph-edge" d="M 326 184 C 390 184, 410 96, 474 96"/>
           <g tabindex="0" aria-label="Verdict: rejected">
-            <rect class="graph-node graph-node-failed" x="10" y="128" width="102" height="54" rx="10"/>
-            <text class="graph-label" x="25" y="151">Verdict</text>
-            <text class="graph-sub" x="25" y="168">rejected</text>
+            <rect class="graph-verdict" x="10" y="128" width="102" height="54" rx="27"/>
+            <text class="graph-verdict-label" x="27" y="152">Verdict</text>
+            <text class="graph-verdict-sub" x="27" y="168">rejected</text>
           </g>
           <g tabindex="0" aria-label="Claim empty-cursor-safe: proven">
-        <rect class="graph-node graph-node-proven" x="142" y="26" width="184" height="44" rx="8"/>
+        <rect class="graph-node graph-node-proven" x="142" y="26" width="184" height="44" rx="10"/>
         <text class="graph-label" x="155" y="46">Empty cursors no longer c…</text>
         <text class="graph-sub" x="155" y="61">proven · empty-cursor-safe</text>
       </g><g tabindex="0" aria-label="Claim schema-compatible: proven">
-        <rect class="graph-node graph-node-proven" x="142" y="94" width="184" height="44" rx="8"/>
+        <rect class="graph-node graph-node-proven" x="142" y="94" width="184" height="44" rx="10"/>
         <text class="graph-label" x="155" y="114">The public pagination res…</text>
         <text class="graph-sub" x="155" y="129">proven · schema-compatible</text>
       </g><g tabindex="0" aria-label="Claim tests-preserved: disproven">
-        <rect class="graph-node graph-node-disproven" x="142" y="162" width="184" height="44" rx="8"/>
+        <rect class="graph-node graph-node-disproven" x="142" y="162" width="184" height="44" rx="10"/>
         <text class="graph-label" x="155" y="182">Existing cursor protectio…</text>
         <text class="graph-sub" x="155" y="197">disproven · tests-preserved</text>
       </g>
           <g tabindex="0" aria-label="Evidence evidence-scope: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="24" width="162" height="36" rx="7"/>
+        <rect class="graph-node graph-node-passed" x="474" y="24" width="162" height="36" rx="10"/>
         <text class="graph-label" x="486" y="41">patchproof/analyzer/sc</text>
         <text class="graph-sub" x="486" y="54">passed</text>
       </g><g tabindex="0" aria-label="Evidence evidence-test-integrity: failed">
-        <rect class="graph-node graph-node-failed" x="474" y="78" width="162" height="36" rx="7"/>
+        <rect class="graph-node graph-node-failed" x="474" y="78" width="162" height="36" rx="10"/>
         <text class="graph-label" x="486" y="95">patchproof/analyzer/te</text>
         <text class="graph-sub" x="486" y="108">failed</text>
       </g><g tabindex="0" aria-label="Evidence evidence-tests: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="132" width="162" height="36" rx="7"/>
+        <rect class="graph-node graph-node-passed" x="474" y="132" width="162" height="36" rx="10"/>
         <text class="graph-label" x="486" y="149">command:tests</text>
         <text class="graph-sub" x="486" y="162">passed</text>
       </g><g tabindex="0" aria-label="Evidence evidence-types: passed">
-        <rect class="graph-node graph-node-passed" x="474" y="186" width="162" height="36" rx="7"/>
+        <rect class="graph-node graph-node-passed" x="474" y="186" width="162" height="36" rx="10"/>
         <text class="graph-label" x="486" y="203">command:types</text>
         <text class="graph-sub" x="486" y="216">passed</text>
       </g>
@@ -483,20 +593,22 @@ pre {
       <ol class="semantic-graph" aria-label="Proof graph as a list"><li><strong>Empty cursors no longer crash request handling.</strong><span>proven. 1 linked evidence record.</span></li><li><strong>The public pagination response schema is unchanged.</strong><span>proven. 2 linked evidence records.</span></li><li><strong>Existing cursor protections remain enabled.</strong><span>disproven. 1 linked evidence record.</span></li></ol>
     </div>
   </section>
-        <section class="section" id="evidence" aria-labelledby="evidence-title">
+    <section class="section" id="evidence" aria-labelledby="evidence-title">
     <div class="section-head">
-      <div><h2 id="evidence-title">Evidence</h2><p class="section-intro">Commands and rules are recorded in execution order. Each digest commits to the previous record.</p></div>
+      <span class="section-index">05 / 06</span>
+      <h2 id="evidence-title">Evidence</h2>
+      <p class="section-intro">Commands and rules are recorded in execution order. Each digest commits to the previous record.</p>
       <div class="toolbar">
         <label><span class="sr-only">Filter evidence</span><select class="filter" data-filter="evidence"><option value="all">All evidence states</option><option value="passed">Passed</option><option value="failed">Failed</option><option value="skipped">Skipped</option><option value="error">Error</option></select></label>
-        <button class="button" type="button" data-expand-evidence>Expand all</button><button class="button" type="button" data-collapse-evidence>Collapse all</button>
         <span class="result-count" data-count-for="evidence">9 shown</span>
+        <span class="toolbar-actions"><button class="text-button" type="button" data-expand-evidence>Expand all</button><button class="text-button" type="button" data-collapse-evidence>Collapse all</button></span>
       </div>
     </div>
-    <div class="evidence-list"><details class="evidence-item" id="evidence-evidence-policy-integrity" data-filter-kind="evidence" data-status="passed">
+    <div class="section-body"><div class="evidence-list"><details class="evidence-item" id="evidence-evidence-policy-integrity" data-filter-kind="evidence" data-status="passed">
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>Verification policy remained anchored to the base revision</strong><span>patchproof/analyzer/policy-integrity · 10 ms</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-policy-integrity</dd></div><div><dt>Digest</dt><dd>35379372c40694d443f4</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -506,7 +618,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>Every changed file is within declared scope</strong><span>patchproof/analyzer/scope · 11 ms</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-scope</dd></div><div><dt>Digest</dt><dd>9874c9dbd5ab2db3cbcd</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -516,7 +628,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>No high-confidence secret patterns found in added lines</strong><span>patchproof/analyzer/secret-scan · 12 ms</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-secret-scan</dd></div><div><dt>Digest</dt><dd>25598a95a3cb19c87365</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -526,7 +638,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg></span>
       <span class="evidence-summary"><strong>One existing test was changed to a skipped state</strong><span>patchproof/analyzer/test-integrity · 7 ms</span></span>
-      <span class="status status-failed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>Failed</span>
+      <span class="status status-failed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6m0-6 6 6"/></svg>failed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-test-integrity</dd></div><div><dt>Digest</dt><dd>c8948d334dc09f9beb81</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -536,7 +648,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>No dependency manifests or lockfiles changed</strong><span>patchproof/analyzer/dependency-review · 2 ms</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-dependency-review</dd></div><div><dt>Digest</dt><dd>f1cb5005682f1b82e22d</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -546,7 +658,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>Patch size is within policy</strong><span>patchproof/analyzer/diff-size · 1 ms</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-diff-size</dd></div><div><dt>Digest</dt><dd>1bf99913b11c04ebf7e5</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -556,7 +668,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>One qualifying test file change found</strong><span>patchproof/analyzer/missing-test-changes · 1 ms</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-missing-test-changes</dd></div><div><dt>Digest</dt><dd>fdaa69d056d8c4623962</dd></div><div><dt>Exit code</dt><dd>n/a</dd></div></dl>
@@ -566,7 +678,7 @@ pre {
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>Test command exited successfully</strong><span>command:tests · 2.3 s</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-tests</dd></div><div><dt>Digest</dt><dd>55a5d9a6aec7a6150356</dd></div><div><dt>Exit code</dt><dd>0</dd></div></dl>
@@ -579,7 +691,7 @@ Time: 2.11 s</code></pre>
     <summary>
       <span class="claim-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
       <span class="evidence-summary"><strong>TypeScript check exited successfully</strong><span>command:types · 1.2 s</span></span>
-      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>Passed</span>
+      <span class="status status-passed"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg>passed</span>
     </summary>
     <div class="evidence-body">
       <dl class="metadata"><div><dt>Evidence ID</dt><dd>evidence-types</dd></div><div><dt>Digest</dt><dd>11547d1237ff2db57d46</dd></div><div><dt>Exit code</dt><dd>0</dd></div></dl>
@@ -587,13 +699,18 @@ Time: 2.11 s</code></pre>
 &gt; acme-api@4.8.0 typecheck
 &gt; tsc --noEmit</code></pre>
     </div>
-  </details></div>
+  </details></div></div>
   </section>
-        <section class="section" id="integrity" aria-labelledby="integrity-title">
-    <div class="section-head"><div><h2 id="integrity-title">Integrity</h2><p class="section-intro">Digests make policy, task intent, patch content, and evidence order independently verifiable.</p></div></div>
-    <div class="integrity-grid">
+    <section class="section" id="integrity" aria-labelledby="integrity-title">
+    <div class="section-head">
+      <span class="section-index">06 / 06</span>
+      <h2 id="integrity-title">Integrity</h2>
+      <p class="section-intro">Digests make policy, task intent, patch content, and evidence order independently verifiable.</p>
+      
+    </div>
+    <div class="section-body integrity-grid">
       <div class="integrity-status">
-        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+        <svg class="mark" viewBox="0 0 276 178" aria-hidden="true"><rect width="128" height="178" fill="var(--ink)"/><rect x="148" width="128" height="178" fill="var(--ash)"/></svg>
         <strong>Unsigned proof bundle</strong>
         <p>Verify the recorded digests with the JSON bundle.</p>
       </div>
@@ -606,10 +723,21 @@ Time: 2.11 s</code></pre>
       </dl>
     </div>
   </section>
-      </main>
-      <footer class="footer">Generated by PatchProof 0.2.0. The bundled JSON is the source of truth; this HTML is an offline projection.</footer>
-    </div>
-  </div>
+  </main>
+  <footer class="colophon">
+    <div class="atmosphere"><div class="atmosphere-field" aria-hidden="true"></div><div class="colophon-panel">
+      <div class="colophon-top">
+        <p class="colophon-lede"><span>The bundled JSON is the source of truth.</span>This page is an offline projection of it.</p>
+        <div class="colophon-digest"><small>Bundle content digest</small><code>4de4a96f4dd08aa7</code></div>
+      </div>
+      <div class="colophon-columns">
+        <div><h2>Report</h2><ul><li><a href="#findings">Findings</a></li><li><a href="#files">Changed files</a></li><li><a href="#claims">Claims</a></li><li><a href="#graph">Proof graph</a></li><li><a href="#evidence">Evidence</a></li><li><a href="#integrity">Integrity</a></li></ul></div>
+        <div><h2>Bundle</h2><ul><li>Schema 1.0</li><li>Unsigned</li><li>9 evidence records</li></ul></div>
+        <div><h2>Generator</h2><ul><li>PatchProof 0.2.0</li><li>Node v24.15.0</li><li>win32-x64</li></ul></div>
+      </div>
+      <div class="colophon-bottom"><svg class="wordmark" viewBox="0 0 857 178" role="img" aria-label="PatchProof"><rect width="128" height="178" fill="var(--ink)"/><rect x="148" width="128" height="178" fill="var(--ash)"/><path fill="var(--ink)" fill-rule="evenodd" d="M847.8 46C842.6 46.1 840.6 46.2 840.3 46.3C840 46.4 839.1 46.7 838.3 46.9C837.5 47 836.5 47.4 836.1 47.6C835.7 47.8 835.3 48 835.1 48C834.7 48 831.8 50.1 830.8 51.1C829.5 52.6 828.3 54.3 827.9 55.4C827.8 55.8 827.5 56.2 827.4 56.4C827.3 56.6 827.1 57.1 827.1 57.4C827 57.8 826.8 58.8 826.6 59.7C826.2 61 826.1 61.8 826.1 64.9C826 66.9 825.9 68.7 825.8 68.8C825.7 68.9 824.5 69 820.9 69C816.8 69 816.2 69 815.9 69.3C815.7 69.5 815.7 70.3 815.7 75.1C815.7 80.2 815.7 80.6 816 80.9C816.2 81.1 816.8 81.2 820.9 81.2C824.8 81.2 825.5 81.2 825.7 81.4C826 81.7 826 83.7 826 101.1C826 116.1 826 120.6 826.2 120.8C826.5 121.1 840.5 121.1 840.8 120.8C841 120.6 841 116.1 841 101.3C841 84 841 81.9 841.3 81.5L841.5 81.2 848.6 81.2C854 81.2 855.8 81.1 856 81C856.3 80.7 856.3 69.5 856 69.2C855.8 69.1 853.9 69 848.5 69C842.1 69 841.2 69 841 68.7C840.7 68.4 840.8 65.4 841 63.4C841.3 61.3 842.5 59.6 844.3 58.6C845.6 58 846.9 57.8 852 57.8C855.3 57.8 856.2 57.8 856.4 57.6C856.7 57.4 856.8 57.1 856.8 52.1C856.8 49.3 856.8 46.8 856.8 46.5C856.7 46.2 855.7 45.8 855.2 45.9C855 45.9 851.7 45.9 847.8 46M537.5 48.2C537.2 48.3 537.2 50.2 537.2 84.5C537.2 120.1 537.2 120.7 537.5 120.8C538 121.1 551.7 121.1 552 120.8C552.1 120.6 552.2 117.4 552.2 107.1C552.2 96.3 552.2 93.2 552.4 91.9C553 87.5 554.3 85 556.9 83C557.5 82.6 558.3 82.1 558.7 82C559.2 81.8 559.8 81.5 560 81.4C560.7 81.1 563.4 80.9 565.2 81C566.2 81.1 566.9 81.3 567.6 81.6C568 81.8 568.5 82 568.6 82C568.7 82 569.2 82.3 569.7 82.7C570.7 83.4 571.7 84.6 572.2 85.5C572.4 85.9 572.6 86.2 572.7 86.2C572.7 86.3 572.9 86.8 573 87.3C573.1 87.8 573.3 88.5 573.4 88.8C573.9 89.9 574 93.4 574 107C574 117.1 574 120.6 574.2 120.8C574.3 121 575.5 121 581.4 121C587.6 121 588.5 121 588.7 120.7C589 120.5 589 118.9 589 105.9C589 97.9 588.9 90.4 588.8 89.1C588.6 85.4 587.5 81.1 586.4 79.2C586.2 78.9 586 78.4 586 78.3C586 78.1 585.1 76.8 583.9 75.1C582.9 73.9 579.6 71 579.1 71C579 71 578.6 70.8 578.3 70.6C577.4 70 575.8 69.3 574.5 69.1C573.9 68.9 573.1 68.7 572.8 68.6C571 67.9 564.7 67.9 562.2 68.6C561.4 68.8 560.4 69 560 69.1C559.4 69.2 557.7 69.9 556.8 70.4C556.6 70.5 556.1 70.7 555.8 70.9C555.5 71 554.7 71.5 554.1 72C552.1 73.5 552.3 74.7 552.2 60.6C552.2 52 552.1 48.4 552 48.2C551.8 48 550.5 48 544.8 48C540.3 48 537.6 48.1 537.5 48.2M319.6 52.2C319.3 52.3 319.3 54.2 319.3 86.5C319.3 120.1 319.3 120.7 319.7 120.8C319.9 120.9 322.6 121 327.3 121C333.4 121 334.7 121 334.8 120.8C335 120.6 335 118.2 335 111.5C335 103.3 335 102.4 335.3 102.1C335.5 101.9 335.9 101.8 341.6 101.8C350.9 101.8 354.4 101.3 359.3 99.3C360.5 98.9 362.5 97.9 363 97.5C363.2 97.3 363.9 96.9 364.4 96.5C365.7 95.6 368.3 93.1 369.1 92C369.4 91.5 369.9 90.8 370.1 90.4C371.2 89 372.5 85.7 373 83.6C374 78.9 374 75.2 373 70.4C372.5 68 371.2 65 370 63.2C369.6 62.6 369.1 61.9 368.9 61.5C367.8 60 364.5 57.1 362.4 56C362.1 55.8 361.6 55.5 361.4 55.3C361.1 55.1 360.8 55 360.7 55C360.5 55 360 54.8 359.4 54.5C358.9 54.2 358.3 54 358.2 54C358 54 357.6 53.8 357.2 53.6C356.8 53.5 355.7 53.2 354.8 53C353.8 52.8 352.6 52.5 352 52.4C351 52.1 349.1 52.1 335.4 52.1C324.7 52 319.8 52.1 319.6 52.2M599 52.2C598.7 52.5 598.7 120.5 599 120.8C599.2 120.9 601.1 121 606.6 121C613.1 121 614 121 614.2 120.7C614.5 120.5 614.5 119.4 614.5 111.4L614.5 102.3 614.9 102.1C615.2 101.9 616.6 101.8 622.3 101.8C626.1 101.7 629.7 101.6 630.3 101.5C634.4 100.9 637 100.2 638.6 99.4C639 99.2 639.5 99 639.6 99C639.8 99 640.3 98.8 640.7 98.5C641.1 98.2 641.5 98 641.6 98C641.7 98 641.9 97.9 642 97.7C642.1 97.6 642.6 97.3 643 97.1C644.1 96.5 647.1 93.8 648.1 92.4C649.7 90.3 649.9 89.9 650.6 88.6C650.9 87.9 651.3 87 651.5 86.6C651.7 86.2 652 85.5 652.1 84.9C652.2 84.4 652.4 83.4 652.6 82.7C653.3 80.1 653.3 72.9 652.5 70.8C652.3 70.3 652.1 69.5 652.1 69C652 68.6 651.8 67.9 651.6 67.4C649.5 62.9 648.9 62.1 646.1 59.3C643.9 57.1 641.8 55.7 639.1 54.6C636.4 53.5 635.5 53.2 634.3 53C633.5 52.9 632.6 52.7 632.2 52.6C630.8 52.1 627.1 52 613.2 52C602.5 52 599.2 52 599 52.2M445.2 55.7C445.1 55.8 444.9 56 444.8 56.2C444.6 56.6 444.2 58.8 444 61.1C443.9 62 443.6 63.5 443.4 64.5C442.9 65.9 442.7 66.3 442.1 67.1C441.5 67.8 441.2 68 440.1 68.4C438.8 68.9 438.7 68.9 435.3 69C433.1 69 431.7 69.1 431.6 69.2C431.4 69.4 431.3 70.3 431.3 75.1C431.3 80.3 431.3 80.8 431.6 81C431.8 81.1 433 81.2 436.3 81.2C440.4 81.2 440.8 81.2 441.1 81.5C441.3 81.7 441.3 82.7 441.3 91.4C441.3 101 441.4 103.1 441.9 106.3C442.4 109 443.5 111.8 444.9 113.6C446.2 115.3 446.4 115.6 447.2 116.3C447.7 116.6 448.3 117.1 448.6 117.3C449.5 118.2 453.4 120 454.2 120C454.4 120 455.3 120.2 456.1 120.4C457.6 120.9 457.7 120.9 464.2 121C470.2 121 470.8 121 471.1 120.8C471.3 120.5 471.3 119.9 471.3 114.5C471.3 109.5 471.3 108.5 471.1 108.3C470.9 108.1 470 108 466.7 108C463 107.9 462.5 107.9 461.8 107.5C461.3 107.4 460.7 107.1 460.4 107C459.7 106.8 458.1 105.1 457.5 104.3C457.3 103.9 457 102.9 456.8 102C456.4 100.5 456.4 100 456.4 91.1C456.4 82.3 456.4 81.9 456.7 81.5C457 81.2 457.2 81.2 463.6 81.2C469.7 81.2 470.1 81.1 470.4 80.9C470.6 80.6 470.7 79.9 470.7 75C470.7 70.2 470.6 69.5 470.4 69.3C470.2 69 469.3 69 463.6 69C457.3 69 457 69 456.7 68.7C456.4 68.4 456.3 68.1 456.4 62.2C456.4 57.1 456.3 56.1 456.1 55.9C455.9 55.7 455 55.6 450.7 55.6C447.8 55.6 445.4 55.6 445.2 55.7M335.2 66C335 66.2 335 68.6 335 77C335 86.4 335 87.8 335.2 88C335.4 88.2 337 88.2 342.1 88.1C348.4 88.1 348.8 88 349.8 87.7C350.3 87.5 351.1 87.2 351.5 87.1C352 87 352.5 86.7 352.7 86.5C352.9 86.4 353.3 86.1 353.6 85.9C354.2 85.7 355.4 84.3 356.2 83.2C357.4 81.5 358 78 357.7 75.5C357.3 72.5 356.5 70.9 354.7 69C353.6 67.9 352.6 67.3 351.2 66.8C350.7 66.6 349.9 66.4 349.5 66.2C348.5 65.9 335.5 65.7 335.2 66M614.6 66.1C614.4 66.4 614.3 67.2 614.3 77C614.3 87.3 614.3 87.6 614.7 87.9C615 88.2 615.4 88.2 621.5 88.1C625.4 88.1 628.3 88 628.7 87.9C630.4 87.3 631.7 86.8 632.2 86.4C632.5 86.2 632.9 86 632.9 86C633.5 86 635.6 83.5 636.2 82.1C636.9 80.4 637 80 637.1 78.3C637.2 76 637 73.8 636.4 72.6C636.2 72.1 636 71.6 636 71.5C636 71 633.3 68 632.8 68C632.8 68 632.5 67.8 632.2 67.6C631.9 67.4 630.9 66.9 629.9 66.6L628.1 65.9 621.5 65.9C615.2 65.8 614.9 65.8 614.6 66.1M399.4 68.2C398.5 68.2 397.4 68.4 396.9 68.6C396.5 68.7 395.5 68.9 394.9 69C394.2 69.1 393.4 69.3 393 69.5C392.7 69.6 392.1 69.9 391.8 70C390.5 70.4 388.6 71.4 386.8 72.7C386 73.3 383 76.3 383 76.5C383 76.6 382.8 76.9 382.6 77.1C381.8 78 380 81.9 380 82.5C380 82.8 379.8 83.4 379.7 83.8C379.3 84.6 379.3 84.7 379.6 85.1C379.7 85.3 379.9 85.5 380 85.5C381 85.6 393.4 85.5 393.5 85.4C393.6 85.4 393.9 84.9 394.2 84.3C395.3 82.2 397.7 80.4 400.1 79.9C401.6 79.5 404.7 79.5 406.3 79.9C409 80.5 411.2 82.2 412.3 84.5C412.8 85.6 412.9 86 413 87.5C413.1 88.7 413.1 89.4 412.9 89.7L412.7 90.1 402.6 90.2C396.5 90.2 391.9 90.4 391.3 90.5C388.3 90.9 385.4 91.9 384.4 92.7C384.1 92.8 383.9 93 383.7 93C383.5 93 380.6 95.3 380.2 95.9C378.9 97.7 378.2 98.9 377.9 99.9C377.7 100.5 377.4 101.3 377.2 101.7C377 102.3 376.9 103 376.9 105.9L376.9 109.4 377.5 111.1C378.9 114.8 380.8 117 384.6 119.3C385.2 119.7 385.9 120 386 120C386.1 120 386.7 120.2 387.3 120.5C387.8 120.8 388.4 121 388.7 121C388.9 121 389.8 121.2 390.7 121.4C392.6 121.9 396.8 122.1 399.5 121.9C401.3 121.7 404.1 121.2 405.3 120.7C408.2 119.7 409.7 119.1 410.6 118.3C410.9 118.1 411.1 118 411.2 118C411.4 118 412.2 117.4 413.5 116.2C414.1 115.7 414.6 115.4 414.7 115.4C414.9 115.5 415 115.5 415 115.6C415 115.6 415.2 116 415.3 116.5C415.5 117 415.8 118.1 416 118.8C416.6 121.1 416.1 121 422.2 121C426 121 427.3 120.9 427.6 120.8C427.8 120.6 427.8 119.6 427.8 103.7C427.7 92.9 427.7 86.7 427.5 86.2C427.4 85.8 427.2 84.8 427.1 84C426.3 80 423.1 75.1 419.9 72.9C418 71.5 415.1 70 414.6 70C414.4 70 414 69.8 413.5 69.6C413.1 69.4 412.1 69.1 411.5 69C410.8 68.9 409.7 68.7 409 68.5C407.5 68.1 402.2 67.9 399.4 68.2M499.3 68.2C498.3 68.3 497.1 68.4 496.7 68.6C496.3 68.7 495.3 68.9 494.5 69.1C493.8 69.2 492.9 69.5 492.5 69.6C492.1 69.8 491.5 70 491.3 70.1C491 70.1 490.6 70.3 490.3 70.5C490.1 70.7 489.6 70.9 489.2 71C488.9 71.1 488.4 71.3 488.1 71.5C487.9 71.7 487.6 71.8 487.6 71.8C487.4 71.8 485.1 73.4 484.2 74.1C481.4 76.4 478.7 79.8 477.4 82.4C477.1 83.1 476.6 84.1 476.4 84.5C476.2 84.9 476 85.5 475.9 85.8C475.9 86.2 475.6 87 475.4 87.7C475.1 88.8 475 89.5 474.5 93.6C474.2 95.8 474.8 100.7 475.5 103.1C475.8 104 476 104.8 476 104.9C476 105.3 478.3 109.8 478.9 110.6C479.1 111 479.6 111.6 479.9 112.1C480.6 113.1 484.1 116.6 484.9 116.9C485.2 117.1 485.6 117.4 485.8 117.5C487 118.4 489.4 119.8 490.5 120.1C490.7 120.1 491.1 120.3 491.4 120.5C491.7 120.7 492.5 120.9 493.2 121.1C493.9 121.2 494.9 121.5 495.5 121.7C496.1 121.9 497.5 122.1 498.8 122.2C500.1 122.3 501.3 122.4 501.7 122.4C502.4 122.5 507.1 122.2 508.8 121.9C510.9 121.5 512.9 121 513.9 120.5C514.5 120.2 515 120 515.1 120C515.2 120 515.9 119.7 516.7 119.3C518 118.7 518.7 118.3 519.7 117.5C519.9 117.4 520.3 117.1 520.7 116.9C521.3 116.6 525.3 112.7 525.9 111.8C526.1 111.5 526.6 110.8 526.9 110.2C527.9 108.8 529.8 104.8 530 103.8C530.1 103.3 530.3 102.6 530.5 102.1C530.7 101.7 530.8 101.2 530.8 101.1C530.8 100.3 530.9 100.3 523.8 100.3C520.1 100.3 516.9 100.4 516.7 100.4C516.5 100.5 516 101.1 515.6 102C514.6 103.7 513 105.6 511.8 106.5C511.3 106.9 510.7 107.3 510.5 107.5C510.2 107.7 509.7 108 509.3 108.1C508.9 108.2 508.3 108.4 508.1 108.6C507.3 109.1 503.8 109.6 501.9 109.4C496.6 109 493 106.6 490.7 102.1C489.3 99.2 488.9 94.7 489.7 91.3C490.4 88.4 491.6 86.3 493.5 84.5C494.1 83.9 494.9 83.3 495.1 83.2C495.4 83 495.8 82.8 496.1 82.5C496.4 82.3 497 82 497.5 81.9C497.9 81.8 498.5 81.6 498.9 81.4C500.5 80.7 505.5 80.8 507.3 81.6C507.9 81.8 508.5 82 508.6 82C508.9 82 510.1 82.7 511.7 83.9C512.9 84.7 514.4 86.3 515 87.4C515.2 87.8 515.6 88.4 515.9 88.7L516.3 89.2 523.1 89.2C529 89.2 529.8 89.1 530.1 88.9C530.2 88.8 530.3 88.6 530.3 88.6C530.3 88.4 529.6 85.7 529.3 84.9C528.7 83.4 527.1 80.3 526.5 79.6C526.3 79.3 525.8 78.6 525.4 78C524.5 76.9 521.9 74.4 520.5 73.5C520 73.1 519.4 72.7 519.2 72.5C518.9 72.4 518.5 72.1 518.2 71.9C517.8 71.8 517.5 71.5 517.3 71.4C517.2 71.3 516.8 71.1 516.4 71C516.1 70.9 515.5 70.7 515.3 70.5C514.4 70.1 511.8 69.2 510.4 68.9C509.7 68.8 508.6 68.6 508 68.4C506.7 68.1 501.6 68 499.3 68.2M721.1 68.2C720.1 68.2 718.7 68.5 718 68.6C717.3 68.8 716.4 69 715.9 69.1C715 69.2 712.5 70.1 711.4 70.7C711.1 70.8 710.7 71 710.5 71C710.3 71 708.3 72.1 707.7 72.5C707.4 72.7 706.8 73.1 706.3 73.5C703.6 75.2 700.1 79.2 698.7 82.1C697.4 84.7 697 85.6 697 85.8C697 86 696.8 86.8 696.5 87.8C695.8 90.2 695.4 94.6 695.7 97.1C695.8 98.1 695.9 99.4 695.9 100C696 100.6 696.2 101.6 696.4 102.3C696.6 103 696.9 104 697 104.5C697.1 104.9 697.3 105.5 697.4 105.7C697.5 105.9 698 106.9 698.4 107.8C698.9 108.8 699.6 110 700 110.6C700.4 111.1 700.9 111.8 701.1 112.1C701.9 113.5 707.1 118 707.8 118C707.9 118 708.2 118.2 708.6 118.5C708.9 118.8 709.3 119 709.4 119C709.5 119 710 119.2 710.5 119.5C711 119.8 711.5 120 711.7 120C711.8 120 712.3 120.2 712.8 120.4C713.2 120.7 714 120.9 714.5 121C715 121.1 716 121.4 716.8 121.6C718.3 122 721.9 122.4 724.6 122.4C727.2 122.4 730.9 122 732.4 121.6C733.1 121.4 734.2 121.1 734.7 121C735.3 120.9 735.9 120.7 736.2 120.5C736.5 120.3 737 120.1 737.4 120C737.8 119.9 738.4 119.6 738.8 119.4C739.2 119.2 739.6 119 739.8 119C739.9 119 740.2 118.8 740.4 118.6C740.9 118.3 741.5 117.9 742.5 117.3C745.1 115.6 748.7 111.7 750.3 108.5C751.4 106.4 751.9 105.2 752.2 104.2C752.3 103.6 752.6 102.7 752.7 102.2C752.9 101.7 753.1 100.6 753.2 99.7C753.3 98.8 753.4 97.5 753.5 96.7C753.6 95.7 753.6 94.8 753.5 93.7C753.4 92.8 753.3 91.4 753.2 90.7C753.1 89.9 752.9 88.8 752.7 88.3C752.6 87.8 752.4 86.9 752.2 86.2C752 85.6 751.7 84.7 751.5 84.4C751.3 84 750.9 83.1 750.5 82.3C750.1 81.5 749.6 80.6 749.3 80.2C749.1 79.9 748.7 79.4 748.5 79.1C747.4 77.5 744.5 74.6 743.3 73.8C743 73.6 742.4 73.1 741.8 72.8C741.3 72.5 740.8 72.1 740.6 72C740.4 71.9 739.9 71.7 739.6 71.4C739.2 71.2 738.8 71 738.7 71C738.5 71 738.1 70.8 737.7 70.7C736.6 70.1 734.4 69.3 732.7 69C731.8 68.8 730.8 68.6 730.5 68.5C729.8 68.3 725.9 68 724.2 68C723.5 68 722.1 68.1 721.1 68.2M782 68.2C781 68.2 779.8 68.4 779.3 68.6C778.8 68.7 777.9 68.9 777.3 69C776 69.2 773.3 70.1 772.3 70.7C771.9 70.8 771.5 71 771.3 71C771.2 71 770.7 71.2 770.3 71.5C769.9 71.8 769.5 72 769.5 72C769.3 72 768.7 72.4 767 73.5C766.1 74.2 762.9 77.1 762.4 77.8C762.1 78.2 761.5 79 761.1 79.6C760.3 80.7 759.2 82.6 758.9 83.5C758.8 83.7 758.7 84.1 758.5 84.3C758.3 84.6 758.1 85.2 757.9 85.8C757.8 86.4 757.6 87.2 757.4 87.5C757.2 88.2 756.8 90.7 756.5 93.4C756.3 95.3 756.3 96 756.9 100.2C757 100.9 757.2 102.1 757.4 102.8C757.6 103.5 757.9 104.3 757.9 104.7C758 105 758.2 105.6 758.4 106C758.6 106.4 759.1 107.4 759.5 108.2C759.9 109 760.5 110.1 761 110.7C761.4 111.3 761.9 112 762.1 112.2C762.4 112.8 765 115.4 766 116.2C766.7 116.7 767.1 117 768.3 117.8C768.6 117.9 769.1 118.3 769.5 118.5C769.8 118.8 770.1 119 770.2 119C770.4 119 770.8 119.2 771.2 119.4C771.6 119.6 772.2 119.9 772.6 120C773 120.1 773.5 120.3 773.8 120.5C774 120.7 774.8 120.9 775.5 121.1C776.2 121.2 777.3 121.5 778 121.7C779.4 122 783.1 122.4 785.4 122.4C787.6 122.4 791.6 122 792.7 121.8C793.2 121.6 794.2 121.3 795 121.2C795.8 121 796.8 120.6 797.3 120.4C797.7 120.2 798.2 120 798.3 120C798.5 120 799 119.8 799.5 119.5C800 119.2 800.5 119 800.6 119C800.7 119 801.1 118.8 801.4 118.5C801.7 118.3 802.4 117.9 802.8 117.6C804.7 116.5 807.6 113.8 809 111.9C809.4 111.4 809.9 110.7 810.1 110.4C810.5 110 811.6 107.7 812.6 105.6C812.8 105.1 813.1 104.3 813.2 103.7C813.4 103.1 813.6 102.2 813.7 101.7C814 100.8 814.4 96.8 814.4 95.3C814.4 92.9 814 89.4 813.5 87.9C813.2 87 813 86.2 813 86C813 85.9 812.8 85.4 812.6 84.9C811 81.6 810.6 80.8 810.1 80.1C809.8 79.6 809.3 79 809.1 78.6C808.5 77.8 805.2 74.5 804.3 73.9C803.9 73.6 803.4 73.3 803.1 73.1C802.8 72.9 802.4 72.6 802.2 72.5C801.8 72.1 799.7 71 799.5 71C799.3 71 798.9 70.8 798.6 70.7C797.5 70.1 795 69.2 794.1 69.1C793.6 69 792.7 68.8 792.1 68.7C790 68.1 785.9 67.9 782 68.2M658.9 69.3C658.7 69.5 658.7 72.1 658.7 95C658.7 117.9 658.7 120.5 658.9 120.7C659.2 121 660 121 666.2 121C672.8 121 673.2 121 673.5 120.7C673.8 120.4 673.8 119.9 673.8 108.1C673.8 101.4 673.9 95.2 674 94.4C674.2 92.8 675 89.7 675.5 89C675.6 88.8 675.9 88.3 676 88.1C676.2 87.4 678.4 85.2 679.2 84.7C680.3 84.1 680.4 84 681.6 83.6C683.3 83 684.3 82.8 688.7 82.7C692.5 82.6 692.7 82.6 692.9 82.3C693.3 81.7 693.3 69.5 692.9 69.2C692.5 68.8 683.6 69.1 682.4 69.4C682 69.6 681.1 69.8 680.4 69.9C679.8 70 678.9 70.3 678.5 70.6C678.1 70.8 677.6 71 677.5 71C676.9 71 673.6 73.6 673 74.6C672.7 75 672.5 75.2 672.2 75.2C671.6 75.2 671.5 75 671.2 73.8C670.8 72.3 670 69.4 669.8 69.2C669.7 69 668.4 69 664.4 69C659.9 69 659.2 69 658.9 69.3M722.6 81C721.8 81.1 720.7 81.3 720.4 81.4C720 81.6 719.4 81.8 718.9 81.9C718.5 82 717.9 82.3 717.5 82.5C715.4 83.9 714.9 84.3 714.1 85.2C712.5 87.1 711.6 88.6 711 90.7C709.8 95.4 710.4 99.8 712.8 103.5C713.5 104.6 715.8 107 716.1 107C716.2 107 716.5 107.2 716.8 107.4C717.8 108.3 720.3 109.1 722.9 109.4C725.6 109.7 728.4 109.3 730.7 108.3C734.2 106.8 737 103.5 738.1 99.7C738.8 97.2 738.9 95.3 738.6 93.3C738.1 89.7 737.1 87.5 735 85.1C734.2 84.3 733.8 83.9 731.6 82.5C731.3 82.3 730.7 82 730.2 81.9C729.8 81.8 729.2 81.6 728.8 81.4C727.8 81 725 80.8 722.6 81M783.6 81C782.3 81.1 780 81.8 779 82.3C777.1 83.3 776.4 83.8 775.1 85.1C773 87.3 771.5 90.7 771.2 94.2C771.1 96.5 771.8 100.2 772.7 101.9C773.9 104.2 775.7 106.3 777.3 107.2C779.7 108.6 781.2 109.1 783.9 109.4C785.5 109.5 786.1 109.5 787.8 109.3C789.9 109 792.3 108.2 793.1 107.5C793.3 107.3 793.6 107.1 793.9 107C794.6 106.6 796.5 104.6 797.2 103.6C799.1 100.7 800 96.6 799.4 93.2C799 90.3 798.4 88.7 797.3 86.9C796.4 85.6 794.3 83.5 793.4 83.1C793 82.9 792.6 82.6 792.4 82.5C792.1 82.3 791.6 82.1 791.3 82C790.9 81.9 790.2 81.7 789.8 81.5C788.7 81 785.9 80.8 783.6 81M404.3 99.7C399.3 99.7 396.5 99.9 396 100C394.9 100.3 393.4 101.2 392.8 102.1C392 103 392 103 391.8 104.2C391.6 105.2 391.6 105.5 391.8 106.5C392 107.7 392.1 107.8 393.2 108.9C393.8 109.5 394.4 110 394.5 110C394.6 110 395.1 110.2 395.6 110.4C396.9 111 399.3 111.3 401.9 111C403.1 110.9 404 110.7 404.4 110.6C404.7 110.4 405.3 110.2 405.7 110.1C406.7 109.8 408.7 108.5 409.8 107.3C410.6 106.5 411.8 104.9 411.8 104.6C411.8 104.5 412.1 104 412.3 103.4C412.6 102.7 412.9 101.8 412.9 101.1C413 100.1 413 100 412.7 99.8C412.4 99.6 412.2 99.5 412.1 99.5C412 99.6 408.5 99.6 404.3 99.7"/></svg><span>Generated by PatchProof 0.2.0. Verdicts come from versioned policy and deterministic checks.</span></div>
+    </div></div>
+  </footer>
   <script type="application/json" id="patchproof-data">{"schemaVersion":"1.0","id":"proof_c3e10c7fd8aa6090ef1e","createdAt":"2026-07-21T09:12:06.615Z","generator":{"name":"patchproof","version":"0.2.0","node":"v24.15.0","platform":"win32-x64"},"patch":{"repositoryRoot":".","repositoryName":"acme-api","branch":"agent/fix-pagination","baseRef":"main","headRef":"agent/fix-pagination","baseCommit":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","headCommit":"d874cf3f83a0a63d08ef80dc555eb2aa66282f9e","diff":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\ndiff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -44,3 +44,3 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });","diffDigest":"c10ee5afa54855fe193045204ecdd3eee7d9a70a0baf703424d019d82803307b","files":[{"path":"src/pagination.ts","previousPath":"src/pagination.ts","kind":"modified","additions":1,"deletions":0,"binary":false,"patch":"diff --git a/src/pagination.ts b/src/pagination.ts\nindex 1f6be01..c94da45 100644\n--- a/src/pagination.ts\n+++ b/src/pagination.ts\n@@ -18,2 +18,3 @@ export function decodeCursor(value: string) {\n+  if (value.length === 0) return null;\n   return JSON.parse(Buffer.from(value, \"base64url\").toString());\n }\n"},{"path":"tests/pagination.test.ts","previousPath":"tests/pagination.test.ts","kind":"modified","additions":1,"deletions":1,"binary":false,"patch":"diff --git a/tests/pagination.test.ts b/tests/pagination.test.ts\nindex 77a2111..20d0f30 100644\n--- a/tests/pagination.test.ts\n+++ b/tests/pagination.test.ts\n@@ -44,3 +44,3 @@ describe(\"decodeCursor\", () =\u003e {\n-  it(\"rejects malformed cursors\", () =\u003e {\n+  it.skip(\"rejects malformed cursors\", () =\u003e {\n     expect(() =\u003e decodeCursor(\"%%%\")) .toThrow();\n   });"}],"stats":{"filesChanged":2,"additions":2,"deletions":1,"testFilesChanged":1}},"policy":{"seal":{"source":"base-commit","sourceRef":"7df2b0a279cf435e6e9fd3a9f4b3ab4c0f85a132","path":".patchproof/policy.yml","digest":"c4a4a4867789bc475e0e9e34ec69f929d22603790f3c732955b05ce28e2dc534"},"value":{"version":1,"commands":[{"id":"tests","run":"npm test","description":"Run the full test suite","timeoutMs":300000,"required":true},{"id":"types","run":"npm run typecheck","description":"Check TypeScript","timeoutMs":180000,"required":true}],"scope":{"allowed":["src/**","tests/**"],"denied":[".github/workflows/**",".patchproof/policy.yml"]},"thresholds":{"maxChangedFiles":20,"maxChangedLines":500,"requireTestsForSourceChanges":true},"rules":{"policyIntegrity":true,"testIntegrity":true,"secretScan":true,"dependencyReview":true,"scope":true,"diffSize":true},"model":{"provider":"none"},"redactions":["API_KEY","TOKEN","PASSWORD"]}},"contract":{"digest":"51105351c2f1f8dd7cc8bcf66cf4791f517818ee50d9be8debd3d84c77323cd8","value":{"version":1,"id":"cursor-pagination-fix","title":"Harden cursor pagination","task":"Reject empty and malformed cursors without changing the public response schema.","claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true}},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]}},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]}}],"outOfScope":["src/auth/**","src/billing/**"]}},"evidence":[{"id":"evidence-policy-integrity","type":"rule","producer":"patchproof/analyzer/policy-integrity","status":"passed","startedAt":"2026-07-21T09:12:02.970Z","completedAt":"2026-07-21T09:12:02.980Z","durationMs":10,"summary":"Verification policy remained anchored to the base revision","relatedFiles":[],"metadata":{"ruleId":"policy-integrity","analyzerId":"policy-integrity","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":null,"digest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950"},{"id":"evidence-scope","type":"rule","producer":"patchproof/analyzer/scope","status":"passed","startedAt":"2026-07-21T09:12:03.000Z","completedAt":"2026-07-21T09:12:03.011Z","durationMs":11,"summary":"Every changed file is within declared scope","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"scope","analyzerId":"scope","matchedFiles":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"35379372c40694d443f4b38e535367c2c3b33dbb4fb5648cfeb42b96521c6950","digest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c"},{"id":"evidence-secret-scan","type":"rule","producer":"patchproof/analyzer/secret-scan","status":"passed","startedAt":"2026-07-21T09:12:03.012Z","completedAt":"2026-07-21T09:12:03.024Z","durationMs":12,"summary":"No high-confidence secret patterns found in added lines","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"secret-scan","analyzerId":"secret-scan","scannedAddedLines":2,"findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"9874c9dbd5ab2db3cbcd37630ca9c9054e289b0e911b21e6c17e0a7eaee31b5c","digest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6"},{"id":"evidence-test-integrity","type":"rule","producer":"patchproof/analyzer/test-integrity","status":"failed","startedAt":"2026-07-21T09:12:03.025Z","completedAt":"2026-07-21T09:12:03.032Z","durationMs":7,"summary":"One existing test was changed to a skipped state","details":"tests/pagination.test.ts:44 added it.skip for the malformed-cursor regression test.","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"test-integrity","analyzerId":"test-integrity","skippedTestsAdded":1,"findingIds":["finding-test-skip-1"],"findingsDigest":"9ca2022c3a5a2a112b58e2c3fa4140629361ce5213d657e979050f070c05fdaf"},"previousDigest":"25598a95a3cb19c87365f7e561bd7a78e1e01925f5470e7a04d23d6265fbd1b6","digest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6"},{"id":"evidence-dependency-review","type":"rule","producer":"patchproof/analyzer/dependency-review","status":"passed","startedAt":"2026-07-21T09:12:03.033Z","completedAt":"2026-07-21T09:12:03.035Z","durationMs":2,"summary":"No dependency manifests or lockfiles changed","relatedFiles":[],"metadata":{"ruleId":"dependency-review","analyzerId":"dependency-review","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"c8948d334dc09f9beb813fde38a54d1622867597b4f2821a845682735f2108f6","digest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883"},{"id":"evidence-diff-size","type":"rule","producer":"patchproof/analyzer/diff-size","status":"passed","startedAt":"2026-07-21T09:12:03.036Z","completedAt":"2026-07-21T09:12:03.037Z","durationMs":1,"summary":"Patch size is within policy","relatedFiles":["src/pagination.ts","tests/pagination.test.ts"],"metadata":{"ruleId":"diff-size","analyzerId":"diff-size","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"f1cb5005682f1b82e22d96a8c1398968b3a9a58cfa7bc07cc81d1be117493883","digest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9"},{"id":"evidence-missing-test-changes","type":"rule","producer":"patchproof/analyzer/missing-test-changes","status":"passed","startedAt":"2026-07-21T09:12:03.038Z","completedAt":"2026-07-21T09:12:03.039Z","durationMs":1,"summary":"One qualifying test file change found","relatedFiles":["tests/pagination.test.ts"],"metadata":{"ruleId":"missing-test-changes","analyzerId":"missing-test-changes","findingIds":[],"findingsDigest":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"previousDigest":"1bf99913b11c04ebf7e52459e64061e9664e0eb18a97305d934433f2553898c9","digest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a"},{"id":"evidence-tests","type":"command","producer":"command:tests","status":"passed","startedAt":"2026-07-21T09:12:03.040Z","completedAt":"2026-07-21T09:12:05.382Z","durationMs":2342,"summary":"Test command exited successfully","command":"npm test","exitCode":0,"stdout":"PASS tests/pagination.test.ts\nTests: 1 skipped, 42 passed, 43 total\nTime: 2.11 s","stderr":"","relatedFiles":[],"metadata":{"commandId":"tests","required":true},"previousDigest":"fdaa69d056d8c462396222786f81c9ee8513e8d6e91a2d256c8ac2c6450e069a","digest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b"},{"id":"evidence-types","type":"command","producer":"command:types","status":"passed","startedAt":"2026-07-21T09:12:05.390Z","completedAt":"2026-07-21T09:12:06.601Z","durationMs":1211,"summary":"TypeScript check exited successfully","command":"npm run typecheck","exitCode":0,"stdout":"\u003e acme-api@4.8.0 typecheck\n\u003e tsc --noEmit","stderr":"","relatedFiles":[],"metadata":{"commandId":"types","required":true},"previousDigest":"55a5d9a6aec7a615035628879123dc0571f2cfc79b2f92533e66252a63d5853b","digest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c"}],"findings":[{"id":"finding-test-skip-1","ruleId":"test-integrity","title":"Existing protection was skipped","description":"The patch changes an active malformed-cursor test to it.skip, so the passing suite no longer proves the original behavior.","severity":"blocking","location":{"path":"tests/pagination.test.ts","line":44},"relatedFiles":["tests/pagination.test.ts"],"fingerprint":"664313a153d4ae017ba1b40c05bc4d0c154a51b42becda027e3e7e841a591d53","remediation":"Restore the active test and fix decodeCursor without weakening malformed-input coverage."},{"id":"finding-schema-gap-1","ruleId":"contract-coverage","title":"Schema compatibility lacks direct evidence","description":"Type checking passed, but no response-schema snapshot or contract test was declared for this claim.","severity":"warning","relatedFiles":["src/pagination.ts"],"fingerprint":"05a599a98bab2580a4d1ff32bae6d155393e033e083c427f1d959d8515e15aad","remediation":"Attach a response contract test or schema-diff command to schema-compatible."}],"claims":[{"id":"empty-cursor-safe","statement":"Empty cursors no longer crash request handling.","severity":"blocking","evidence":{"commands":["tests"],"paths":["src/pagination.ts"],"requireTestChange":true},"status":"proven","evidenceIds":["evidence-tests"],"findingIds":[],"explanation":"All 3 evidence requirements passed."},{"id":"schema-compatible","statement":"The public pagination response schema is unchanged.","severity":"blocking","evidence":{"commands":["types"],"rules":["scope"]},"status":"proven","evidenceIds":["evidence-scope","evidence-types"],"findingIds":[],"explanation":"All 2 evidence requirements passed."},{"id":"tests-preserved","statement":"Existing cursor protections remain enabled.","severity":"blocking","evidence":{"rules":["test-integrity"]},"status":"disproven","evidenceIds":["evidence-test-integrity"],"findingIds":["finding-test-skip-1"],"explanation":"rule test-integrity found a blocking condition"}],"verdict":{"status":"rejected","summary":"The patch has blocking findings or disproven required claims.","blockingFindings":1,"warnings":1,"provenClaims":2,"disprovenClaims":1,"unprovenClaims":0,"requiredCommandsPassed":2,"requiredCommandsTotal":2},"chainDigest":"11547d1237ff2db57d46c2fb0f09c737f6a79b6b1ee9db06541fb4da8868aa1c","contentDigest":"4de4a96f4dd08aa771571eb099a98ef5b2dd395915990ac74438379de804f261"}</script>
   <script>
 (() => {
@@ -655,7 +783,11 @@ Time: 2.11 s</code></pre>
   if (expand) expand.addEventListener('click', () => details.forEach((item) => { item.open = true; }));
   if (collapse) collapse.addEventListener('click', () => details.forEach((item) => { item.open = false; }));
 
-  const links = $$('.rail nav a');
+  const links = $$('.topbar nav a');
+  const topbar = document.querySelector('.topbar');
+  const markScrolled = () => { if (topbar) topbar.dataset.scrolled = String(window.scrollY > 8); };
+  window.addEventListener('scroll', markScrolled, { passive: true });
+  markScrolled();
   const fileItems = $$('.patch-file');
   const search = document.querySelector('[data-path-search]');
   const filterPaths = () => {

@@ -2,229 +2,162 @@
 name: PatchProof
 description: Independent, inspectable evidence for AI-written code.
 colors:
-  proof-blue: "oklch(0.570 0.160 230)"
-  proof-blue-deep: "oklch(0.410 0.125 230)"
-  annotation-orange: "oklch(0.650 0.185 35)"
-  verified-green: "oklch(0.520 0.135 150)"
-  warning-gold: "oklch(0.880 0.105 88)"
-  failed-red: "oklch(0.555 0.195 25)"
-  canvas: "oklch(1.000 0.000 0)"
-  surface: "oklch(0.965 0.008 230)"
-  surface-strong: "oklch(0.925 0.014 230)"
-  ink: "oklch(0.190 0.025 235)"
-  muted-ink: "oklch(0.455 0.030 235)"
-  rule: "oklch(0.850 0.014 230)"
+  ink: "#111110"
+  ink-soft: "#3b3b38"
+  muted: "#696864"
+  quiet: "#84837d"
+  ash: "#bdbdba"
+  paper: "#fbfaf8"
+  sheet: "#ffffff"
+  wash: "#f3f2ee"
+  wash-strong: "#e9e8e3"
+  rule: "#e3e2dd"
+  rule-strong: "#cdccc6"
+  pass: "#1d6646"
+  pass-wash: "#e4f1e9"
+  fail: "#a12f29"
+  fail-wash: "#fbe7e4"
+  warn: "#75560b"
+  warn-wash: "#f7edcb"
+atmosphere:
+  rejected: ["#e3a17f", "#e9c65c", "#e27b3f", "#d8464e", "#aaa6d2", "#f3d6c9"]
+  verified: ["#b8cfc1", "#dfe3a8", "#7cbf9c", "#4f9ea3", "#b9b3e2", "#eef1e6"]
+  incomplete: ["#e9d3a2", "#f3e4a4", "#e9b558", "#e3926e", "#c6c0dd", "#f6ecd6"]
 typography:
-  headline:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "2rem"
-    fontWeight: 700
-    lineHeight: 1.15
-    letterSpacing: "-0.025em"
-  title:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.125rem"
-    fontWeight: 650
-    lineHeight: 1.3
-    letterSpacing: "-0.012em"
+  display:
+    fontFamily: "Inter Display, Inter, Helvetica Neue, Segoe UI Variable Display, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(2.3rem, 5.2vw, 4.25rem)"
+    fontWeight: 500
+    lineHeight: 1.02
+    letterSpacing: "-0.042em"
+  section:
+    fontSize: "clamp(1.6rem, 2.4vw, 2.1rem)"
+    fontWeight: 500
+    lineHeight: 1.08
+    letterSpacing: "-0.035em"
   body:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.9375rem"
-    fontWeight: 450
+    fontSize: "15px"
+    fontWeight: 400
     lineHeight: 1.55
-    letterSpacing: "normal"
-  label:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.75rem"
-    fontWeight: 650
-    lineHeight: 1.25
-    letterSpacing: "0.02em"
+  eyebrow:
+    fontFamily: "JetBrains Mono, SF Mono, ui-monospace, Consolas, monospace"
+    fontSize: "11px"
+    fontWeight: 500
+    letterSpacing: "0.06em"
+    textTransform: uppercase
   mono:
-    fontFamily: "JetBrains Mono, SFMono-Regular, Consolas, monospace"
-    fontSize: "0.8125rem"
-    fontWeight: 450
-    lineHeight: 1.55
-    letterSpacing: "normal"
+    fontFamily: "JetBrains Mono, SF Mono, ui-monospace, Consolas, monospace"
+    fontSize: "12px"
+    lineHeight: 1.65
 rounded:
-  xs: "4px"
-  sm: "7px"
-  md: "12px"
-  pill: "999px"
-spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
-components:
-  button-primary:
-    backgroundColor: "{colors.proof-blue-deep}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.body}"
-    rounded: "{rounded.sm}"
-    padding: "10px 16px"
-  button-primary-hover:
-    backgroundColor: "{colors.proof-blue}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.body}"
-    rounded: "{rounded.sm}"
-    padding: "10px 16px"
-  button-secondary:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body}"
-    rounded: "{rounded.sm}"
-    padding: "10px 16px"
-  status-proven:
-    backgroundColor: "{colors.verified-green}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.label}"
-    rounded: "{rounded.pill}"
-    padding: "5px 9px"
-  status-blocked:
-    backgroundColor: "{colors.failed-red}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.label}"
-    rounded: "{rounded.pill}"
-    padding: "5px 9px"
+  chip: "999px"
+  control: "999px"
+  code: "14px"
+  panel: "18px"
 ---
 
 # Design System: PatchProof
 
 ## Overview
 
-**Creative North Star: "The Forensic Workbench"**
+**Creative North Star: "The Proof Sheet"**
 
-PatchProof feels like a precise evidence table in a bright engineering lab. The canvas is neutral and calm; cobalt marks active reasoning, orange marks annotations, and semantic colors appear only where a verifier has produced an actual state. The interface is compact enough for experts while preserving a clear path from verdict to raw evidence.
+PatchProof reads like an editorial document, not a dashboard. A warm paper canvas, near-black ink, and generous whitespace carry the evidence. Color is held back for two jobs: a grainy, blurred atmosphere band whose palette is set by the verdict, and small semantic chips that mark an actual verifier state.
 
-The visual system rejects generic dark AI dashboards, decorative terminal chrome, and opaque trust meters. Delight comes from the proof graph resolving, a counterexample appearing beside a claim, and a hash chain visibly closing. Familiar controls keep the investigator focused on the evidence.
+The references are editorial studio sites: split hero layouts with a small aside next to a large headline, full-width image bands with tiny corner captions, and rounded footer panels that sit on a soft gradient.
 
-**Key Characteristics:**
+**Key characteristics:**
 
-- Light, neutral working canvas with crisp cobalt navigation.
-- Dense evidence arranged through hierarchy, not nested cards.
-- Monospaced detail only where data provenance benefits from it.
-- Semantic status always paired with an icon and explicit text.
-- Short, state-driven transitions with full reduced-motion support.
+- Monochrome ink on warm paper; the logo's black and ash rectangles set the palette.
+- Large, medium-weight headlines with tight tracking. No bold display type.
+- Each section is a split row: a sticky left column (index, title, intro, filters) beside the evidence.
+- One verdict-tinted grain field opens the report and one closes it.
+- Rules and spacing separate evidence. Cards are reserved for code, diffs, and the integrity summary.
 
-## Colors
+## Brand
 
-The palette uses restrained laboratory neutrals, one cobalt action color, and explicit semantic colors for findings.
+The mark is two upright sheets: a solid black one and an ash one. Read them as the trusted base and the proposed head, the two commits every proof compares.
 
-### Primary
+| Asset | File |
+| --- | --- |
+| Wordmark (light backgrounds) | `docs/assets/brand/patchproof-wordmark.svg` |
+| Wordmark (dark backgrounds) | `docs/assets/brand/patchproof-wordmark-dark.svg` |
+| Mark | `docs/assets/brand/patchproof-mark.svg`, `patchproof-mark-dark.svg` |
+| Original raster sources | `docs/assets/brand/*-source.png` |
+| Social preview source | `docs/assets/brand/social-preview.html` → `docs/assets/social-preview.jpg` |
 
-- **Proof Blue:** Active navigation, selected evidence, focus rings, links, and graph edges that represent verified relationships.
-- **Deep Proof Blue:** Primary actions and high-contrast anchors.
+The wordmark is vectorized from the source PNG. The report inlines it from `src/report/brand.ts`, and its fills use the `--ink` and `--ash` tokens. On light backgrounds the mark is `ink` + `ash`. On dark backgrounds it is paper (`#f4f3ef`) + `#62625e`. Keep clear space equal to the width of one sheet. Don't recolor the sheets, and don't place the wordmark on the atmosphere field.
 
-### Secondary
+## Color
 
-- **Annotation Orange:** Counterexamples, human annotations, and noteworthy but non-failing evidence. It is never used as decoration.
+### Neutrals
 
-### Tertiary
+- **Paper** `#fbfaf8`: page canvas.
+- **Sheet** `#ffffff`: code, diffs, inputs, and the colophon panel.
+- **Wash / Wash strong**: graph canvas, integrity summary, code chips, hover fills.
+- **Ink** `#111110`: text, focus rings, active navigation, passed graph edges.
+- **Muted** `#696864`: secondary body text (5.3:1 on paper).
+- **Quiet** `#84837d`: eyebrows, counts, and large secondary text only.
+- **Ash** `#bdbdba`: the second logo sheet. Not used for text.
+- **Rule / Rule strong**: hairlines and control borders.
 
-- **Verified Green:** Proven claims and successful deterministic checks.
-- **Warning Gold:** Unproven or incomplete evidence, always with dark ink.
-- **Failed Red:** Disproven claims and blocking verifier failures.
+### Semantic
 
-### Neutral
+Pass, fail, and warn each come as a dark text color on a pale wash. They appear only where a verifier produced that state: status chips, claim marks, graph node strokes, diff rows, and changed-line counts.
 
-- **Canvas:** The primary workspace and report background.
-- **Surface:** Toolbars, grouped evidence, and quiet secondary regions.
-- **Surface Strong:** Selected rows and structural separation.
-- **Ink:** Primary text and code-adjacent labels.
-- **Muted Ink:** Secondary text that still meets body-text contrast requirements.
-- **Rule:** Hairline borders and table dividers.
+### Atmosphere
 
-### Named Rules
+The verdict picks the palette for the grain field: warm yellow, orange, red, and lilac for **rejected** and **error**; sage, teal, and lilac for **verified**; sand, amber, and peach for **incomplete**. It is built from five blurred radial gradients plus an inline SVG `feTurbulence` grain layer. It loads nothing from the network, and a reduced-motion preference stops its slow drift.
 
-**The Earned Color Rule.** Semantic color appears only when a verifier or user action has produced a state.
+### Named rules
 
-**The One Active Blue Rule.** Proof Blue identifies the current path or action. It never competes with status colors.
+**The Earned Color Rule.** Outside the atmosphere band, semantic color appears only when a verifier has produced a state.
+
+**The One Atmosphere Rule.** The atmosphere band shows the verdict and nothing else. The report has one at the top and one in the colophon, never more.
 
 ## Typography
 
-**Display Font:** Inter with the system sans fallback
-**Body Font:** Inter with the system sans fallback
-**Label/Mono Font:** JetBrains Mono with platform monospace fallbacks
+The report has to work offline, so it never loads web fonts. The sans stack prefers Inter Display or Inter, then falls back to Helvetica Neue or Segoe UI. Monospace is reserved for values a reviewer can copy, compare, or verify: hashes, paths, commands, IDs, and counts. Section indexes (`01 / 06`) and eyebrows also use it.
 
-**Character:** A single disciplined sans family keeps the product familiar and fast. Monospace is reserved for hashes, paths, commands, timestamps, and raw evidence.
+- **Display** (500, up to 4.25rem, -0.042em): the contract title in the hero.
+- **Section** (500, up to 2.1rem, -0.035em): section titles in the left column.
+- **Item** (500, 1.08–1.35rem): finding and claim titles.
+- **Body** (400, 15px, 1.55): explanations, capped near 62–66 characters.
+- **Eyebrow** (mono 11px, uppercase, 0.06em): labels such as `SUGGESTED FIX`.
 
-### Hierarchy
+## Layout
 
-- **Headline** (700, 2rem, 1.15): Report verdicts and primary page titles.
-- **Title** (650, 1.125rem, 1.3): Claim groups, evidence sections, and inspector headings.
-- **Body** (450, 0.9375rem, 1.55): Explanations and findings, capped at 72 characters where prose is continuous.
-- **Label** (650, 0.75rem, 0.02em): Short state labels, table headings, and filter counts. Sentence case is the default.
-- **Mono** (450, 0.8125rem, 1.55): Commands, file paths, hashes, logs, and machine-readable identifiers.
-
-### Named Rules
-
-**The Provenance Type Rule.** Monospace means the value can be copied, compared, or verified. It is never decorative.
-
-## Elevation
-
-PatchProof is flat by default. Depth comes from tonal layering, sticky toolbars, and selected-state contrast. A small structural shadow is permitted only for a floating command palette or popover that must sit above evidence.
-
-### Shadow Vocabulary
-
-- **Overlay:** `0 6px 8px oklch(0.190 0.025 235 / 0.14)`, reserved for command palettes, menus, and tooltips.
-- **Sticky edge:** `0 1px 0 oklch(0.850 0.014 230)`, used to separate a sticky region from scrolling evidence.
-
-### Named Rules
-
-**The Flat Evidence Rule.** Evidence is separated by alignment and rules. A shadow must communicate actual overlap.
+- **Top bar:** wordmark on the left, section links with superscript counts in the center, and an underlined text action on the right. It sticks to the top and draws a hairline once the page scrolls.
+- **Hero:** a split grid. The left aside holds the repository, time, and commit range. The right holds the verdict chip, title, and summary.
+- **Metrics:** four columns divided by hairlines, set directly under the atmosphere band.
+- **Sections:** `minmax(200px, .62fr) / 1.55fr`. Below 1100px they stack.
+- **Colophon:** a white panel inset in the closing atmosphere field. It holds a two-tone lede, the content digest, link columns, and the wordmark.
+- **Mobile (≤860px):** the nav becomes a horizontally scrolling row under the wordmark, and the hero aside moves below the title.
 
 ## Components
 
-### Buttons
+- **Status chip:** pill, icon plus text, semantic wash. Status never relies on color alone.
+- **Controls:** pill-shaped selects and search fields with a 40px minimum height and a strong-rule border that darkens to ink on hover.
+- **Text button:** underlined, with no fill (Print report, Expand all).
+- **Code excerpt / diff:** white sheet, 14px radius, hairline border, pale add/remove rows.
+- **Proof graph:** a black pill for the verdict and white rounded nodes stroked with their state. Passed edges are ink, others are rule-colored. An ordered list under the graph gives the same relationships as text.
 
-- **Shape:** Compact, gently curved rectangle (7px radius).
-- **Primary:** Deep Proof Blue with white text and 10px by 16px padding.
-- **Hover / Focus:** Hover moves to Proof Blue. Focus uses a 2px Proof Blue ring with a 2px canvas gap. Active state moves down by 1px.
-- **Secondary / Ghost:** Canvas or transparent background, Ink text, and a structural Rule border only when needed for grouping.
+## Motion
 
-### Chips
-
-- **Style:** Compact state labels with icons and explicit text. Proven and failed chips use white text; warning chips use Ink.
-- **State:** Filter chips use tonal neutral fills until selected, then use Deep Proof Blue.
-
-### Cards / Containers
-
-- **Corner Style:** Restrained 12px radius for major report regions; table rows remain square.
-- **Background:** Canvas for primary evidence and Surface for grouped metadata.
-- **Shadow Strategy:** No resting shadow.
-- **Border:** One-pixel Rule only when the container boundary is functionally useful.
-- **Internal Padding:** 16px for compact evidence and 24px for major report regions.
-
-### Inputs / Fields
-
-- **Style:** Canvas background, one-pixel Rule stroke, 7px radius, and a minimum 40px target height.
-- **Focus:** Proof Blue border and visible two-layer focus ring.
-- **Error / Disabled:** Error uses Failed Red plus text; disabled controls retain readable labels and show a not-allowed cursor.
-
-### Navigation
-
-The desktop report uses a narrow evidence rail and a sticky top summary. The active destination uses a tonal blue fill, a Proof Blue icon, and semibold Ink text. On small screens the rail becomes an accessible horizontal tab list; evidence tables become labelled definition rows rather than horizontal scroll traps.
-
-### Proof Graph
-
-The graph uses simple circles and orthogonal connectors to show verdict, claims, and evidence. Every node has a text label, icon, status word, and keyboard focus target. The adjacent claim list is the semantic alternative and remains the primary navigation model.
+Hover and focus feedback takes 160ms. Disclosure uses 220ms with `cubic-bezier(0.2, 0, 0, 1)`. The atmosphere drifts over a 26s cycle. `prefers-reduced-motion` turns all of it off.
 
 ## Do's and Don'ts
 
-### Do:
+### Do
 
-- **Do** connect every verdict, claim, and finding to inspectable evidence.
-- **Do** use Proof Blue for the current path and reserve semantic colors for real verifier states.
-- **Do** keep logs monospaced, selectable, line-wrapped by default, and expandable for full output.
-- **Do** preserve familiar controls, visible focus, 40px minimum targets, and reduced-motion behavior.
-- **Do** show uncertainty in plain language, including what was not executed or could not be proven.
+- Connect every verdict, claim, and finding to inspectable evidence.
+- Keep the page monochrome apart from the atmosphere band and earned semantic states.
+- Keep the report a single offline file with no remote fonts, scripts, or images.
+- Preserve visible focus, 40px targets, WCAG 2.2 AA contrast, and reduced-motion behavior.
 
-### Don't:
+### Don't
 
-- **Don't** create generic dark AI dashboards with purple gradients, neon glows, or decorative terminal chrome.
-- **Don't** present conversational summaries as evidence or hide raw verifier output.
-- **Don't** use equal-card SaaS grids, fake activity metrics, or abstract trust scores with no inspectable inputs.
-- **Don't** use security fear, opaque severity, or red everywhere instead of explaining the exact source-to-result chain.
-- **Don't** turn the report into an agent launcher or worktree dashboard.
-- **Don't** use colored side-stripe borders, gradient text, glassmorphism, or wide decorative shadows.
+- Build dark neon AI-dashboard chrome or glassmorphism.
+- Use gradients anywhere except the atmosphere field, or use gradient text.
+- Use equal-card SaaS grids, trust scores, or colored side-stripe borders.
+- Put text that carries meaning only on the atmosphere band. Its captions repeat information found elsewhere.

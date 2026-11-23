@@ -1,4 +1,13 @@
-# ![PatchProof — Local verification for AI-written patches](docs/assets/social-preview.jpg)
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/patchproof-wordmark-dark.svg">
+    <img alt="PatchProof" src="docs/assets/brand/patchproof-wordmark.svg" width="240">
+  </picture>
+</h1>
+
+**Local verification for AI-written patches.**
+
+![A PatchProof report: a rejected verdict above a grainy, verdict-tinted color band and the summary metrics](docs/assets/patchproof-report.png)
 
 PatchProof compares two Git commits, runs the checks defined on the trusted base, and shows the evidence behind each claim in an offline HTML report. Use it to catch a patch that skips a test, changes files outside its scope, or weakens its own verification policy.
 

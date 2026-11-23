@@ -4,6 +4,7 @@ Notable user-visible changes are recorded here. PatchProof follows semantic vers
 
 ## Unreleased
 
+- `policy-integrity` now blocks patches that change the `package.json` scripts a policy command runs, including nested scripts and `pre`/`post` hooks. Previously a patch could replace `npm test` with a script that always exits 0 and still verify. Changes to a policy command's test runner configuration are shown as review warnings.
 - New PatchProof identity and report design. The two-sheet logo and wordmark ship as SVG in `docs/assets/brand/`. The report now has an editorial layout: a top navigation bar, a split hero, numbered sections with sticky headings, and a closing colophon. A grain band tinted by the verdict opens and closes the page. The report remains a single offline file. See `DESIGN.md`.
 - The offline report now opens with the verdict, ranked findings, suggested fixes, and a source excerpt for a blocking finding when available. Reviewers can filter changed paths and inspect numbered Git hunks with links from findings.
 - `verify-bundle --repository <directory>` checks the diff, trusted base policy, and candidate contract against local Git objects. The command works from a dirty or unrelated checkout of the repository.

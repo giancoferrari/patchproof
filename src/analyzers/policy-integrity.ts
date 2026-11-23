@@ -1,4 +1,5 @@
 import type { Analyzer, AnalyzerResult, FileChange } from "../types.js";
+import { reviewCommandDefinitions } from "./command-definitions.js";
 import {
   changedPaths,
   evidenceStatusForFindings,
@@ -76,9 +77,18 @@ export const policyIntegrityAnalyzer: Analyzer = {
       );
     }
 
+    const commandReview = await reviewCommandDefinitions(context);
+    findings.push(...commandReview.findings);
+
     sortFindings(findings);
-    const relatedFiles = uniqueSortedPaths(protectedChanges.flatMap(({ file }) => changedPaths(file)));
-    const status = evidenceStatusForFindings(findings);
+    const relatedFiles = uniqueSortedPaths([
+      ...protectedChanges.flatMap(({ file }) => changedPaths(file)),
+      ...commandReview.relatedFiles,
+    ]);
+    // Runner configuration changes are advisory: reviewers see them, but they do not fail the rule.
+    const integrityIssues = findings.filter((finding) => finding.ruleId !== "policy-integrity.runner-config-changed");
+    const advisories = findings.length - integrityIssues.length;
+    const status = evidenceStatusForFindings(integrityIssues);
     return {
       findings,
       evidence: [
@@ -88,13 +98,16 @@ export const policyIntegrityAnalyzer: Analyzer = {
           status,
           startedAt,
           summary:
-            findings.length === 0
-              ? "Verification policy remained anchored to the base revision."
-              : `${findings.length} verification policy integrity issue${findings.length === 1 ? "" : "s"} detected.`,
+            integrityIssues.length > 0
+              ? `${integrityIssues.length} verification policy integrity issue${integrityIssues.length === 1 ? "" : "s"} detected.`
+              : advisories > 0
+                ? `Verification policy and the scripts it runs remained anchored to the base revision; ${advisories} test runner configuration change${advisories === 1 ? "" : "s"} to review.`
+                : "Verification policy and the scripts it runs remained anchored to the base revision.",
           relatedFiles,
           metadata: {
             protectedPaths: [...POLICY_PATHS].sort(),
             changedProtectedFiles: relatedFiles.length,
+            checkedScripts: commandReview.checkedScripts,
           },
         }),
       ],

@@ -68,7 +68,7 @@ Enabled analyzers run concurrently with `Promise.all`; their evidence is collect
 
 | Analyzer ID | Behavior |
 | --- | --- |
-| `policy-integrity` | Blocks changes to recognized PatchProof policy paths or failed base/head comparisons |
+| `policy-integrity` | Blocks changes to recognized PatchProof policy paths, failed base/head comparisons, and edits to the `package.json` scripts that policy commands run. Warns when the configuration of a test runner used by a policy command changes |
 | `test-integrity` | Detects deleted test files, newly skipped tests, reduced assertions/test cases, and obvious assertion weakening |
 | `secret-scan` | Scans added text lines for supported credential patterns and redacts matched values |
 | `dependency-review` | Reviews Node, Python, Go, Rust, Ruby, and PHP manifest/lockfile structure; adds deeper Node manifest checks |

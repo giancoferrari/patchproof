@@ -18,6 +18,7 @@ import {
   secretScanAnalyzer,
   testIntegrityAnalyzer,
 } from "../src/analyzers/index.js";
+import { scriptReferences } from "../src/analyzers/command-definitions.js";
 import type {
   AnalyzerContext,
   ClaimDefinition,
@@ -217,6 +218,148 @@ describe("policy integrity analyzer", () => {
 
     expect(result.findings).toEqual([]);
     expect(result.evidence[0]?.status).toBe("passed");
+  });
+});
+
+describe("verification command definitions", () => {
+  function policyRunning(...runs: string[]): PatchProofPolicy {
+    const policy = defaultPolicy();
+    policy.commands = runs.map((run, index) => ({
+      id: `check-${index + 1}`,
+      run,
+      timeoutMs: 60_000,
+      required: true,
+    }));
+    return policy;
+  }
+
+  function manifest(scripts: Record<string, string>, extra: Record<string, unknown> = {}): string {
+    return JSON.stringify({ name: "demo", ...extra, scripts }, null, 2);
+  }
+
+  it("blocks a patch that rewrites the test script the policy runs", async () => {
+    // A broken implementation plus a test script that always exits 0 used to verify.
+    const context = makeContext({
+      policy: policyRunning("npm test"),
+      files: [change("src/math.js"), change("package.json")],
+      filesAtRef: {
+        "base:package.json": manifest({ test: "node --test" }),
+        "head:package.json": manifest({ test: 'node -e "process.exit(0)"' }),
+      },
+    });
+
+    const result = await policyIntegrityAnalyzer.analyze(context);
+
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]).toMatchObject({
+      ruleId: "policy-integrity.command-definition-changed",
+      severity: "blocking",
+      location: { path: "package.json" },
+    });
+    expect(result.findings[0]?.description).toContain('"test"');
+    expect(result.evidence[0]?.status).toBe("failed");
+  });
+
+  it("follows nested scripts and lifecycle hooks", async () => {
+    const context = makeContext({
+      policy: policyRunning("pnpm run check"),
+      files: [change("package.json")],
+      filesAtRef: {
+        "base:package.json": manifest({ check: "npm run lint && npm test", lint: "eslint .", test: "vitest run" }),
+        "head:package.json": manifest({
+          check: "npm run lint && npm test",
+          lint: "eslint .",
+          test: "vitest run",
+          pretest: "exit 0",
+        }),
+      },
+    });
+
+    const result = await policyIntegrityAnalyzer.analyze(context);
+
+    expect(result.findings.map((finding) => finding.ruleId)).toEqual(["policy-integrity.command-definition-changed"]);
+    expect(result.findings[0]?.description).toContain('"pretest"');
+  });
+
+  it("allows dependency and unrelated script edits", async () => {
+    const context = makeContext({
+      policy: policyRunning("npm test"),
+      files: [change("package.json")],
+      filesAtRef: {
+        "base:package.json": manifest({ test: "vitest run", build: "tsup" }),
+        "head:package.json": manifest(
+          { test: "vitest run", build: "tsup --minify", dev: "tsx watch src" },
+          { dependencies: { zod: "^4.0.0" } },
+        ),
+      },
+    });
+
+    const result = await policyIntegrityAnalyzer.analyze(context);
+
+    expect(result.findings).toEqual([]);
+    expect(result.evidence[0]?.metadata["checkedScripts"]).toEqual(["package.json#test"]);
+  });
+
+  it("checks the manifest in the command's working directory", async () => {
+    const context = makeContext({
+      policy: policyRunning("npm --prefix web test"),
+      files: [change("web/package.json"), change("package.json")],
+      filesAtRef: {
+        "base:package.json": manifest({ test: "echo root" }),
+        "head:package.json": manifest({ test: "echo changed root" }),
+        "base:web/package.json": manifest({ test: "vitest run" }),
+        "head:web/package.json": manifest({ test: "vitest run --passWithNoTests" }),
+      },
+    });
+
+    const result = await policyIntegrityAnalyzer.analyze(context);
+
+    expect(result.findings.map((finding) => finding.location?.path)).toEqual(["web/package.json"]);
+  });
+
+  it("blocks when the changed manifest cannot be read", async () => {
+    const context = makeContext({
+      policy: policyRunning("npm test"),
+      files: [change("package.json")],
+      filesAtRef: {
+        "base:package.json": manifest({ test: "vitest run" }),
+        "head:package.json": "{ not json",
+      },
+    });
+
+    const result = await policyIntegrityAnalyzer.analyze(context);
+
+    expect(result.findings[0]).toMatchObject({
+      ruleId: "policy-integrity.command-definition-unverified",
+      severity: "blocking",
+    });
+  });
+
+  it("warns when the configuration of a runner the policy uses changes", async () => {
+    const files = [change("vitest.config.ts"), change("jest.config.js"), change("tsconfig.json")];
+    const filesAtRef = { "base:package.json": manifest({ test: "vitest run" }) };
+
+    const result = await policyIntegrityAnalyzer.analyze(
+      makeContext({ policy: policyRunning("npm test", "npx tsc --noEmit"), files, filesAtRef }),
+    );
+
+    expect(result.findings.map((finding) => [finding.ruleId, finding.severity, finding.location?.path])).toEqual([
+      ["policy-integrity.runner-config-changed", "warning", "tsconfig.json"],
+      ["policy-integrity.runner-config-changed", "warning", "vitest.config.ts"],
+    ]);
+    expect(result.evidence[0]?.status).toBe("passed");
+  });
+
+  it("extracts package scripts from shell commands", () => {
+    const command =
+      "CI=1 npm run test:unit -- --coverage && yarn lint && pnpm install && bun test; npm --prefix web test || pnpm -C api run e2e";
+    expect(scriptReferences(command)).toEqual([
+      { name: "test:unit", directory: "" },
+      { name: "lint", directory: "" },
+      { name: "test", directory: "web" },
+      { name: "e2e", directory: "api" },
+    ]);
+    expect(scriptReferences("cargo test && make check && npx vitest run")).toEqual([]);
   });
 });
 

@@ -11,7 +11,9 @@ Both are strict YAML version `1`. JSON-compatible YAML is accepted. Unknown keys
 
 The default locations are `.patchproof/policy.yml` and `.patchproof/contract.yml`.
 
-On ordinary verification, the policy is read from the resolved base commit, so a candidate policy edit cannot relax the rules used for that run. With the default `policyIntegrity` analyzer enabled, changes to recognized `.patchproof/policy.*` paths are also blocking. `--trust-working-policy` instead reads the local file and labels the seal `explicit-file`; this is useful while authoring policy but is a weaker trust mode.
+On ordinary verification, the policy is read from the resolved base commit, so a candidate policy edit cannot relax the rules used for that run. With the default `policyIntegrity` analyzer enabled, changes to recognized `.patchproof/policy.*` paths are also blocking.
+
+Commands such as `npm test` run the candidate's own `package.json` scripts, so the same analyzer also blocks a patch that changes any script a policy command reaches. That covers scripts called directly, scripts they call in turn, and `pre`/`post` hooks, for npm, pnpm, yarn, and bun, including `--prefix`, `-C`, and `cwd`. Unrelated script and dependency edits pass. When a patch changes the configuration of a runner a policy command uses (for example `vitest.config.ts`, `jest.config.js`, `tsconfig.json`, `pyproject.toml`, or a `Makefile`), the report shows a warning for review without failing the rule. `--trust-working-policy` instead reads the local file and labels the seal `explicit-file`; this is useful while authoring policy but is a weaker trust mode.
 
 The contract is always read from the working tree and hashed into the bundle. When commands run, PatchProof requires the checkout to be clean and at the candidate head, binding the contract file to that commit. Review it before implementation; high-assurance workflows should preserve the approved contract digest outside candidate control.
 
